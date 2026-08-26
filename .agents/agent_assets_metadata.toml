@@ -1,0 +1,17 @@
+uploads = []
+generated = []
+
+[[outputs]]
+id = "giNADLUCe41qUFardkpNA"
+uri = "file://.conversation/mystery-bento-implementation-plan.md"
+type = "text"
+title = "Mystery Bento implementation plan"
+description = "Implementation plan, state model, contest logic, accessibility requirements, build phases, and acceptance checklist for the Mystery Bento Meter and Persona Contest."
+logical_id = "7621df8f-1b9e-4700-9306-eef9e4e9e468"
+content_hash = "sha256:183e760da09a5ba720ebbf9ba31bdfa681457816b4aff2feae5fb0c18ac430f8"
+size = 21140
+mtime_ms = 1787779541606
+storage_uri = "gcs://replit-rams-assets-reed/rams/assets/conversation:4732112d-255e-4220-82ea-b36c0e5fb8d3/7621df8f-1b9e-4700-9306-eef9e4e9e468/79ec53cc-c9b1-4253-824b-29822813e1d3"
+storage_version_token = "1787779547898225"
+content_type = "text/markdown"
+source_uri = "file://mystery-bento-implementation-plan.md"

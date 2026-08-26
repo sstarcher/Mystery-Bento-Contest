@@ -1,0 +1,70 @@
+MYSTERY BENTO METER AND PERSONA CONTEST
+
+Add a prominent “Mystery Bento Meter” as an in-world pixel-art object, such as a magical rice cooker, glowing bento box, or enchanted lantern.
+
+METER BEHAVIOR
+- Each successful item selection adds a randomized, controlled amount of progress, for example 7–16%.
+- Show a brief in-world acknowledgement such as “+12 sparkle points” or “The bento hums warmly…”
+- Cap progress at 100%.
+- When it reaches 100% through normal selections, automatically launch the Persona Contest.
+- Persist meter progress in localStorage.
+- After every completed Persona Contest, reset the meter to 0%.
+
+SECRET EARLY-START GESTURE
+- Include a hidden shortcut: pressing and holding the Mystery Bento Meter completely fills it and immediately launches the Persona Contest.
+- Do not display “play now,” “hold to play,” or any instruction that reveals this feature in normal UI.
+- Desktop: pointer/mouse hold for 1.5 seconds.
+- Touch: press and hold for 1.5 seconds.
+- Keyboard: when the meter has focus, holding Enter or Space for 1.5 seconds.
+- During the hold, show subtle in-world feedback only, such as a faint glow strengthening, steam intensifying, or the bento shaking.
+- If released before the required duration, cancel with no visible error state and restore the meter to its previous progress.
+- Prevent accidental text selection and browser context menu behavior while holding.
+- The secret gesture must be accessible: the meter is keyboard focusable, has an accessible name, and its long-press behavior is documented in the README even though it is not advertised in the normal visual UI.
+
+PERSONA CONTEST
+Create a short, fully automated 5–10 second spectator contest. The user watches but does not control it.
+
+The contest is a silly, friendly competition between original pixel-art personas who appear in a miniature food-stall scene. It should feel like a playful animated interlude, not gambling and not a skill test.
+
+Create 4–6 persistent, original contestants with distinct names, pixel-art silhouettes, personalities, idle animations, and small flavor text. Example personality types:
+- A cheerful rice-ball courier who trips over enthusiasm
+- A meticulous tea spirit who follows every rule
+- A dramatic retired tuna captain
+- A sleepy cat-food critic
+- A tiny mushroom chef with an oversized ladle
+- A hyperactive radish mascot
+
+Do not copy real restaurant mascots, game characters, or recognizable character designs.
+
+CONTEST STRUCTURE
+- Randomly select 3–4 personas from the cast for each contest.
+- Present a brief title card, such as “Bento Dash,” “Lantern Ladle League,” or “The Midnight Maki Match.”
+- Run a visual race or playful challenge using automatically simulated outcomes. Appropriate themes include:
+  - Carrying wobbling plates through a tiny kitchen
+  - Rolling rice balls through a lantern-lit course
+  - Balancing tofu cubes on trays
+  - Delivering tea while avoiding harmless kitchen clutter
+- The contest must require no clicks, taps, timing, or player decision-making once it starts.
+- Give each persona a randomized but weighted performance profile based on persistent traits, for example speed, balance, focus, luck, and chaos.
+- Use controlled randomness so outcomes feel varied but each persona’s personality comes through over repeated contests.
+- Show simple, readable progress and delightful events, such as “Miso the tea spirit takes a perfect turn!” or “Captain Toro pauses for a dramatic bow.”
+- Include a clear winner at the end, plus a short playful recap.
+- Avoid mechanics associated with gambling: no betting, wagering, odds, currencies, real-world prizes, prize claims, slot reels, gachapon terminology, or prompts to increase selection volume.
+
+COLLECTIBLES AND MEMORY
+- The winning persona earns an original fictional collectible or moment for the player’s “Kitchen Curio Shelf,” such as:
+  - A recipe-card fragment
+  - A tiny lantern charm
+  - A chef sticker
+  - A ceramic plate pattern
+  - A framed victory snapshot
+- The collectible is cosmetic and has no monetary or real-world value.
+- Track contest history and winners in localStorage.
+- Include an unobtrusive corner button that opens the Kitchen Curio Shelf and Contest Ledger.
+- The ledger should show recent contest name, contestants, winner, and a memorable event line.
+- Avoid frequent duplicate collectibles where alternatives remain available.
+
+ACCESSIBILITY AND MOTION
+- The contest must have accessible text updates through an aria-live region, including selected contestants, key events, and winner.
+- Honor prefers-reduced-motion: replace the animated race with a staged illustrated result sequence or readable event log, then show the winner and collectible.
+- Provide a visible “Skip scene” button once a contest starts. Skipping must reveal the same final result, update the ledger, award the collectible, reset the meter, and return to the conveyor cleanly.

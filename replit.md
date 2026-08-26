@@ -1,6 +1,6 @@
-# [Project name]
+# Mystery Bento
 
-_Replace the heading above with the project's name, and this line with one sentence describing what this app does for users._
+An after-hours pixel-art food stall where curious selections charge a magical Bento Meter and unlock automated persona contests.
 
 ## Run & Operate
 
@@ -22,15 +22,22 @@ _Replace the heading above with the project's name, and this line with one sente
 
 ## Where things live
 
-_Populate as you build — short repo map plus pointers to the source-of-truth file for DB schema, API contracts, theme files, etc._
+- `artifacts/mystery-bento/src/App.tsx` — the complete conveyor, meter, contest, collectible, and ledger experience.
+- `artifacts/mystery-bento/src/index.css` — the lacquer-and-parchment visual system, pixel illustrations, and motion/reduced-motion rules.
+- `artifacts/mystery-bento/README.md` — run instructions and documentation for the hidden meter gesture.
 
 ## Architecture decisions
 
-_Populate as you build — non-obvious choices a reader couldn't infer from the code (3-5 bullets)._
+- The first version is frontend-only; localStorage is intentional because the experience is personal and does not require accounts or a server.
+- Contest outcomes are resolved once at launch with a seeded RNG so the animated, skipped, and reduced-motion paths share the same result.
+- The meter long-press is implemented as a focusable progressbar with pointer and keyboard support, while its visual guidance remains intentionally hidden.
 
 ## Product
 
-_Describe the high-level user-facing capabilities of this app once they exist._
+- Select one of four illustrated morsels to charge the Mystery Bento Meter by a randomized 7–16%.
+- Watch a short, spectator-only Persona Contest with six original kitchen personas.
+- Collect cosmetic curios and review recent winners in the Kitchen Curio Shelf and Contest Ledger.
+- Progress, history, and collectibles survive reload in the same browser.
 
 ## User preferences
 
@@ -38,7 +45,8 @@ _Populate as you build — explicit user instructions worth remembering across s
 
 ## Gotchas
 
-_Populate as you build — sharp edges, "always run X before Y" rules._
+- Contest completion is guarded so Skip scene and the automatic result path cannot award duplicate collectibles or ledger rows.
+- Reduced-motion mode keeps the same contest result and side effects but replaces the moving race with readable staged updates.
 
 ## Pointers
 

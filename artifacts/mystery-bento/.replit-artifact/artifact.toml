@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "Mystery Bento"
+description = "A playful pixel-art kitchen experience where item selections charge a magical Bento Meter and unlock automated persona contests with cosmetic collectibles and a persistent contest ledger."
+version = "1.0.0"
+id = "artifacts/mystery-bento"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 24283
+
+[services.development]
+run = "pnpm --filter @workspace/mystery-bento run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/mystery-bento", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/mystery-bento/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "24283"
+BASE_PATH = "/"

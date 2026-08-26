@@ -1,0 +1,1 @@
+- [Mystery Bento interaction rules](mystery-bento-rules.md) — keep the personal loop local and resolve each contest once across all presentation paths.
