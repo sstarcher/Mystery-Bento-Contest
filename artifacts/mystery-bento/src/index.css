@@ -148,15 +148,6 @@
 .background-shelf-title { position: absolute; top: 5px; left: 0; right: 0; color: rgba(248,231,198,.72); font-family: var(--app-font-mono); font-size: 7px; letter-spacing: .13em; text-align: center; text-transform: uppercase; }
 .background-shelf-slot { width: 31px; height: 34px; border: 2px dashed rgba(245,201,104,.62); background: rgba(36,25,43,.42); box-shadow: inset 0 0 0 3px rgba(245,201,104,.08); }
 .background-shelf-slot-small { width: 23px; height: 26px; border-style: solid; border-color: rgba(216,189,135,.45); }
-.background-shelf-jar { position: relative; width: 25px; height: 32px; border: 3px solid #17121e; border-radius: 4px 4px 8px 8px; background: #d07a57; box-shadow: inset 0 -6px rgba(48,28,37,.25); }
-.background-shelf-jar::before { content: ''; position: absolute; top: -8px; left: 4px; width: 11px; height: 7px; border: 3px solid #17121e; border-bottom: 0; background: #c58d6a; }
-.background-shelf-jar-amber { background: #f5c968; }
-.background-shelf-jar-blue { background: #52677a; }
-.background-shelf-jar-green { background: #83a66f; }
-.background-shelf-bowl { width: 39px; height: 21px; border: 3px solid #17121e; border-radius: 3px 3px 20px 20px; background: #f5c968; }
-.background-shelf-bowl-coral { background: #d07a57; }
-.background-shelf-plate { width: 42px; height: 27px; border: 3px solid #17121e; border-radius: 50%; background: #f3dfb4; box-shadow: inset 0 -6px #d8bd87; transform: rotate(-8deg); }
-.background-shelf-plate-coral { background: #c96575; transform: rotate(8deg); }
 .background-shelf-left { top: 292px; left: 5%; }
 .background-shelf-right { top: 292px; right: 5%; }
 .background-shelf-low-left { top: 452px; left: 13%; width: 218px; height: 91px; }
@@ -167,11 +158,35 @@
 .background-utensil { position: absolute; top: 11px; width: 8px; height: 50px; border: 2px solid #17121e; background: #d8bd78; transform-origin: top center; }
 .background-utensil::before { content: ''; position: absolute; top: -7px; left: -4px; width: 12px; height: 9px; border: 2px solid #17121e; background: #d8bd78; }
 .background-utensil-spatula { left: 18%; transform: rotate(-8deg); }
-.background-utensil-ladle { left: 39%; height: 43px; border-radius: 8px; transform: rotate(4deg); }
-.background-utensil-ladle::before { width: 19px; height: 19px; top: -10px; left: -8px; border-radius: 50%; }
+.background-utensil-slot { position: absolute; top: 10px; left: 37%; width: 22px; height: 49px; border: 2px dashed rgba(245,201,104,.62); border-radius: 12px 12px 7px 7px; }
 .background-utensil-whisk { left: 60%; height: 45px; background: transparent; transform: rotate(7deg); }
 .background-utensil-whisk::before { background: repeating-linear-gradient(90deg, #d8bd78 0 2px, transparent 2px 5px); }
 .background-utensil-tongs { left: 80%; height: 48px; transform: rotate(12deg); }
+.background-hanging-plant { position: absolute; top: 556px; z-index: 1; width: 74px; height: 101px; }
+.background-hanging-plant-left { left: 10%; }
+.background-hanging-plant-right { right: 10%; transform: scaleX(-1); }
+.background-hanging-plant::before { content: ''; position: absolute; top: 0; left: 34px; width: 5px; height: 21px; background: #a17a66; box-shadow: 0 0 0 2px #17121e; }
+.background-hanging-plant::after { content: ''; position: absolute; top: 18px; left: 18px; width: 38px; height: 7px; border: 3px solid #17121e; border-bottom: 0; border-radius: 50% 50% 0 0; background: #c58d6a; }
+.background-plant-vine { position: absolute; top: 20px; width: 3px; height: 48px; border-left: 3px dotted #83a66f; transform-origin: top; }
+.background-plant-vine-one { left: 25px; transform: rotate(10deg); }
+.background-plant-vine-two { left: 47px; height: 42px; transform: rotate(-12deg); }
+.background-plant-leaf { position: absolute; z-index: 1; width: 18px; height: 11px; border: 2px solid #17121e; border-radius: 50% 8px 50% 8px; background: #83a66f; }
+.background-plant-leaf-one { top: 35px; left: 10px; transform: rotate(-25deg); }
+.background-plant-leaf-two { top: 47px; left: 40px; transform: rotate(28deg); }
+.background-plant-leaf-three { top: 63px; left: 21px; transform: rotate(-12deg); background: #a5b873; }
+.background-plant-pot { position: absolute; bottom: 0; left: 15px; width: 44px; height: 29px; border: 3px solid #17121e; border-radius: 3px 3px 14px 14px; background: #d07a57; box-shadow: inset 0 -7px rgba(48,28,37,.25), 4px 4px 0 rgba(16,10,23,.2); }
+.background-plant-pot::before { content: ''; position: absolute; top: -7px; right: -4px; left: -4px; height: 7px; border: 3px solid #17121e; background: #c58d6a; }
+.background-spice-shelf { position: absolute; top: 574px; z-index: 1; display: flex; align-items: end; justify-content: space-around; gap: 9px; width: 136px; height: 53px; padding: 16px 11px 8px; border: 3px solid #17121e; background: rgba(50,35,48,.7); box-shadow: inset 0 0 0 2px rgba(245,201,104,.16), 4px 4px 0 rgba(16,10,23,.18); }
+.background-spice-shelf::after { content: ''; position: absolute; right: -6px; bottom: -9px; left: -6px; height: 8px; border: 3px solid #17121e; background: #a17a66; }
+.background-spice-shelf-left { left: 23%; }
+.background-spice-shelf-right { right: 23%; }
+.background-spice-label { position: absolute; top: 4px; right: 0; left: 0; color: rgba(248,231,198,.65); font-family: var(--app-font-mono); font-size: 6px; letter-spacing: .1em; text-align: center; text-transform: uppercase; }
+.background-spice-jar { position: relative; z-index: 1; width: 17px; height: 23px; border: 2px solid #17121e; border-radius: 3px 3px 6px 6px; background: #f5c968; box-shadow: inset 0 -4px rgba(48,28,37,.2); }
+.background-spice-jar::before { content: ''; position: absolute; top: -6px; left: 3px; width: 7px; height: 5px; border: 2px solid #17121e; border-bottom: 0; background: #c58d6a; }
+.background-spice-jar-gold { background: #f5c968; }
+.background-spice-jar-coral { background: #d07a57; }
+.background-spice-jar-green { background: #83a66f; }
+.background-spice-jar-blue { background: #52677a; }
 .restaurant-window { position: absolute; top: 99px; width: 188px; height: 137px; overflow: hidden; background: linear-gradient(180deg, #2c2140, #744b5c); border: 4px solid #1b1423; box-shadow: inset 0 0 0 3px #d09a6e, 0 0 18px rgba(245,201,104,.17), 5px 5px 0 rgba(16,10,23,.34); z-index: 1; }
 .restaurant-window::before { content: ''; position: absolute; inset: 22px 0 0; background: linear-gradient(150deg, transparent 0 42%, rgba(245,201,104,.58) 42% 44%, transparent 44% 100%), repeating-linear-gradient(90deg, transparent 0 25px, rgba(245,201,104,.18) 25px 28px), linear-gradient(180deg, transparent, rgba(245,201,104,.3)); }
 .restaurant-window::after { content: ''; position: absolute; left: 50%; top: 21px; bottom: 0; width: 4px; background: #a17a66; box-shadow: 0 -2px #1b1423; }
@@ -204,7 +219,7 @@
 .curio-wall-lamp::before { content: ''; position: absolute; left: 3px; top: -8px; width: 6px; height: 7px; border: 2px solid #17121e; border-bottom: 0; border-radius: 7px 7px 0 0; }
 .curio-wall-lamp-left { left: 5%; }
 .curio-wall-lamp-right { right: 5%; background: #e57d5a; }
-.restaurant-wall-curios { position: absolute; inset: 0; z-index: 2; pointer-events: none; }
+.restaurant-curio-displays { position: absolute; inset: 0; z-index: 3; pointer-events: none; }
 .curio-hotspot { position: relative; display: grid; border: 0; padding: 0; background: transparent; color: inherit; font: inherit; cursor: pointer; pointer-events: auto; }
 .curio-hotspot:focus-visible { outline: 3px solid #f5c968; outline-offset: 5px; }
 .curio-info-card { position: absolute; left: 50%; bottom: calc(100% + 14px); z-index: 50; display: grid; width: min(236px, calc(100vw - 24px)); gap: 4px; padding: 12px 13px; transform: translate(-50%, 8px); visibility: hidden; opacity: 0; border: 3px solid #17121e; background: #f5e8c9; color: #30223c; box-shadow: 5px 5px 0 rgba(23,18,30,.48); font-family: var(--app-font-mono); font-size: 9px; line-height: 1.35; text-align: left; text-transform: none; letter-spacing: normal; pointer-events: none; transition: opacity .16s ease, transform .16s ease, visibility .16s ease; }
@@ -212,12 +227,23 @@
 .curio-info-card strong { position: relative; z-index: 1; font-family: var(--font-display); font-size: 15px; line-height: 1.05; }
 .curio-info-kind, .curio-info-earned { position: relative; z-index: 1; color: #a34d43; font-size: 8px; text-transform: uppercase; letter-spacing: .1em; }
 .curio-info-description { position: relative; z-index: 1; color: #765752; font-family: var(--font-sans); font-size: 11px; line-height: 1.35; }
-.curio-hotspot:hover .curio-info-card, .curio-hotspot:focus-visible .curio-info-card { visibility: visible; opacity: 1; transform: translate(-50%, 0); }
-.restaurant-wall-curio-3 .curio-info-card { right: 0; left: auto; transform: translateY(8px); }
-.restaurant-wall-curio-3:hover .curio-info-card, .restaurant-wall-curio-3:focus-visible .curio-info-card { transform: translateY(0); }
-.restaurant-wall-curio { position: absolute; display: grid; justify-items: center; width: 112px; color: rgba(248,231,198,.9); font-family: var(--app-font-mono); font-size: 8px; line-height: 1.15; text-align: center; text-transform: uppercase; letter-spacing: .07em; }
-.restaurant-wall-curio::before { content: ''; position: absolute; inset: 1px 4px 8px; z-index: -1; border: 3px solid rgba(245,201,104,.5); background: rgba(42,28,48,.48); box-shadow: 4px 4px 0 rgba(20,13,29,.34); }
-.restaurant-wall-curio .curio-glyph { transform: scale(.82); margin: -5px 0 -7px; }
+.curio-hotspot:hover .curio-info-card, .curio-hotspot:focus .curio-info-card, .curio-hotspot:focus-visible .curio-info-card { visibility: visible; opacity: 1; transform: translate(-50%, 0); }
+.displayed-curio { position: absolute; display: grid; place-items: center; width: 57px; height: 54px; color: rgba(248,231,198,.9); }
+.displayed-curio .curio-glyph { transform: scale(.55); margin: -11px 0 -12px; }
+.displayed-curio .curio-place-label { display: none; }
+.displayed-curio-house-keeps-0 { top: 311px; left: calc(5% + 22px); }
+.displayed-curio-house-keeps-1 { top: 316px; left: calc(5% + 151px); }
+.displayed-curio-tea-tools-0 { top: 311px; right: calc(5% + 151px); }
+.displayed-curio-tea-tools-1 { top: 316px; right: calc(5% + 22px); }
+.displayed-curio-spare-plates-0 { top: 463px; left: calc(13% + 19px); }
+.displayed-curio-spare-plates-1 { top: 468px; left: calc(13% + 135px); }
+.displayed-curio-little-finds-0 { top: 463px; right: calc(13% + 135px); }
+.displayed-curio-little-finds-1 { top: 468px; right: calc(13% + 19px); }
+.displayed-curio-hanging-tools { top: 249px; left: calc(41% + 81px); }
+.displayed-curio-hanging-tools .curio-glyph { transform: scale(.62) rotate(5deg); }
+.displayed-curio-hanging-tools .curio-info-card { top: calc(100% + 13px); bottom: auto; transform: translate(-50%, -8px); }
+.displayed-curio-hanging-tools .curio-info-card::after { top: -9px; bottom: auto; transform: translateX(-50%) rotate(225deg); }
+.displayed-curio-hanging-tools:hover .curio-info-card, .displayed-curio-hanging-tools:focus .curio-info-card, .displayed-curio-hanging-tools:focus-visible .curio-info-card { transform: translate(-50%, 0); }
 .curio-backshelf { position: absolute; left: 5%; right: 5%; z-index: 3; display: flex; align-items: flex-end; justify-content: space-evenly; gap: 12px; height: 126px; padding: 12px 5% 16px; border-bottom: 10px solid #17121e; border-top: 3px solid rgba(245,201,104,.46); background: linear-gradient(180deg, rgba(113,70,65,.24), rgba(255,255,255,.06)), repeating-linear-gradient(90deg, rgba(255,255,255,.06) 0 2px, transparent 2px 24px); }
 .curio-backshelf::after { content: ''; position: absolute; bottom: -17px; left: 0; right: 0; height: 4px; background: #a17a66; }
 .curio-backshelf-top { top: 91px; }
@@ -476,45 +502,40 @@
   .compact-meter { width: min(190px, 54vw); }
   .compact-meter h2 { font-size: 9px; }
   .compact-meter > div:last-child span:first-child { max-width: 98px; }
-  .restaurant-curio-shelf { margin-top: auto; padding: 13px 10px 12px; }
-  .restaurant-curio-heading { align-items: start; flex-direction: column; gap: 4px; margin-bottom: 9px; }
-  .restaurant-curio-heading h2 { font-size: 18px; }
-  .restaurant-curio-plinth { justify-content: flex-start; min-height: 124px; padding: 8px 10px 13px; overflow-x: auto; }
-  .restaurant-curio-object { flex: 0 0 116px; min-width: 116px; min-height: 98px; padding: 2px 6px 5px; }
-  .restaurant-curio-object::after { right: -7px; }
-  .restaurant-curio-object .curio-glyph { transform: scale(.84); margin: -5px 0; }
-  .restaurant-curio-object > span { font-size: 6px; }
-  .restaurant-curio-empty { min-width: 260px; font-size: 8px; }
-  .restaurant-wall-curio { width: 64px; font-size: 0; }
-  .restaurant-wall-curio::before { inset: 0 2px 3px; border-width: 2px; }
-  .restaurant-wall-curio .curio-glyph { transform: scale(.62); margin: -13px 0 -17px; }
-  .restaurant-wall-curio-0 { top: 154px; left: 12%; }
-  .restaurant-wall-curio-1 { top: 232px; right: 22%; }
-  .restaurant-wall-curio-2 { top: 310px; left: 34%; }
-  .restaurant-wall-curio-3 { top: 382px; right: 7%; }
+  .displayed-curio { width: 34px; height: 36px; }
+  .displayed-curio .curio-glyph { transform: scale(.39); margin: -18px 0 -21px; }
+  .displayed-curio-house-keeps-0 { top: 224px; left: calc(3% + 12px); }
+  .displayed-curio-house-keeps-1 { top: 227px; left: calc(3% + 67px); }
+  .displayed-curio-tea-tools-0 { top: 224px; right: calc(3% + 67px); }
+  .displayed-curio-tea-tools-1 { top: 227px; right: calc(3% + 12px); }
+  .displayed-curio-spare-plates-0 { top: 333px; left: calc(3% + 12px); }
+  .displayed-curio-spare-plates-1 { top: 336px; left: calc(3% + 67px); }
+  .displayed-curio-little-finds-0 { top: 333px; right: calc(3% + 67px); }
+  .displayed-curio-little-finds-1 { top: 336px; right: calc(3% + 12px); }
+  .displayed-curio-hanging-tools { top: 406px; left: calc(31% + 48px); }
+  .displayed-curio-hanging-tools .curio-glyph { transform: scale(.44) rotate(5deg); }
   .background-shelf { width: 118px; height: 70px; gap: 3px; padding: 19px 6px 8px; border-width: 2px; }
   .background-shelf::before { top: 5px; left: 7px; right: 7px; }
   .background-shelf::after { right: -5px; bottom: -7px; left: -5px; height: 6px; border-width: 2px; }
   .background-shelf-title { top: 3px; font-size: 5px; }
   .background-shelf-slot { width: 17px; height: 22px; border-width: 1px; }
   .background-shelf-slot-small { width: 14px; height: 18px; }
-  .background-shelf-jar { width: 16px; height: 22px; border-width: 2px; }
-  .background-shelf-jar::before { top: -6px; left: 2px; width: 8px; height: 5px; border-width: 2px; }
-  .background-shelf-bowl { width: 26px; height: 14px; border-width: 2px; }
-  .background-shelf-plate { width: 28px; height: 18px; border-width: 2px; }
   .background-shelf-left { top: 207px; left: 3%; }
   .background-shelf-right { top: 207px; right: 3%; }
-  .background-shelf-low-left, .background-shelf-low-right { display: none; }
+  .background-shelf-low-left { top: 316px; left: 3%; }
+  .background-shelf-low-right { top: 316px; right: 3%; }
   .background-utensil-rail { top: 412px; left: 31%; width: 38%; height: 48px; border-width: 2px; }
   .background-utensil-rail::before, .background-utensil-rail::after { top: -6px; bottom: -6px; width: 2px; }
   .background-utensil { top: 7px; width: 5px; height: 33px; border-width: 1px; }
   .background-utensil::before { top: -5px; left: -3px; width: 9px; height: 6px; border-width: 1px; }
-  .background-utensil-ladle::before { width: 13px; height: 13px; top: -8px; left: -5px; }
+  .background-utensil-slot { top: 6px; left: 37%; width: 14px; height: 34px; border-width: 1px; }
+  .background-hanging-plant { top: 401px; width: 52px; height: 70px; transform: scale(.72); transform-origin: bottom center; }
+  .background-hanging-plant-left { left: 7%; }
+  .background-hanging-plant-right { right: 7%; transform: scaleX(-1) scale(.72); }
+  .background-spice-shelf { display: none; }
   .curio-info-card { width: min(210px, calc(100vw - 24px)); padding: 10px 11px; }
   .curio-info-card strong { font-size: 13px; }
   .curio-info-description { font-size: 10px; }
-  .counter-curio-cluster { right: 8px; gap: 3px; }
-  .counter-curio-item:not(:first-child) { display: none; }
   .open-kitchen { top: 76px; left: 25%; right: 25%; height: 325px; }
   .kitchen-hood { left: 5%; right: 5%; height: 27px; }
   .kitchen-hood span { font-size: 6px; }
