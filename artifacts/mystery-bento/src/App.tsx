@@ -35,6 +35,7 @@ type Collectible = {
 };
 type FoodItem = { id: string; name: string; note: string; glyph: string; color: string };
 type ContestOutcome = { winner: Persona; memorableEvent: string; contestName: string };
+type ContestStep = 'intro' | 'warmup' | 'matchup' | 'finale' | 'winner';
 
 const queryClient = new QueryClient();
 const METER_KEY = 'mystery-bento-meter';
@@ -72,6 +73,29 @@ const contestNames = [
   'Wobble Plate Relay',
   'Tea Tray Twilight Trial',
 ];
+
+const contestDurations: Record<ContestStep, number> = {
+  intro: 8000,
+  warmup: 18000,
+  matchup: 32000,
+  finale: 45000,
+  winner: 17000,
+};
+
+const contestNextStep: Partial<Record<ContestStep, ContestStep>> = {
+  intro: 'warmup',
+  warmup: 'matchup',
+  matchup: 'finale',
+  finale: 'winner',
+};
+
+const contestStepLabels: Record<ContestStep, string> = {
+  intro: 'arrival',
+  warmup: 'warm-up',
+  matchup: 'main course',
+  finale: 'final stretch',
+  winner: 'recap',
+};
 
 const collectiblePool = [
   { id: 'recipe-midnight-sauce', kind: 'recipe fragment', title: 'The Unfinished Midnight Sauce', description: 'A recipe-card fragment with one suspiciously important ingredient missing.', earnedBy: 'miso' },
@@ -144,6 +168,91 @@ function FoodGlyph({ item }: { item: FoodItem }) {
   return <div className={`food-glyph ${item.glyph}`} style={{ '--food-color': item.color } as CSSProperties} aria-hidden="true" />;
 }
 
+function FoodSelectionSplash({ item }: { item: FoodItem }) {
+  return (
+    <div className="selection-splash" role="status" aria-live="polite" data-testid={`selection-splash-${item.id}`}>
+      <span className="splash-particle splash-particle-one" aria-hidden="true">✦</span>
+      <span className="splash-particle splash-particle-two" aria-hidden="true">+</span>
+      <span className="splash-particle splash-particle-three" aria-hidden="true">✦</span>
+      <div className="selection-card">
+        <div className="font-mono-ui text-[10px] uppercase tracking-[.2em] text-[#f5c968]">fresh off the belt</div>
+        <div className="selection-card-main">
+          <div className="selection-plate" aria-hidden="true">
+            <div className="plate"><FoodGlyph item={item} /></div>
+          </div>
+          <div>
+            <div className="font-display text-2xl font-bold leading-none sm:text-3xl">{item.name}</div>
+            <p className="mt-2 text-sm text-[#d8c6af]">{item.note}</p>
+          </div>
+        </div>
+        <div className="mt-4 flex items-center justify-between gap-3 border-t border-[#64516b] pt-3 font-mono-ui text-[10px] uppercase tracking-wider text-[#f5c968]">
+          <span>clue collected</span>
+          <span>+7–16 mystery points</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function CurioGlyph({ item }: { item: Collectible }) {
+  const glyphClass = item.id.includes('recipe-midnight-sauce')
+    ? 'recipe'
+    : item.id.includes('lantern-warm-glow')
+      ? 'lantern'
+      : item.id.includes('chef-ladle-champion')
+        ? 'ladle'
+        : item.id.includes('plate-moon-checker')
+          ? 'checker'
+          : item.id.includes('snapshot-great-wobble')
+            ? 'snapshot'
+            : 'radish';
+  return (
+    <div className={`curio-glyph curio-glyph-${glyphClass}`} aria-hidden="true">
+      <span className="curio-glyph-detail" />
+      <span className="curio-glyph-shine" />
+    </div>
+  );
+}
+
+function CurioBacksplash({ collectibles }: { collectibles: Collectible[] }) {
+  const displayed = collectibles.slice(0, 6);
+  return (
+    <div className="curio-backsplash" aria-hidden="true">
+      <div className="restaurant-window restaurant-window-left">
+        <span className="restaurant-window-sign">OPEN LATE</span>
+        <span className="restaurant-window-light restaurant-window-light-one" />
+        <span className="restaurant-window-light restaurant-window-light-two" />
+      </div>
+      <div className="restaurant-window restaurant-window-right">
+        <span className="restaurant-window-sign">SUSHI BAR</span>
+        <span className="restaurant-window-light restaurant-window-light-one" />
+        <span className="restaurant-window-light restaurant-window-light-two" />
+      </div>
+      <div className="restaurant-menu-board">
+        <span className="font-mono-ui text-[8px] uppercase tracking-[.16em]">tonight's menu</span>
+        <strong className="font-display">maki · miso · mystery</strong>
+        <span className="font-mono-ui text-[8px] uppercase tracking-wider">served after dark</span>
+      </div>
+      <div className="restaurant-noren">
+        <span>NO.</span><span>07</span><span>SUSHI</span><span>BAR</span>
+      </div>
+      <div className="curio-room-title">
+        <span className="font-mono-ui text-[9px] uppercase tracking-[.18em]">backroom curios</span>
+        <span className="font-mono-ui text-[9px] uppercase tracking-wider">{collectibles.length ? `${collectibles.length} kept` : 'shelf waiting'}</span>
+      </div>
+      <div className="curio-wall-lamp curio-wall-lamp-left" />
+      <div className="curio-wall-lamp curio-wall-lamp-right" />
+      <div className="curio-backshelf curio-backshelf-top">
+        {displayed.slice(0, 3).map((item) => <div className="backsplash-curio" key={item.id}><CurioGlyph item={item} /><span>{item.title}</span></div>)}
+      </div>
+      <div className="curio-backshelf curio-backshelf-bottom">
+        {displayed.slice(3, 6).map((item) => <div className="backsplash-curio" key={item.id}><CurioGlyph item={item} /><span>{item.title}</span></div>)}
+      </div>
+      {!displayed.length && <div className="curio-empty-shelf font-mono-ui text-[10px] uppercase tracking-[.14em]">finish a contest to place the first keepsake</div>}
+    </div>
+  );
+}
+
 function PersonaPortrait({ persona, large = false }: { persona: Persona; large?: boolean }) {
   const color = { miso: '#c98b61', toro: '#d65f52', puck: '#e9ae55', luma: '#9b83ad', nori: '#83a66f', rin: '#de7260' }[persona.id];
   return (
@@ -197,16 +306,51 @@ function Meter({ meter, onPointerStart, onPointerEnd, onMeterKeyDown, onMeterKey
   );
 }
 
-function ContestOverlay({ contestants, winner, step, contestName, memorableEvent, onSkip, onClose }: { contestants: Persona[]; winner: Persona | null; step: 'intro' | 'matchup' | 'winner'; contestName: string; memorableEvent: string; onSkip: () => void; onClose: () => void }) {
+function ContestOverlay({ contestants, winner, step, contestName, memorableEvent, onSkip, onClose }: { contestants: Persona[]; winner: Persona | null; step: ContestStep; contestName: string; memorableEvent: string; onSkip: () => void; onClose: () => void }) {
   const eventText = winner ? memorableEvent : 'The three silhouettes take their places beneath the market lantern.';
+  const stepCopy: Record<ContestStep, string> = {
+    intro: 'The curtain lifts. No votes, no wagers — just three peculiar regulars and one very good story.',
+    warmup: 'The contestants test their footing, balance their plates, and learn the shape of the alley.',
+    matchup: 'The main course begins. Their signature quirks collide in a slow blur of steam and suspiciously elegant footwork.',
+    finale: 'The last corner is ahead. Every wobble matters now as the field makes its final, careful push.',
+    winner: eventText,
+  };
+  const stepIndex = Object.keys(contestStepLabels).indexOf(step);
   return (
-    <div className="contest-backdrop fixed inset-0 z-30 flex items-center justify-center p-3 sm:p-6" role="dialog" aria-modal="true" aria-labelledby="contest-title">
-      <div className="contest-stage modal-scroll w-full max-w-3xl rounded-xl p-5 sm:p-8">
+    <div className="contest-backdrop fixed inset-0 z-30 flex items-stretch justify-center" role="dialog" aria-modal="true" aria-labelledby="contest-title">
+      <div className="contest-stage w-full p-5 sm:p-8">
         <div className="mb-5 flex items-start justify-between gap-4">
           <div><div className="font-mono-ui text-[10px] uppercase tracking-[.2em] text-[#f5c968]">live from the back alley</div><h2 id="contest-title" className="mt-2 font-display text-3xl font-bold tracking-tight sm:text-5xl">{contestName}</h2></div>
           <button type="button" className="flex items-center gap-2 border border-[#806a85] px-3 py-2 text-xs font-bold text-[#f8e7c6] hover:bg-[#f5c968] hover:text-[#30223c]" onClick={onSkip} data-testid="button-skip-contest"><SkipForward className="h-4 w-4" aria-hidden="true" />Skip scene</button>
         </div>
-        <p className="max-w-xl text-sm leading-6 text-[#d8c6af]">{step === 'intro' ? 'The curtain lifts. No votes, no wagers — just three peculiar regulars and one very good story.' : step === 'matchup' ? 'Their signature quirks collide in a blur of steam, speed, and suspiciously elegant footwork.' : eventText}</p>
+        <div className="contest-phase-row">
+          <span className="font-mono-ui text-[10px] uppercase tracking-[.16em] text-[#f5c968]">act {stepIndex + 1} of 5 · {contestStepLabels[step]}</span>
+          <span className="font-mono-ui text-[10px] uppercase tracking-[.12em] text-[#bca99b]">long-form spectator match · about 2 min</span>
+        </div>
+        <div className="contest-progress" aria-label={`Contest progress: act ${stepIndex + 1} of 5`}>
+          {Object.entries(contestStepLabels).map(([key, label], index) => <span key={key} className={index <= stepIndex ? 'is-active' : ''}><i aria-hidden="true" />{label}</span>)}
+        </div>
+        <p className="max-w-xl text-sm leading-6 text-[#d8c6af]">{stepCopy[step]}</p>
+        <div className={`contest-race contest-race-${step}`} aria-label="Animated contest race">
+          <div className="race-track-label font-mono-ui text-[9px] uppercase tracking-[.16em] text-[#bca99b]"><span>start</span><span>finish</span></div>
+          <div className="race-finish-line" aria-hidden="true" />
+          {contestants.map((persona, index) => {
+            const restingPosition = [52, 72, 61, 78][index % 4];
+            const middlePosition = Math.max(28, restingPosition - 16);
+            return (
+              <div className="race-lane" key={persona.id}>
+                <div className="race-lane-number font-mono-ui text-[10px] text-[#bca99b]">{String(index + 1).padStart(2, '0')}</div>
+                <div className="race-lane-name font-mono-ui text-[10px] uppercase tracking-wider text-[#d8c6af]">{persona.name}</div>
+                <div
+                  className={`race-runner ${winner?.id === persona.id ? 'is-winner' : ''}`}
+                  style={{ '--race-mid': `${middlePosition}%`, '--race-end': winner?.id === persona.id ? '91%' : `${restingPosition}%` } as CSSProperties}
+                >
+                  <PersonaPortrait persona={persona} />
+                </div>
+              </div>
+            );
+          })}
+        </div>
         <div className="my-9 grid grid-cols-1 gap-5 sm:grid-cols-3">
           {contestants.map((persona, index) => (
             <div key={persona.id} className={`persona-tile rounded-lg p-4 text-center transition-transform ${winner?.id === persona.id ? 'scale-[1.04] ring-4 ring-[#f5c968]' : ''}`} data-testid={`card-contestant-${persona.id}`}>
@@ -217,7 +361,9 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
                 {[persona.traits.speed, persona.traits.focus, persona.traits.luck].map((trait, traitIndex) => <span key={traitIndex} className={`h-1.5 w-5 ${trait > 75 ? 'bg-[#37745c]' : 'bg-[#d8b879]'}`} />)}
               </div>
               {winner?.id === persona.id && <div className="mt-4"><span className="winner-stamp">LANE WINNER</span></div>}
+              {step === 'warmup' && index === 0 && <div className="mt-3 font-mono-ui text-[10px] uppercase tracking-wider text-[#b88f66]">checking the trays</div>}
               {step === 'matchup' && index === 1 && <div className="mt-3 font-mono-ui text-[10px] uppercase tracking-wider text-[#b88f66]">making a scene</div>}
+              {step === 'finale' && index === 2 && <div className="mt-3 font-mono-ui text-[10px] uppercase tracking-wider text-[#b88f66]">last corner</div>}
             </div>
           ))}
         </div>
@@ -239,7 +385,7 @@ function CurioOverlay({ view, ledger, collectibles, onClose, onReset }: { view: 
           <button type="button" onClick={onClose} className="rounded-md p-2 hover:bg-[#e6ce9d]" aria-label="Close collection" data-testid="button-close-collection"><X className="h-5 w-5" aria-hidden="true" /></button>
         </div>
         {view === 'shelf' ? (
-          collectibles.length ? <div className="grid gap-4 sm:grid-cols-2">{collectibles.map((item) => <article key={item.id} className="pixel-card rounded-lg bg-[#fff3d5] p-4" data-testid={`card-collectible-${item.id}`}><div className="mb-4 flex items-center justify-between"><div className="grid h-11 w-11 place-items-center border-2 border-[#30223c] bg-[#f5c968] text-[#30223c]"><Sparkles className="h-5 w-5" aria-hidden="true" /></div><span className="font-mono-ui text-[10px] uppercase text-[#96745e]">{item.kind}</span></div><h3 className="font-display text-lg font-bold">{item.title}</h3><p className="mt-1 text-sm leading-5 text-[#765752]">{item.description}</p><p className="mt-4 font-mono-ui text-[10px] uppercase tracking-wider text-[#a34d43]">earned by {item.earnedBy}</p></article>)}</div> : <EmptyState title="The shelf is listening" body="Finish a Persona Contest and your first little kitchen curio will appear here." /> 
+          collectibles.length ? <div className="curio-room" aria-label="Illustrated kitchen curio room">{collectibles.map((item, index) => <article key={item.id} className={`curio-display curio-display-${index % 3}`} data-testid={`card-collectible-${item.id}`}><div className="curio-display-art"><CurioGlyph item={item} /></div><div className="curio-display-label"><span className="font-mono-ui text-[9px] uppercase tracking-[.12em] text-[#a34d43]">{item.kind}</span><h3 className="font-display mt-1 text-lg font-bold leading-5">{item.title}</h3><p className="mt-2 text-sm leading-5 text-[#765752]">{item.description}</p><p className="mt-4 font-mono-ui text-[10px] uppercase tracking-wider text-[#a34d43]">earned by {item.earnedBy}</p></div></article>)}</div> : <EmptyState title="The shelf is listening" body="Finish a Persona Contest and your first little kitchen curio will appear here." />
         ) : (
           ledger.length ? <div className="space-y-3">{ledger.map((entry) => <article key={entry.id} className="ledger-entry rounded-r-lg p-4" data-testid={`row-ledger-${entry.id}`}><div className="flex flex-wrap items-baseline justify-between gap-2"><h3 className="font-display font-bold">{entry.contestName}</h3><time className="font-mono-ui text-[10px] text-[#96745e]">{new Date(entry.completedAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</time></div><p className="mt-2 text-sm text-[#765752]">{entry.memorableEvent}</p><div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 font-mono-ui text-[10px] uppercase tracking-wider text-[#a34d43]"><span>winner: {entry.winner}</span><span>seen by {entry.contestants.join(', ')}</span></div></article>)}</div> : <EmptyState title="No stories yet" body="The ledger is blank for now. Charge the meter with a few things from the conveyor." />
         )}
@@ -262,12 +408,15 @@ function Home() {
   const [isHolding, setIsHolding] = useState(false);
   const [curioView, setCurioView] = useState<'shelf' | 'ledger' | null>(null);
   const [contestOpen, setContestOpen] = useState(false);
-  const [contestStep, setContestStep] = useState<'intro' | 'matchup' | 'winner'>('intro');
+  const [contestStep, setContestStep] = useState<ContestStep>('intro');
+  const [foodSplash, setFoodSplash] = useState<{ item: FoodItem; key: number } | null>(null);
   const [contestants, setContestants] = useState<Persona[]>([]);
   const [winner, setWinner] = useState<Persona | null>(null);
   const [liveStatus, setLiveStatus] = useState(acknowledgement);
   const holdTimer = useRef<number | null>(null);
   const contestTimer = useRef<number | null>(null);
+  const foodSplashTimer = useRef<number | null>(null);
+  const foodSplashSequence = useRef(0);
   const contestQueued = useRef(false);
   const contestOutcome = useRef<ContestOutcome | null>(null);
   const completionGuard = useRef(false);
@@ -333,7 +482,7 @@ function Home() {
     setLiveStatus(`${outcome.contestName} is ready. Contestants: ${selected.map((persona) => persona.name).join(', ')}.`);
   };
 
-  const charge = () => {
+  const charge = (item: FoodItem) => {
     if (meter.progress >= 100 || contestOpen) return;
     const increment = 7 + Math.floor(Math.random() * 10);
     const progress = Math.min(100, meter.progress + increment);
@@ -343,6 +492,13 @@ function Home() {
     setLiveStatus(`${nextAck} ${increment} sparkle points added.`);
     setMeterPulse(true);
     window.setTimeout(() => setMeterPulse(false), 420);
+    if (foodSplashTimer.current) window.clearTimeout(foodSplashTimer.current);
+    setFoodSplash({ item, key: foodSplashSequence.current + 1 });
+    foodSplashSequence.current += 1;
+    foodSplashTimer.current = window.setTimeout(() => {
+      setFoodSplash(null);
+      foodSplashTimer.current = null;
+    }, 12600);
     if (progress >= 100 && !contestQueued.current) {
       contestQueued.current = true;
       setLiveStatus('The Mystery Bento Meter is full. The curtain is lifting.');
@@ -350,7 +506,7 @@ function Home() {
     }
   };
 
-  const selectFood = () => charge();
+  const selectFood = (item: FoodItem) => charge(item);
   const startHold = () => {
     if (holdTimer.current || meter.progress >= 100 || contestOpen) return;
     setIsHolding(true);
@@ -375,31 +531,43 @@ function Home() {
     setContestStep('winner');
     setLiveStatus(`${winningPersona.name} reaches the finish. The stall is revealing the result.`);
   };
-  useEffect(() => () => { if (holdTimer.current) window.clearTimeout(holdTimer.current); if (contestTimer.current) window.clearTimeout(contestTimer.current); }, []);
+  useEffect(() => () => {
+    if (holdTimer.current) window.clearTimeout(holdTimer.current);
+    if (contestTimer.current) window.clearTimeout(contestTimer.current);
+    if (foodSplashTimer.current) window.clearTimeout(foodSplashTimer.current);
+  }, []);
   useEffect(() => {
     window.addEventListener('blur', cancelHold);
     document.addEventListener('visibilitychange', cancelHold);
     return () => { window.removeEventListener('blur', cancelHold); document.removeEventListener('visibilitychange', cancelHold); };
   }, []);
   useEffect(() => {
-    if (!contestOpen || contestStep !== 'intro') return;
-    contestTimer.current = window.setTimeout(() => setContestStep('matchup'), 1100);
-    return () => { if (contestTimer.current) window.clearTimeout(contestTimer.current); };
-  }, [contestOpen, contestStep]);
-  useEffect(() => {
-    if (!contestOpen || contestStep !== 'matchup') return;
+    if (!contestOpen) return;
+    const nextStep = contestNextStep[contestStep];
+    if (!nextStep) return;
     contestTimer.current = window.setTimeout(() => {
-      const outcome = contestOutcome.current ?? resolveContest(contestants, createRng(Date.now()));
-      contestOutcome.current = outcome;
-      setWinner(outcome.winner);
-      setContestStep('winner');
-      setLiveStatus(`${outcome.memorableEvent} ${outcome.winner.name} wins.`);
-    }, 1800);
+      if (nextStep === 'winner') {
+        const outcome = contestOutcome.current ?? resolveContest(contestants, createRng(Date.now()));
+        contestOutcome.current = outcome;
+        setWinner(outcome.winner);
+        setContestStep('winner');
+        setLiveStatus(`${outcome.memorableEvent} ${outcome.winner.name} wins.`);
+        return;
+      }
+      const stageMessages: Record<Exclude<ContestStep, 'winner'>, string> = {
+        intro: 'The contestants have arrived. The warm-up begins beneath the lanterns.',
+        warmup: 'The trays are balanced. The long race is finally underway.',
+        matchup: 'The field reaches the last corner. Watch the final stretch.',
+        finale: 'The finish is near. The stall is preparing the winner’s story.',
+      };
+      setContestStep(nextStep);
+      setLiveStatus(stageMessages[nextStep]);
+    }, contestDurations[contestStep]);
     return () => { if (contestTimer.current) window.clearTimeout(contestTimer.current); };
   }, [contestOpen, contestStep, contestants]);
   useEffect(() => {
     if (!contestOpen || contestStep !== 'winner') return;
-    contestTimer.current = window.setTimeout(() => finishContestRef.current(), 2200);
+    contestTimer.current = window.setTimeout(() => finishContestRef.current(), contestDurations.winner);
     return () => { if (contestTimer.current) window.clearTimeout(contestTimer.current); };
   }, [contestOpen, contestStep]);
 
@@ -418,17 +586,9 @@ function Home() {
   return (
     <div className="bento-app">
       <Header onOpenCurio={setCurioView} ledgerCount={ledger.length} curioCount={collectibles.length} />
-      <main className="mx-auto max-w-6xl px-4 pb-10 pt-7 sm:px-6 md:px-8 md:pt-10">
-        <section className="mb-7 grid items-end gap-5 md:grid-cols-[1fr_auto]">
-          <div className="float-in">
-            <div className="mb-3 flex items-center gap-2 font-mono-ui text-[10px] uppercase tracking-[.2em] text-[#a34d43]"><span className="h-2 w-2 animate-pulse rounded-full bg-[#a34d43]" />open until the last lantern goes out</div>
-            <h1 className="font-display max-w-3xl text-4xl font-bold leading-[.98] tracking-[-.05em] text-[#30223c] sm:text-6xl md:text-7xl">Pick a bite.<br /><span className="text-[#a34d43]">Wake the weird.</span></h1>
-            <p className="mt-4 max-w-lg text-base leading-7 text-[#765752]">A tiny night market for curious palates. Choose what catches your eye and the stall will decide who meets under the lanterns.</p>
-          </div>
-          <div className="hidden justify-end gap-2 md:flex" aria-label="Market details"><div className="h-8 w-5 rounded-t-full border-2 border-[#30223c] bg-[#f5c968]" /><div className="h-6 w-5 self-end rounded-t-full border-2 border-[#30223c] bg-[#a34d43]" /><div className="h-10 w-5 rounded-t-full border-2 border-[#30223c] bg-[#37745c]" /></div>
-        </section>
-
-        <section className="scene-shell pixel-card rounded-xl p-4 sm:p-6 md:p-8" aria-label="Mystery Bento night market">
+      <main className="min-h-[calc(100dvh-72px)]" aria-label="Mystery Bento night market">
+        <section className="scene-shell min-h-[calc(100dvh-72px)] p-4 sm:p-6 md:p-10" aria-label="Mystery Bento night market">
+          <CurioBacksplash collectibles={collectibles} />
           <div className="scene-content">
             <div className="mb-6 flex items-start justify-between gap-4">
               <div className="stall-sign max-w-[260px] px-4 py-3 sm:px-6"><div className="font-mono-ui text-[10px] uppercase tracking-[.2em]">no. 07 · alley counter</div><div className="font-display mt-1 text-2xl font-bold sm:text-3xl">MYSTERY BENTO</div></div>
@@ -437,10 +597,41 @@ function Home() {
             <div className="relative mb-6">
               <span className="pixel-star left-[8%] top-2" aria-hidden="true">+</span><span className="pixel-star right-[13%] top-10 text-sm" aria-hidden="true">+</span><span className="pixel-star right-[28%] top-0 text-xs" aria-hidden="true">+</span>
               <p className="mb-3 font-mono-ui text-[10px] uppercase tracking-[.2em] text-[#bca99b]">the conveyor is carrying tonight's clues</p>
-              <div className="conveyor grid grid-cols-2 gap-3 p-3 sm:grid-cols-4 sm:gap-4 sm:p-5">
-                {foodItems.map((item, index) => <button type="button" key={item.id} onClick={() => selectFood()} disabled={meter.progress >= 100 || contestOpen} className="food-button rounded-lg p-3 text-left" data-testid={`button-select-food-${item.id}`}><div className="food-illustration"><FoodGlyph item={item} /><span className="absolute right-1 top-0 font-mono-ui text-[10px] text-[#a34d43]">0{index + 1}</span></div><div className="font-display mt-2 text-sm font-bold leading-4">{item.name}</div><div className="mt-1 text-[11px] leading-4 text-[#765752]">{item.note}</div><div className="mt-2 flex items-center justify-between font-mono-ui text-[9px] uppercase tracking-wider text-[#a34d43]"><span>add 7–16</span><span aria-hidden="true">+</span></div></button>)}
+              <div className="restaurant-counter">
+                <div className="restaurant-counter-label font-mono-ui text-[9px] uppercase tracking-[.18em]">sushi bar · moving service</div>
+                <div className="conveyor rounded-xl p-3 sm:p-4">
+                  <div className="conveyor-window" aria-label="Moving plated bento selections">
+                    <div className="conveyor-track">
+                      {[0, 1].map((copy) => (
+                        <div className="conveyor-group" key={`conveyor-group-${copy}`}>
+                          {foodItems.map((item, index) => (
+                            <button
+                              type="button"
+                              key={`${item.id}-${copy}`}
+                              onClick={() => selectFood(item)}
+                              disabled={meter.progress >= 100 || contestOpen}
+                              tabIndex={copy === 0 ? 0 : -1}
+                              className="food-button"
+                              data-testid={`button-select-food-${item.id}${copy ? '-repeat' : ''}`}
+                            >
+                              <div className="food-illustration">
+                                <div className="plate-display">
+                                  <div className="plate"><FoodGlyph item={item} /></div>
+                                  <span className="plate-glint" aria-hidden="true" />
+                                </div>
+                                <span className="plate-number font-mono-ui text-[10px] text-[#a34d43]">0{index + 1}</span>
+                              </div>
+                              <div className="food-name font-display mt-3 text-base font-bold leading-4">{item.name}</div>
+                              <div className="food-points mt-2 font-mono-ui text-[9px] uppercase tracking-[.14em] text-[#f5c968]">+7–16 clue points</div>
+                            </button>
+                          ))}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+                <div className="conveyor-line mt-3 rounded-full" />
               </div>
-              <div className="conveyor-line mt-3 rounded-full" />
             </div>
             <div className="grid gap-4 md:grid-cols-[1fr_1.4fr] md:items-end">
               <div className="rounded-xl border-2 border-[#65506d] bg-[#261d31] p-4 text-[#f8e7c6] sm:p-5">
@@ -450,18 +641,14 @@ function Home() {
               <Meter meter={meter} onPointerStart={(event) => { event.currentTarget.setPointerCapture?.(event.pointerId); startHold(); }} onPointerEnd={cancelHold} onMeterKeyDown={handleMeterKeyDown} onMeterKeyUp={handleMeterKeyUp} onContextMenu={handleMeterContextMenu} meterPulse={meterPulse} isHolding={isHolding} />
             </div>
           </div>
+          {foodSplash && <FoodSelectionSplash key={foodSplash.key} item={foodSplash.item} />}
         </section>
 
-        <section className="mt-7 grid gap-4 border-t-2 border-[#d9c496] pt-5 text-sm text-[#765752] sm:grid-cols-3">
-          <div><div className="font-mono-ui text-[10px] uppercase tracking-[.16em] text-[#a34d43]">01 · sample</div><p className="mt-1">Choose from the moving tray.</p></div>
-          <div><div className="font-mono-ui text-[10px] uppercase tracking-[.16em] text-[#a34d43]">02 · charge</div><p className="mt-1">The meter remembers your curiosity.</p></div>
-          <div><div className="font-mono-ui text-[10px] uppercase tracking-[.16em] text-[#a34d43]">03 · witness</div><p className="mt-1">A new contest story joins your shelf.</p></div>
-        </section>
       </main>
       <div className="sr-only" role="status" aria-live="polite" data-testid="live-contest-status">{liveStatus}</div>
       {contestOpen && <ContestOverlay contestants={contestants} winner={winner} step={contestStep} contestName={contestOutcome.current?.contestName ?? 'The Persona Contest'} memorableEvent={contestOutcome.current?.memorableEvent ?? ''} onSkip={skipContest} onClose={finishContest} />}
       {curioView && <CurioOverlay view={curioView} ledger={ledger} collectibles={collectibles} onClose={() => setCurioView(null)} onReset={resetMemory} />}
-      <div className="mx-auto flex max-w-6xl justify-end px-4 pb-6 sm:px-6 md:px-8"><span className="font-mono-ui text-[10px] uppercase tracking-wider text-[#96745e]">{selectedCount ? `${selectedCount} memories kept nearby` : 'local memory is empty'}</span></div>
+      <span className="sr-only">{selectedCount ? `${selectedCount} memories kept nearby` : 'local memory is empty'}</span>
     </div>
   );
 }

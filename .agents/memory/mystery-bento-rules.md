@@ -14,3 +14,9 @@ Contest results must be resolved once per contest session and reused by animatio
 **Why:** A skip or accessibility mode should reveal the same story the spectator would have seen, not reroll a different winner.
 
 **How to apply:** Resolve contestants, winner, event, and collectible choice before the visual sequence begins, then guard completion side effects against duplicate calls.
+
+Visual spectacle should always have a readable staged fallback when reduced motion is enabled.
+
+**Why:** The belt, item splash, and contest race are part of the story but must not be required for understanding what happened.
+
+**How to apply:** Keep the important item, race stage, and winner state in the DOM and use CSS motion only to amplify those states.
