@@ -764,7 +764,6 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
   });
   const voiceSupported = typeof window !== 'undefined' && 'speechSynthesis' in window;
   const announcedStep = useRef<ContestStep | null>(null);
-  const eventText = winner ? memorableEvent : 'The contestants take their places beneath the market lantern.';
   const currentObstacleIndex = step === 'intro' ? -1 : Math.min(race.obstacles.length - 1, raceStepProgress[step] - 1);
   const currentObstacle = currentObstacleIndex >= 0 ? race.obstacles[currentObstacleIndex] : null;
   const currentObstacleCopy = currentObstacle
