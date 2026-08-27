@@ -17,6 +17,8 @@ type Persona = {
   silhouetteKey: string;
   idleAnimationKey: string;
   palette: { primary: string; accent: string; neutral: string };
+  quirk: string;
+  contestBehavior: string;
   memorableEvent: string;
   portraitSrc: string;
   foodSpriteSrc: string;
@@ -42,7 +44,49 @@ type Collectible = {
   earnedAt: string;
 };
 type FoodItem = { id: string; name: string; note: string; glyph: string; color: string };
-type ContestOutcome = { winner: Persona; memorableEvent: string; contestName: string };
+type RaceTrait = keyof Persona['traits'];
+type RaceObstacleKind =
+  | 'napkin-gust'
+  | 'tea-puddle'
+  | 'wobble-stack'
+  | 'shortcut-reflection'
+  | 'broken-cart'
+  | 'ribbon-tunnel'
+  | 'cushion-pile'
+  | 'flour-sacks'
+  | 'crumb-trail'
+  | 'garnish-gate'
+  | 'steam-gadget'
+  | 'bento-stack';
+type RaceEncounterResult = 'clear' | 'slow' | 'surge' | 'reroute';
+type RaceObstacle = {
+  id: string;
+  kind: RaceObstacleKind;
+  label: string;
+  shortLabel: string;
+  description: string;
+  icon: string;
+  position: number;
+  sourcePersonaId: string;
+};
+type RaceEncounter = {
+  result: RaceEncounterResult;
+  headline: string;
+  detail: string;
+};
+type RaceLaneSimulation = {
+  personaId: string;
+  positions: Record<ContestStep, number>;
+  finishPosition: number;
+  finishScore: number;
+  encounters: Record<string, RaceEncounter>;
+};
+type RaceSimulation = {
+  obstacles: RaceObstacle[];
+  lanes: RaceLaneSimulation[];
+  winnerId: string;
+};
+type ContestOutcome = { winner: Persona; memorableEvent: string; contestName: string; race: RaceSimulation };
 type ContestStep = 'intro' | 'warmup' | 'matchup' | 'finale' | 'winner';
 
 const queryClient = new QueryClient();
@@ -64,6 +108,8 @@ const personas: Persona[] = contestantDesigns.map((design) => ({
   silhouetteKey: design.silhouetteKey,
   idleAnimationKey: design.idleAnimationKey,
   palette: design.palette,
+  quirk: design.quirk,
+  contestBehavior: design.contestBehavior,
   memorableEvent: design.memorableEvent,
   portraitSrc: contestantPortraits[design.id],
   foodSpriteSrc: contestantFoodSprites[design.id],
@@ -115,6 +161,51 @@ const contestStepLabels: Record<ContestStep, string> = {
   matchup: 'main course',
   finale: 'final stretch',
   winner: 'recap',
+};
+
+const raceStepProgress: Record<ContestStep, number> = {
+  intro: 0,
+  warmup: 1,
+  matchup: 2,
+  finale: 3,
+  winner: 4,
+};
+
+const raceObstacleCatalog: Record<RaceObstacleKind, {
+  label: string;
+  shortLabel: string;
+  description: string;
+  icon: string;
+  primaryTrait: RaceTrait;
+  secondaryTrait: RaceTrait;
+}> = {
+  'napkin-gust': { label: 'Napkin gust', shortLabel: 'napkin gust', description: 'a loose napkin gust turns the straightaway into a paper storm', icon: '≈', primaryTrait: 'speed', secondaryTrait: 'focus' },
+  'tea-puddle': { label: 'Tea puddle', shortLabel: 'tea puddle', description: 'a perfect tea puddle demands a very exact step', icon: '◌', primaryTrait: 'focus', secondaryTrait: 'balance' },
+  'wobble-stack': { label: 'Wobble stack', shortLabel: 'wobble stack', description: 'a tower of bowls sways across the narrow lane', icon: '≋', primaryTrait: 'balance', secondaryTrait: 'focus' },
+  'shortcut-reflection': { label: 'Moon reflection', shortLabel: 'moon reflection', description: 'a puddle reflection appears to reveal a suspicious shortcut', icon: '✦', primaryTrait: 'luck', secondaryTrait: 'focus' },
+  'broken-cart': { label: 'Broken cart', shortLabel: 'broken cart', description: 'a pantry cart has parked itself directly across the course', icon: '□', primaryTrait: 'focus', secondaryTrait: 'chaos' },
+  'ribbon-tunnel': { label: 'Ribbon tunnel', shortLabel: 'ribbon tunnel', description: 'celebration ribbons knot together into a fast-moving tunnel', icon: '∿', primaryTrait: 'chaos', secondaryTrait: 'luck' },
+  'cushion-pile': { label: 'Cushion pile', shortLabel: 'cushion pile', description: 'a polite stack of cushions blocks the safest-looking route', icon: '⌂', primaryTrait: 'balance', secondaryTrait: 'chaos' },
+  'flour-sacks': { label: 'Flour sacks', shortLabel: 'flour sacks', description: 'fresh flour sacks tumble into the lane from the side door', icon: '▦', primaryTrait: 'speed', secondaryTrait: 'balance' },
+  'crumb-trail': { label: 'Crumb trail', shortLabel: 'crumb trail', description: 'one bright crumb trail winds behind a tempting stack of crates', icon: '·', primaryTrait: 'luck', secondaryTrait: 'focus' },
+  'garnish-gate': { label: 'Garnish gate', shortLabel: 'a garnish gate', description: 'two precise garnish poles leave one elegant line through', icon: '╫', primaryTrait: 'focus', secondaryTrait: 'balance' },
+  'steam-gadget': { label: 'Steam gadget', shortLabel: 'steam gadget', description: 'a little kettle device fills the lane with expressive steam', icon: '☼', primaryTrait: 'luck', secondaryTrait: 'focus' },
+  'bento-stack': { label: 'Bento stack', shortLabel: 'bento stack', description: 'a stack of empty bento boxes makes the finish lane narrow', icon: '▤', primaryTrait: 'balance', secondaryTrait: 'speed' },
+};
+
+const personaObstacleKinds: Record<string, RaceObstacleKind> = {
+  pip: 'napkin-gust',
+  sencha: 'tea-puddle',
+  toro: 'wobble-stack',
+  nori: 'shortcut-reflection',
+  tilda: 'broken-cart',
+  rollo: 'ribbon-tunnel',
+  miso: 'cushion-pile',
+  uma: 'flour-sacks',
+  panko: 'crumb-trail',
+  saffy: 'garnish-gate',
+  kiku: 'steam-gadget',
+  bibi: 'bento-stack',
 };
 
 const collectiblePool = [
@@ -177,21 +268,102 @@ function shuffleWithRng<T>(items: T[], rng: () => number) {
   return shuffled;
 }
 
+function clampRacePosition(value: number) {
+  return Math.min(96, Math.max(4, value));
+}
+
+function buildRaceSimulation(contestants: Persona[], rng: () => number): RaceSimulation {
+  const obstaclePositions = [18, 40, 62, 83];
+  const fallbackKinds = shuffleWithRng(Object.keys(raceObstacleCatalog) as RaceObstacleKind[], rng);
+  const selectedKinds = contestants.map((persona) => personaObstacleKinds[persona.id] ?? fallbackKinds[0]).slice(0, 4);
+  for (const kind of fallbackKinds) {
+    if (selectedKinds.length >= 4) break;
+    if (!selectedKinds.includes(kind)) selectedKinds.push(kind);
+  }
+  const obstacles = selectedKinds.map((kind, index) => {
+    const catalog = raceObstacleCatalog[kind];
+    const sourcePersona = contestants[index % Math.max(1, contestants.length)] ?? personas[0];
+    return {
+      id: `obstacle-${index + 1}`,
+      kind,
+      label: catalog.label,
+      shortLabel: catalog.shortLabel,
+      description: `${sourcePersona.name}'s signature hazard: ${catalog.description}. Their quirk — ${sourcePersona.quirk.toLowerCase()} — makes this one personal.`,
+      icon: catalog.icon,
+      position: obstaclePositions[index] ?? 83,
+      sourcePersonaId: sourcePersona.id,
+    };
+  });
+
+  const lanes = contestants.map((persona) => {
+    let progress = 5 + persona.traits.speed * 0.08;
+    const encounters: Record<string, RaceEncounter> = {};
+    const positions: Record<ContestStep, number> = {
+      intro: clampRacePosition(progress),
+      warmup: clampRacePosition(progress),
+      matchup: clampRacePosition(progress),
+      finale: clampRacePosition(progress),
+      winner: 92,
+    };
+
+    obstacles.forEach((obstacle, obstacleIndex) => {
+      const catalog = raceObstacleCatalog[obstacle.kind];
+      const control = persona.traits[catalog.primaryTrait] * 0.52
+        + persona.traits[catalog.secondaryTrait] * 0.24
+        + persona.traits.luck * 0.12
+        + (100 - persona.traits.chaos) * 0.12;
+      const luckyBreak = persona.traits.chaos >= 70
+        && (catalog.primaryTrait === 'luck' || obstacle.kind === 'ribbon-tunnel' || obstacle.kind === 'shortcut-reflection')
+        && rng() > 0.35;
+      const roll = control + rng() * 22 - 11;
+      const result: RaceEncounterResult = luckyBreak
+        ? 'surge'
+        : roll >= 76
+          ? 'clear'
+          : roll < 51
+            ? 'slow'
+            : persona.traits.chaos >= 72 && rng() > 0.48
+              ? 'reroute'
+              : 'clear';
+      const progressDelta = result === 'surge' ? 9 : result === 'slow' ? -8 : result === 'reroute' ? -3 : 2;
+      progress = clampRacePosition(progress + 16 + persona.traits.speed * 0.1 + progressDelta);
+      const encounterCopy: Record<RaceEncounterResult, { headline: string; detail: string }> = {
+        clear: { headline: 'clean line', detail: `${persona.name} reads the ${catalog.shortLabel} and keeps pace. Their routine holds.` },
+        slow: { headline: 'slowed down', detail: `${persona.name} loses a few steps at the ${catalog.shortLabel}; ${persona.contestBehavior.toLowerCase()}` },
+        surge: { headline: 'found a break', detail: `${persona.name} turns the ${catalog.shortLabel} into an unexpected opening. ${persona.quirk}` },
+        reroute: { headline: 'rerouted', detail: `${persona.name} takes the strange line around the ${catalog.shortLabel}; ${persona.contestBehavior}` },
+      };
+      encounters[obstacle.id] = { result, ...encounterCopy[result] };
+      if (obstacleIndex === 0) positions.warmup = progress;
+      if (obstacleIndex === 1) positions.matchup = progress;
+      if (obstacleIndex >= 2) positions.finale = progress;
+    });
+
+    if (obstacles.length < 3) positions.finale = progress;
+    const finishScore = progress
+      + persona.traits.speed * 0.28
+      + persona.traits.balance * 0.1
+      + persona.traits.focus * 0.12
+      + persona.traits.luck * 0.14
+      + (100 - persona.traits.chaos) * 0.06
+      + rng() * 8 - 4;
+    const finishPosition = clampRacePosition(progress + persona.traits.focus * 0.04 + persona.traits.luck * 0.03 + rng() * 5 - 2.5);
+    positions.winner = finishPosition;
+    return { personaId: persona.id, positions, finishPosition, finishScore, encounters };
+  });
+
+  const winnerLane = [...lanes].sort((a, b) => b.finishScore - a.finishScore)[0] ?? lanes[0];
+  return { obstacles, lanes, winnerId: winnerLane?.personaId ?? contestants[0]?.id ?? personas[0].id };
+}
+
 function resolveContest(contestants: Persona[], rng: () => number): ContestOutcome {
-  const scored = contestants.map((persona) => {
-    const traitScore =
-      persona.traits.speed * 0.28 +
-      persona.traits.balance * 0.2 +
-      persona.traits.focus * 0.2 +
-      persona.traits.luck * 0.17 +
-      (100 - persona.traits.chaos) * 0.15;
-    return { persona, score: traitScore + (rng() * 22 - 11) };
-  }).sort((a, b) => b.score - a.score);
-  const winner = scored[0]?.persona ?? contestants[0] ?? personas[0];
+  const race = buildRaceSimulation(contestants, rng);
+  const winner = contestants.find((persona) => persona.id === race.winnerId) ?? contestants[0] ?? personas[0];
   return {
     winner,
     memorableEvent: winner.memorableEvent,
     contestName: contestNames[Math.floor(rng() * contestNames.length)] ?? contestNames[0],
+    race,
   };
 }
 
@@ -545,13 +717,18 @@ function ForegroundSeating() {
   );
 }
 
-function ContestOverlay({ contestants, winner, step, contestName, memorableEvent, onSkip, onClose }: { contestants: Persona[]; winner: Persona | null; step: ContestStep; contestName: string; memorableEvent: string; onSkip: () => void; onClose: () => void }) {
+function ContestOverlay({ contestants, winner, step, contestName, memorableEvent, race, onSkip, onClose }: { contestants: Persona[]; winner: Persona | null; step: ContestStep; contestName: string; memorableEvent: string; race: RaceSimulation; onSkip: () => void; onClose: () => void }) {
   const eventText = winner ? memorableEvent : 'The contestants take their places beneath the market lantern.';
+  const currentObstacleIndex = step === 'intro' ? -1 : Math.min(race.obstacles.length - 1, raceStepProgress[step] - 1);
+  const currentObstacle = currentObstacleIndex >= 0 ? race.obstacles[currentObstacleIndex] : null;
+  const currentObstacleCopy = currentObstacle
+    ? `${currentObstacle.label}: ${currentObstacle.description}`
+    : 'The route is being set. Four trouble spots are waiting beyond the starting lantern.';
   const stepCopy: Record<ContestStep, string> = {
     intro: 'The curtain lifts. No votes, no wagers — just a few peculiar regulars and one very good story.',
-    warmup: 'The contestants test their footing, balance their plates, and learn the shape of the alley.',
-    matchup: 'The main course begins. Their signature quirks collide in a slow blur of steam and suspiciously elegant footwork.',
-    finale: 'The last corner is ahead. Every wobble matters now as the field makes its final, careful push.',
+    warmup: `The first hazard is live. ${currentObstacleCopy}`,
+    matchup: `The route bends through the market. ${currentObstacleCopy}`,
+    finale: `The finish lane is narrowing. ${currentObstacleCopy}`,
     winner: eventText,
   };
   const stepIndex = Object.keys(contestStepLabels).indexOf(step);
@@ -572,23 +749,83 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
         <p className="max-w-xl text-sm leading-6 text-[#d8c6af]">{stepCopy[step]}</p>
         <div className={`contest-race contest-race-${step}`} aria-label="Animated contest race">
           <div className="race-track-label font-mono-ui text-[9px] uppercase tracking-[.16em] text-[#bca99b]"><span>start</span><span>finish</span></div>
-          <div className="race-finish-line" aria-hidden="true" />
-          {contestants.map((persona, index) => {
-            const restingPosition = [52, 72, 61, 78][index % 4];
-            const middlePosition = Math.max(28, restingPosition - 16);
-            return (
-              <div className="race-lane" key={persona.id}>
-                <div className="race-lane-number font-mono-ui text-[10px] text-[#bca99b]">{String(index + 1).padStart(2, '0')}</div>
-                <div className="race-lane-name font-mono-ui text-[10px] uppercase tracking-wider text-[#d8c6af]">{persona.name}</div>
-                <div
-                  className={`race-runner ${winner?.id === persona.id ? 'is-winner' : ''}`}
-                  style={{ '--race-mid': `${middlePosition}%`, '--race-end': winner?.id === persona.id ? '91%' : `${restingPosition}%` } as CSSProperties}
-                >
-                  <PersonaPortrait persona={persona} />
+          <div className="race-course-viewport">
+            <div className="race-scenery-track" aria-hidden="true">
+              {['lantern alley', 'steam crossing', 'market bend', 'moon gate', 'finish stall'].map((section, index) => (
+                <div className={`race-scenery-panel race-scenery-panel-${index}`} key={section}>
+                  <span className="race-scenery-skyline" />
+                  <span className="race-scenery-lantern" />
+                  <span className="race-scenery-detail">{section}</span>
                 </div>
-              </div>
-            );
-          })}
+              ))}
+            </div>
+            <div className="race-course-road">
+              <div className="race-finish-line" aria-hidden="true" />
+              {contestants.map((persona, index) => {
+                const lane = race.lanes.find((candidate) => candidate.personaId === persona.id) ?? race.lanes[index];
+                return (
+                  <div className="race-lane" key={persona.id}>
+                    <div className="race-lane-number font-mono-ui text-[10px] text-[#bca99b]">{String(index + 1).padStart(2, '0')}</div>
+                    <div className="race-lane-name font-mono-ui text-[10px] uppercase tracking-wider text-[#d8c6af]">{persona.name}</div>
+                    {race.obstacles.map((obstacle, obstacleIndex) => {
+                      const encounter = lane?.encounters[obstacle.id];
+                      const obstacleState = obstacleIndex <= currentObstacleIndex ? `race-obstacle-${encounter?.result ?? 'clear'}` : 'race-obstacle-upcoming';
+                      return (
+                        <span
+                          className={`race-obstacle race-obstacle-${obstacle.kind} ${obstacleState} ${obstacleIndex === currentObstacleIndex ? 'is-current' : ''}`}
+                          style={{ left: `${obstacle.position}%` }}
+                          key={`${persona.id}-${obstacle.id}`}
+                          title={obstacle.label}
+                          aria-hidden="true"
+                        >
+                          <b>{obstacle.icon}</b>
+                          <small>{obstacle.shortLabel}</small>
+                        </span>
+                      );
+                    })}
+                    <div
+                      className={`race-runner ${winner?.id === persona.id ? 'is-winner' : ''}`}
+                      style={{
+                        '--race-intro': `${lane?.positions.intro ?? 5}%`,
+                        '--race-warmup': `${lane?.positions.warmup ?? 28}%`,
+                        '--race-matchup': `${lane?.positions.matchup ?? 52}%`,
+                        '--race-finale': `${lane?.positions.finale ?? 78}%`,
+                        '--race-winner': `${winner?.id === persona.id ? lane?.positions.winner ?? 92 : lane?.positions.finale ?? 78}%`,
+                      } as CSSProperties}
+                    >
+                      <PersonaPortrait persona={persona} />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+          <div className="race-event-report" role="status" aria-live="polite">
+            <div className="race-event-heading">
+              <span className="font-mono-ui text-[9px] uppercase tracking-[.16em] text-[#f5c968]">{step === 'winner' ? 'finish report' : 'course report'}</span>
+              <strong>{currentObstacle?.label ?? 'Starting lantern'}</strong>
+            </div>
+            <p>{step === 'winner' && winner ? `${winner.name} takes the finish after the last hazard.` : currentObstacleCopy}</p>
+            <div className="race-encounter-row" aria-label="Contestant obstacle results">
+              {contestants.map((persona) => {
+                const lane = race.lanes.find((candidate) => candidate.personaId === persona.id);
+                const encounter = currentObstacle ? lane?.encounters[currentObstacle.id] : null;
+                return (
+                  <span className={`race-encounter race-encounter-${encounter?.result ?? 'clear'}`} key={persona.id}>
+                    <b>{persona.name.split(' ')[0]}</b>
+                    {encounter ? encounter.headline : 'ready'}
+                  </span>
+                );
+              })}
+            </div>
+          </div>
+          <div className="race-obstacle-list" aria-label="Course hazards">
+            {race.obstacles.map((obstacle, index) => (
+              <span className={index === currentObstacleIndex ? 'is-current' : index < currentObstacleIndex ? 'is-cleared' : ''} key={obstacle.id}>
+                <i aria-hidden="true">{obstacle.icon}</i>{obstacle.shortLabel}
+              </span>
+            ))}
+          </div>
         </div>
         <div className="my-9 grid grid-cols-1 gap-5 sm:grid-cols-3">
           {contestants.map((persona, index) => (
@@ -939,7 +1176,7 @@ function Home() {
 
       </main>
       <div className="sr-only" role="status" aria-live="polite" data-testid="live-contest-status">{liveStatus}</div>
-      {contestOpen && <ContestOverlay contestants={contestants} winner={winner} step={contestStep} contestName={contestOutcome.current?.contestName ?? 'The Persona Contest'} memorableEvent={contestOutcome.current?.memorableEvent ?? ''} onSkip={skipContest} onClose={finishContest} />}
+      {contestOpen && contestOutcome.current && <ContestOverlay contestants={contestants} winner={winner} step={contestStep} contestName={contestOutcome.current.contestName} memorableEvent={contestOutcome.current.memorableEvent} race={contestOutcome.current.race} onSkip={skipContest} onClose={finishContest} />}
       {curioView && <CurioOverlay view={curioView} ledger={ledger} collectibles={collectibles} onClose={() => setCurioView(null)} onReset={resetMemory} />}
       <span className="sr-only">{selectedCount ? `${selectedCount} memories kept nearby` : 'local memory is empty'}</span>
     </div>
