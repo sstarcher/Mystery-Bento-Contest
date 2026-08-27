@@ -517,7 +517,7 @@ function CurioHotspot({ item, className }: { item: Collectible; className: strin
   );
 }
 
-function CurioBacksplash({ collectibles, lastWinner }: { collectibles: Collectible[]; lastWinner: Persona | null }) {
+function CurioBacksplash({ collectibles }: { collectibles: Collectible[] }) {
   const byZone = (zone: CurioDisplayZone) => collectibles.filter((item) => getCurioDisplayZone(item) === zone);
   const houseKeeps = byZone('house-keeps');
   const teaTools = byZone('tea-tools');
@@ -633,7 +633,7 @@ function CurioBacksplash({ collectibles, lastWinner }: { collectibles: Collectib
         <div className="kitchen-prep-light kitchen-prep-light-two" />
         <div className="kitchen-steam kitchen-steam-one" />
         <div className="kitchen-steam kitchen-steam-two" />
-        {!lastWinner && (
+        {!collectibles.length && (
           <div className="kitchen-return-sign" aria-hidden="true">
             <strong lang="ja">すぐ戻ります</strong>
             <span>be right back</span>
@@ -998,10 +998,8 @@ function Home() {
         const template = showcaseById.get(item.id);
         return template ? { ...item, kind: template.kind, title: template.title, description: template.description, earnedBy: template.earnedBy } : item;
       });
-      const ownedIds = new Set(refreshed.map((item) => item.id));
-      const missing = showcaseCollectibles.filter((item) => !ownedIds.has(item.id));
       const needsRefresh = refreshed.some((item, index) => item !== current[index]);
-      return missing.length || needsRefresh ? [...missing, ...refreshed].slice(0, 30) : current;
+      return needsRefresh ? refreshed : current;
     });
   }, [setCollectibles]);
 
@@ -1191,7 +1189,7 @@ function Home() {
     <div className="bento-app">
       <main className="min-h-[100dvh]" aria-label="Mystery Bento night market">
         <section className="scene-shell min-h-[100dvh] p-4 sm:p-6 md:p-10" aria-label="Mystery Bento night market">
-          <CurioBacksplash collectibles={collectibles} lastWinner={activeChef} />
+          <CurioBacksplash collectibles={collectibles} />
           <RestaurantCurioDisplays collectibles={collectibles} />
           <div className="scene-content">
             <div className="restaurant-top-zone">
@@ -1206,7 +1204,7 @@ function Home() {
               <div className="relative mt-6">
                 <span className="pixel-star left-[8%] top-2" aria-hidden="true">+</span><span className="pixel-star right-[13%] top-10 text-sm" aria-hidden="true">+</span><span className="pixel-star right-[28%] top-0 text-xs" aria-hidden="true">+</span>
                 <div className="restaurant-counter">
-                  {activeChef && (
+                  {collectibles.length > 0 && activeChef && (
                     <div className={`counter-chef counter-chef-${activeChef.id}`} aria-label={`${activeChef.name}, the active chef, is preparing food at the conveyor bar`}>
                       {activeChef.foodAnimationFrameSrcs ? (
                         <AnimatedChefSprite persona={activeChef} />
