@@ -32,3 +32,9 @@ The supplied cooking-character sheet has a baked-in neutral checkerboard rather 
 **Why:** Rendering the sheet directly would expose the checkerboard as a background, especially when the winner sprite is enlarged behind the counter.
 
 **How to apply:** Preserve the original sheet as reference and use transparent per-character derivatives for scene compositing while keeping the existing portrait assets for contest cards.
+
+Sprite-sheet motion must change frames discretely; never interpolate the transform across the strip.
+
+**Why:** Interpolating between frame offsets visibly slides the character and can expose neighboring poses.
+
+**How to apply:** Use exact one-frame offsets with discrete timing, and verify the first, middle, and last poses at the final display size.

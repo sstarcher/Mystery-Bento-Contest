@@ -250,6 +250,7 @@
 .counter-chef { position: absolute; bottom: 100%; left: 50%; z-index: 1; width: min(244px, 27vw); height: 260px; overflow: hidden; transform: translateX(-50%); pointer-events: none; }
 .counter-chef-image { position: absolute; top: 0; left: 50%; display: block; width: 100%; height: auto; max-width: none; transform: translateX(-50%); image-rendering: pixelated; }
 .counter-chef-sprite { position: absolute; top: -105px; left: 0; display: block; width: 100%; aspect-ratio: 362 / 724; overflow: hidden; }
+.counter-chef-frame-image { position: absolute; inset: 0; display: block; width: 100%; height: 100%; object-fit: fill; image-rendering: pixelated; }
 .counter-chef-sheet { position: absolute; top: 0; left: 0; display: block; width: 600%; height: 100%; max-width: none; animation: counter-chef-cook-cycle 1.8s steps(1, end) infinite; image-rendering: pixelated; }
 @keyframes counter-chef-cook-cycle {
   0%, 16.666% { transform: translateX(0); }

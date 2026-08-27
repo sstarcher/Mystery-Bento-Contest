@@ -12,6 +12,12 @@ import pankoFood from './assets/contestants/panko-food.png';
 import pipPortrait from './assets/contestants/pip.png';
 import pipFood from './assets/contestants/pip-food.png';
 import pipPorridgeFrames from './assets/contestants/pip-porridge-frames.png';
+import pipPorridgeFrame1 from './assets/contestants/pip-porridge-frame-1.png';
+import pipPorridgeFrame2 from './assets/contestants/pip-porridge-frame-2.png';
+import pipPorridgeFrame3 from './assets/contestants/pip-porridge-frame-3.png';
+import pipPorridgeFrame4 from './assets/contestants/pip-porridge-frame-4.png';
+import pipPorridgeFrame5 from './assets/contestants/pip-porridge-frame-5.png';
+import pipPorridgeFrame6 from './assets/contestants/pip-porridge-frame-6.png';
 import rolloPortrait from './assets/contestants/rollo.png';
 import rolloFood from './assets/contestants/rollo-food.png';
 import saffyPortrait from './assets/contestants/saffy.png';
@@ -81,6 +87,10 @@ export const contestantFoodAnimationSheets: Partial<Record<string, string>> = {
   sencha: senchaTeaFrames,
   toro: toroGrillFrames,
   nori: noriNibFrames,
+};
+
+export const contestantFoodAnimationFrames: Partial<Record<string, string[]>> = {
+  pip: [pipPorridgeFrame1, pipPorridgeFrame2, pipPorridgeFrame3, pipPorridgeFrame4, pipPorridgeFrame5, pipPorridgeFrame6],
 };
 
 export const contestantFoodAnimationAspectRatios: Partial<Record<string, string>> = {

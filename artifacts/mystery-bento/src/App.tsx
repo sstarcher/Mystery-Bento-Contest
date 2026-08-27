@@ -6,7 +6,7 @@ import { Toaster } from '@/components/ui/toaster';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import NotFound from '@/pages/not-found';
 import { Route, Router as WouterRouter, Switch, useLocation } from 'wouter';
-import { contestantDesigns, contestantFoodAnimationAspectRatios, contestantFoodAnimationSheets, contestantFoodSprites, contestantPortraits } from './contestant-design-config';
+import { contestantDesigns, contestantFoodAnimationAspectRatios, contestantFoodAnimationFrames, contestantFoodAnimationSheets, contestantFoodSprites, contestantPortraits } from './contestant-design-config';
 
 type MeterState = { progress: number; lastAcknowledgement: string };
 type Persona = {
@@ -21,6 +21,7 @@ type Persona = {
   portraitSrc: string;
   foodSpriteSrc: string;
   foodAnimationSheetSrc?: string;
+  foodAnimationFrameSrcs?: string[];
   foodAnimationAspectRatio?: string;
 };
 type ContestLedgerEntry = {
@@ -68,6 +69,7 @@ const personas: Persona[] = contestantDesigns.map((design) => ({
   portraitSrc: contestantPortraits[design.id],
   foodSpriteSrc: contestantFoodSprites[design.id],
   foodAnimationSheetSrc: contestantFoodAnimationSheets[design.id],
+  foodAnimationFrameSrcs: contestantFoodAnimationFrames[design.id],
   foodAnimationAspectRatio: contestantFoodAnimationAspectRatios[design.id],
 }));
 
@@ -434,6 +436,31 @@ function CurioBacksplash({ collectibles, lastWinner }: { collectibles: Collectib
       <div className="curio-wall-lamp curio-wall-lamp-left" />
       <div className="curio-wall-lamp curio-wall-lamp-right" />
     </div>
+  );
+}
+
+function AnimatedChefSprite({ persona }: { persona: Persona }) {
+  const frames = persona.foodAnimationFrameSrcs ?? [];
+  const [frameIndex, setFrameIndex] = useState(0);
+  const aspectRatio = persona.foodAnimationAspectRatio ?? '362 / 724';
+
+  useEffect(() => {
+    if (frames.length < 2 || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const timer = window.setInterval(() => {
+      setFrameIndex((current) => (current + 1) % frames.length);
+    }, 300);
+    return () => window.clearInterval(timer);
+  }, [frames]);
+
+  return (
+    <span
+      className="counter-chef-sprite"
+      role="img"
+      aria-label={`${persona.name} cooking animation`}
+      style={{ aspectRatio }}
+    >
+      <img className="counter-chef-frame-image" src={frames[frameIndex] ?? frames[0]} alt="" />
+    </span>
   );
 }
 
@@ -862,7 +889,9 @@ function Home() {
                 <div className="restaurant-counter">
                   {activeChef && (
                     <div className="counter-chef" aria-label={`${activeChef.name}, the active chef, is preparing food at the conveyor bar`}>
-                      {activeChef.foodAnimationSheetSrc ? (
+                      {activeChef.foodAnimationFrameSrcs ? (
+                        <AnimatedChefSprite persona={activeChef} />
+                      ) : activeChef.foodAnimationSheetSrc ? (
                         <span
                           className="counter-chef-sprite"
                           role="img"
