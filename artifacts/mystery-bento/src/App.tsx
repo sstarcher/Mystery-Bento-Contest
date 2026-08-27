@@ -141,11 +141,11 @@ const contestNames = [
 ];
 
 const contestDurations: Record<ContestStep, number> = {
-  intro: 8000,
-  warmup: 18000,
-  matchup: 32000,
-  finale: 45000,
-  winner: 17000,
+  intro: 3600,
+  warmup: 7600,
+  matchup: 9200,
+  finale: 11000,
+  winner: 6500,
 };
 
 const contestNextStep: Partial<Record<ContestStep, ContestStep>> = {
@@ -741,7 +741,7 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
         </div>
         <div className="contest-phase-row">
           <span className="font-mono-ui text-[10px] uppercase tracking-[.16em] text-[#f5c968]">act {stepIndex + 1} of 5 · {contestStepLabels[step]}</span>
-          <span className="font-mono-ui text-[10px] uppercase tracking-[.12em] text-[#bca99b]">long-form spectator match · about 2 min</span>
+          <span className="font-mono-ui text-[10px] uppercase tracking-[.12em] text-[#bca99b]">quick spectator match · under a minute</span>
         </div>
         <div className="contest-progress" aria-label={`Contest progress: act ${stepIndex + 1} of 5`}>
           {Object.entries(contestStepLabels).map(([key, label], index) => <span key={key} className={index <= stepIndex ? 'is-active' : ''}><i aria-hidden="true" />{label}</span>)}
@@ -750,47 +750,59 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
         <div className={`contest-race contest-race-${step}`} aria-label="Animated contest race">
           <div className="race-track-label font-mono-ui text-[9px] uppercase tracking-[.16em] text-[#bca99b]"><span>start</span><span>finish</span></div>
           <div className="race-course-viewport">
-            <div className="race-scenery-track" aria-hidden="true">
-              {['lantern alley', 'steam crossing', 'market bend', 'moon gate', 'finish stall'].map((section, index) => (
-                <div className={`race-scenery-panel race-scenery-panel-${index}`} key={section}>
-                  <span className="race-scenery-skyline" />
-                  <span className="race-scenery-lantern" />
-                  <span className="race-scenery-detail">{section}</span>
-                </div>
-              ))}
+            <div className="race-world-track">
+              <div className="race-scenery-track" aria-hidden="true">
+                {['lantern alley', 'steam crossing', 'market bend', 'moon gate', 'finish stall'].map((section, index) => (
+                  <div className={`race-scenery-panel race-scenery-panel-${index}`} key={section}>
+                    <span className="race-scenery-skyline" />
+                    <span className="race-scenery-lantern" />
+                    <span className="race-scenery-detail">{section}</span>
+                  </div>
+                ))}
+              </div>
+              <div className="race-course-road">
+                <div className="race-finish-line" aria-hidden="true" />
+                {contestants.map((persona) => {
+                  const lane = race.lanes.find((candidate) => candidate.personaId === persona.id);
+                  return (
+                    <div className="race-lane" key={persona.id}>
+                      {race.obstacles.map((obstacle, obstacleIndex) => {
+                        const encounter = lane?.encounters[obstacle.id];
+                        const obstacleState = obstacleIndex <= currentObstacleIndex ? `race-obstacle-${encounter?.result ?? 'clear'}` : 'race-obstacle-upcoming';
+                        return (
+                          <span
+                            className={`race-obstacle race-obstacle-${obstacle.kind} ${obstacleState} ${obstacleIndex === currentObstacleIndex ? 'is-current' : ''}`}
+                            style={{ left: `${obstacle.position}%` }}
+                            key={`${persona.id}-${obstacle.id}`}
+                            title={obstacle.label}
+                            aria-hidden="true"
+                          >
+                            <b>{obstacle.icon}</b>
+                            <small>{obstacle.shortLabel}</small>
+                          </span>
+                        );
+                      })}
+                    </div>
+                  );
+                })}
+              </div>
             </div>
-            <div className="race-course-road">
-              <div className="race-finish-line" aria-hidden="true" />
+            <div className="race-runner-overlay">
               {contestants.map((persona, index) => {
                 const lane = race.lanes.find((candidate) => candidate.personaId === persona.id) ?? race.lanes[index];
+                const toScreenAnchor = (position: number) => `${Math.min(42, Math.max(18, 16 + position * 0.26))}%`;
                 return (
-                  <div className="race-lane" key={persona.id}>
+                  <div className="race-runner-lane" key={persona.id}>
                     <div className="race-lane-number font-mono-ui text-[10px] text-[#bca99b]">{String(index + 1).padStart(2, '0')}</div>
                     <div className="race-lane-name font-mono-ui text-[10px] uppercase tracking-wider text-[#d8c6af]">{persona.name}</div>
-                    {race.obstacles.map((obstacle, obstacleIndex) => {
-                      const encounter = lane?.encounters[obstacle.id];
-                      const obstacleState = obstacleIndex <= currentObstacleIndex ? `race-obstacle-${encounter?.result ?? 'clear'}` : 'race-obstacle-upcoming';
-                      return (
-                        <span
-                          className={`race-obstacle race-obstacle-${obstacle.kind} ${obstacleState} ${obstacleIndex === currentObstacleIndex ? 'is-current' : ''}`}
-                          style={{ left: `${obstacle.position}%` }}
-                          key={`${persona.id}-${obstacle.id}`}
-                          title={obstacle.label}
-                          aria-hidden="true"
-                        >
-                          <b>{obstacle.icon}</b>
-                          <small>{obstacle.shortLabel}</small>
-                        </span>
-                      );
-                    })}
                     <div
                       className={`race-runner ${winner?.id === persona.id ? 'is-winner' : ''}`}
                       style={{
-                        '--race-intro': `${lane?.positions.intro ?? 5}%`,
-                        '--race-warmup': `${lane?.positions.warmup ?? 28}%`,
-                        '--race-matchup': `${lane?.positions.matchup ?? 52}%`,
-                        '--race-finale': `${lane?.positions.finale ?? 78}%`,
-                        '--race-winner': `${winner?.id === persona.id ? lane?.positions.winner ?? 92 : lane?.positions.finale ?? 78}%`,
+                        '--race-intro-anchor': toScreenAnchor(lane?.positions.intro ?? 5),
+                        '--race-warmup-anchor': toScreenAnchor(lane?.positions.warmup ?? 28),
+                        '--race-matchup-anchor': toScreenAnchor(lane?.positions.matchup ?? 52),
+                        '--race-finale-anchor': toScreenAnchor(lane?.positions.finale ?? 78),
+                        '--race-winner-anchor': `${winner?.id === persona.id ? Math.min(68, Math.max(52, 48 + (lane?.positions.winner ?? 92) * 0.1)) : Math.min(42, Math.max(18, 16 + (lane?.positions.finale ?? 78) * 0.26))}%`,
                       } as CSSProperties}
                     >
                       <PersonaPortrait persona={persona} />
@@ -1076,8 +1088,8 @@ function Home() {
       }
       const stageMessages: Record<Exclude<ContestStep, 'winner'>, string> = {
         intro: 'The contestants have arrived. The warm-up begins beneath the lanterns.',
-        warmup: 'The trays are balanced. The long race is finally underway.',
-        matchup: 'The field reaches the last corner. Watch the final stretch.',
+        warmup: 'The world rolls. The first hazard is already coming into view.',
+        matchup: 'The market slips past. The next hazard is waiting around the bend.',
         finale: 'The finish is near. The stall is preparing the winner’s story.',
       };
       setContestStep(nextStep);
