@@ -949,7 +949,7 @@ function Home() {
       ?? personas.find((persona) => persona.name === latestEntry.winner)
       ?? null;
   }, [ledger]);
-  const activeChef = personas.find((persona) => persona.id === 'rollo') ?? lastWinner ?? null;
+  const activeChef = lastWinner ?? personas.find((persona) => persona.id === 'toro') ?? null;
 
   useEffect(() => {
     setCollectibles((current) => {
