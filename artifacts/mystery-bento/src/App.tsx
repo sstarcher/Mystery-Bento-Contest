@@ -6,6 +6,7 @@ import { Toaster } from '@/components/ui/toaster';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import NotFound from '@/pages/not-found';
 import { Route, Router as WouterRouter, Switch, useLocation } from 'wouter';
+import { contestantDesigns, contestantPortraits } from './contestant-design-config';
 
 type MeterState = { progress: number; lastAcknowledgement: string };
 type Persona = {
@@ -15,6 +16,9 @@ type Persona = {
   traits: { speed: number; balance: number; focus: number; luck: number; chaos: number };
   silhouetteKey: string;
   idleAnimationKey: string;
+  palette: { primary: string; accent: string; neutral: string };
+  memorableEvent: string;
+  portraitSrc: string;
 };
 type ContestLedgerEntry = {
   id: string;
@@ -42,14 +46,23 @@ const METER_KEY = 'mystery-bento-meter';
 const LEDGER_KEY = 'mystery-bento-ledger';
 const CURIO_KEY = 'mystery-bento-curios';
 
-const personas: Persona[] = [
-  { id: 'miso', name: 'Miso', flavorText: 'A meticulous tea spirit who counts every last leaf.', traits: { speed: 62, balance: 94, focus: 98, luck: 58, chaos: 12 }, silhouetteKey: 'crown', idleAnimationKey: 'hover', },
-  { id: 'toro', name: 'Captain Toro', flavorText: 'A dramatic retired tuna captain with a foghorn laugh.', traits: { speed: 72, balance: 76, focus: 53, luck: 81, chaos: 86 }, silhouetteKey: 'toro', idleAnimationKey: 'sway', },
-  { id: 'puck', name: 'Puck', flavorText: 'A cheerful rice-ball courier who never misses a shortcut.', traits: { speed: 96, balance: 70, focus: 74, luck: 77, chaos: 48 }, silhouetteKey: 'puck', idleAnimationKey: 'bounce', },
-  { id: 'luma', name: 'Luma', flavorText: 'A sleepy cat-food critic with a very serious palate.', traits: { speed: 35, balance: 82, focus: 87, luck: 68, chaos: 29 }, silhouetteKey: 'cat', idleAnimationKey: 'blink', },
-  { id: 'nori', name: 'Nori', flavorText: 'A tiny mushroom chef wielding an oversized ladle.', traits: { speed: 55, balance: 88, focus: 91, luck: 64, chaos: 61 }, silhouetteKey: 'mushroom', idleAnimationKey: 'stir', },
-  { id: 'rin', name: 'Radish Rin', flavorText: 'A hyperactive radish mascot who runs on pure fizz.', traits: { speed: 99, balance: 45, focus: 49, luck: 89, chaos: 97 }, silhouetteKey: 'rin', idleAnimationKey: 'zip', },
-];
+const personas: Persona[] = contestantDesigns.map((design) => ({
+  id: design.id,
+  name: design.name,
+  flavorText: `${design.contestEdge} ace · ${design.readableSpriteFeature.toLowerCase()}.`,
+  traits: {
+    speed: design.traits.speed * 10,
+    balance: design.traits.balance * 10,
+    focus: design.traits.focus * 10,
+    luck: design.traits.luck * 10,
+    chaos: design.traits.chaos * 10,
+  },
+  silhouetteKey: design.silhouetteKey,
+  idleAnimationKey: design.idleAnimationKey,
+  palette: design.palette,
+  memorableEvent: design.memorableEvent,
+  portraitSrc: contestantPortraits[design.id],
+}));
 
 const foodItems: FoodItem[] = [
   { id: 'tamago', name: 'Sunset tamago', note: 'soft, sweet, perfectly tucked', glyph: 'circle', color: '#ed9560' },
@@ -104,12 +117,12 @@ const collectiblePool = [
   { id: 'lantern-rain-ticket', kind: 'lantern charm', title: 'Rainy Lantern Ticket', description: 'A little ticket from a stormy night when every puddle reflected gold.', earnedBy: 'toro' },
   { id: 'chef-ladle-champion', kind: 'chef sticker', title: 'Ladle Champion', description: 'A shiny sticker for a chef who made one enormous spoon look graceful.', earnedBy: 'nori' },
   { id: 'chef-ladle-night-shift', kind: 'chef sticker', title: 'Night-Shift Ladle Patch', description: 'A stitched patch for the cook who kept the late service perfectly stirred.', earnedBy: 'nori' },
-  { id: 'plate-moon-checker', kind: 'plate pattern', title: 'Moonlit Checker', description: 'A ceramic plate pattern in the exact colors of a late-night shortcut.', earnedBy: 'luma' },
-  { id: 'plate-rainbow-rim', kind: 'plate pattern', title: 'Rainbow Rim Test Tile', description: 'A test tile with a rim that catches every color of the market sign.', earnedBy: 'luma' },
-  { id: 'snapshot-great-wobble', kind: 'victory snapshot', title: 'The Great Wobble', description: 'A framed snapshot of a rice ball refusing to give up.', earnedBy: 'puck' },
-  { id: 'snapshot-last-tray', kind: 'victory snapshot', title: 'The Last Tray Home', description: 'A tiny photograph of an empty tray making it safely back to the pass.', earnedBy: 'puck' },
-  { id: 'radish-spark-sticker', kind: 'chef sticker', title: 'Radish Spark', description: 'A zippy little sticker that seems to vibrate when nobody is looking.', earnedBy: 'rin' },
-  { id: 'radish-fizz-pin', kind: 'chef sticker', title: 'Fizz Route Pin', description: 'A bright pin marking the fastest route between the pantry and the dance floor.', earnedBy: 'rin' },
+  { id: 'plate-moon-checker', kind: 'plate pattern', title: 'Moonlit Checker', description: 'A ceramic plate pattern in the exact colors of a late-night shortcut.', earnedBy: 'bibi' },
+  { id: 'plate-rainbow-rim', kind: 'plate pattern', title: 'Rainbow Rim Test Tile', description: 'A test tile with a rim that catches every color of the market sign.', earnedBy: 'saffy' },
+  { id: 'snapshot-great-wobble', kind: 'victory snapshot', title: 'The Great Wobble', description: 'A framed snapshot of a rice ball refusing to give up.', earnedBy: 'panko' },
+  { id: 'snapshot-last-tray', kind: 'victory snapshot', title: 'The Last Tray Home', description: 'A tiny photograph of an empty tray making it safely back to the pass.', earnedBy: 'pip' },
+  { id: 'radish-spark-sticker', kind: 'chef sticker', title: 'Radish Spark', description: 'A zippy little sticker that seems to vibrate when nobody is looking.', earnedBy: 'rollo' },
+  { id: 'radish-fizz-pin', kind: 'chef sticker', title: 'Fizz Route Pin', description: 'A bright pin marking the fastest route between the pantry and the dance floor.', earnedBy: 'rollo' },
 ];
 
 const showcaseCollectibles: Collectible[] = collectiblePool.map((item) => ({
@@ -160,17 +173,9 @@ function resolveContest(contestants: Persona[], rng: () => number): ContestOutco
     return { persona, score: traitScore + (rng() * 22 - 11) };
   }).sort((a, b) => b.score - a.score);
   const winner = scored[0]?.persona ?? contestants[0] ?? personas[0];
-  const eventByPersona: Record<string, string> = {
-    miso: 'Miso takes a perfect turn, right on the invisible line.',
-    toro: 'Captain Toro pauses for a dramatic bow, then sails across the finish.',
-    puck: 'Puck trips over enthusiasm, then sprints ahead with a grin.',
-    luma: 'Luma stops to judge the plating and somehow gains ground.',
-    nori: "Nori's oversized ladle saves the wobbling stack!",
-    rin: 'Radish Rin zooms into a harmless pile of cushions and bounces onward.',
-  };
   return {
     winner,
-    memorableEvent: eventByPersona[winner.id] ?? `${winner.name} finds a curious shortcut.`,
+    memorableEvent: winner.memorableEvent,
     contestName: contestNames[Math.floor(rng() * contestNames.length)] ?? contestNames[0],
   };
 }
@@ -419,10 +424,11 @@ function RestaurantCurioDisplays({ collectibles }: { collectibles: Collectible[]
 }
 
 function PersonaPortrait({ persona, large = false }: { persona: Persona; large?: boolean }) {
-  const color = { miso: '#c98b61', toro: '#d65f52', puck: '#e9ae55', luma: '#9b83ad', nori: '#83a66f', rin: '#de7260' }[persona.id];
   return (
-    <div className={`persona-orb ${persona.silhouetteKey} ${large ? 'scale-125' : ''}`} style={{ '--persona-color': color } as CSSProperties} aria-hidden="true">
-      <span className="absolute -bottom-2 left-1/2 -translate-x-1/2 h-2 w-7 rounded-full bg-[#30223c]/40" />
+    <div className={`persona-portrait ${persona.silhouetteKey} ${large ? 'is-featured' : ''}`} style={{ '--persona-color': persona.palette.primary, '--persona-accent': persona.palette.accent } as CSSProperties} aria-hidden="true">
+      <img className="persona-portrait-image" src={persona.portraitSrc} alt="" />
+      <span className="persona-portrait-shine" />
+      <span className="persona-portrait-shadow" />
     </div>
   );
 }
@@ -486,9 +492,9 @@ function ForegroundSeating() {
 }
 
 function ContestOverlay({ contestants, winner, step, contestName, memorableEvent, onSkip, onClose }: { contestants: Persona[]; winner: Persona | null; step: ContestStep; contestName: string; memorableEvent: string; onSkip: () => void; onClose: () => void }) {
-  const eventText = winner ? memorableEvent : 'The three silhouettes take their places beneath the market lantern.';
+  const eventText = winner ? memorableEvent : 'The contestants take their places beneath the market lantern.';
   const stepCopy: Record<ContestStep, string> = {
-    intro: 'The curtain lifts. No votes, no wagers — just three peculiar regulars and one very good story.',
+    intro: 'The curtain lifts. No votes, no wagers — just a few peculiar regulars and one very good story.',
     warmup: 'The contestants test their footing, balance their plates, and learn the shape of the alley.',
     matchup: 'The main course begins. Their signature quirks collide in a slow blur of steam and suspiciously elegant footwork.',
     finale: 'The last corner is ahead. Every wobble matters now as the field makes its final, careful push.',
@@ -604,9 +610,15 @@ function Home() {
 
   useEffect(() => {
     setCollectibles((current) => {
-      const ownedIds = new Set(current.map((item) => item.id));
+      const showcaseById = new Map(showcaseCollectibles.map((item) => [item.id, item]));
+      const refreshed = current.map((item) => {
+        const template = showcaseById.get(item.id);
+        return template ? { ...item, kind: template.kind, title: template.title, description: template.description, earnedBy: template.earnedBy } : item;
+      });
+      const ownedIds = new Set(refreshed.map((item) => item.id));
       const missing = showcaseCollectibles.filter((item) => !ownedIds.has(item.id));
-      return missing.length ? [...missing, ...current].slice(0, 30) : current;
+      const needsRefresh = refreshed.some((item, index) => item !== current[index]);
+      return missing.length || needsRefresh ? [...missing, ...refreshed].slice(0, 30) : current;
     });
   }, [setCollectibles]);
 
@@ -631,7 +643,7 @@ function Home() {
     const now = new Date().toISOString();
     const isOwned = (template: (typeof collectiblePool)[number]) => collectibles.some((item) => item.id === template.id || item.id.startsWith(`${template.id}-`));
     const availableCurios = collectiblePool.filter((item) => !isOwned(item));
-    const template = availableCurios.find((item) => item.earnedBy === winningPersona.id) ?? availableCurios[0];
+    const template = availableCurios.find((item) => item.earnedBy === winningPersona.id);
     const memorableEvent = outcome?.memorableEvent ?? `${winningPersona.name} finds a curious shortcut.`;
     const entryId = `contest-${Date.now()}`;
     const collectible: Collectible | null = template ? {
@@ -651,7 +663,7 @@ function Home() {
     if (collectible) setCollectibles((current) => [collectible, ...current].slice(0, 30));
     setMeter({ progress: 0, lastAcknowledgement: `${winningPersona.name} left a story on the counter.` });
     setAcknowledgement(`${winningPersona.name} left a story on the counter.`);
-    setLiveStatus(collectible ? `Contest complete. ${winningPersona.name} wins and earns ${collectible.title}.` : `Contest complete. ${winningPersona.name} wins. Every curio is already on the shelf.`);
+    setLiveStatus(collectible ? `Contest complete. ${winningPersona.name} wins and earns ${collectible.title}.` : `Contest complete. ${winningPersona.name} wins. No new matching curio remains in the collection.`);
     setContestOpen(false);
     setContestStep('intro');
     setWinner(null);
