@@ -99,20 +99,30 @@ const contestStepLabels: Record<ContestStep, string> = {
 
 const collectiblePool = [
   { id: 'recipe-midnight-sauce', kind: 'recipe fragment', title: 'The Unfinished Midnight Sauce', description: 'A recipe-card fragment with one suspiciously important ingredient missing.', earnedBy: 'miso' },
+  { id: 'recipe-after-hours-note', kind: 'recipe fragment', title: 'The After-Hours Note', description: 'A folded kitchen note that begins with “never skip the toasted sesame.”', earnedBy: 'miso' },
   { id: 'lantern-warm-glow', kind: 'lantern charm', title: 'Warm-Glow Wisp', description: 'A tiny charm that remembers the softest light in the alley.', earnedBy: 'toro' },
+  { id: 'lantern-rain-ticket', kind: 'lantern charm', title: 'Rainy Lantern Ticket', description: 'A little ticket from a stormy night when every puddle reflected gold.', earnedBy: 'toro' },
   { id: 'chef-ladle-champion', kind: 'chef sticker', title: 'Ladle Champion', description: 'A shiny sticker for a chef who made one enormous spoon look graceful.', earnedBy: 'nori' },
+  { id: 'chef-ladle-night-shift', kind: 'chef sticker', title: 'Night-Shift Ladle Patch', description: 'A stitched patch for the cook who kept the late service perfectly stirred.', earnedBy: 'nori' },
   { id: 'plate-moon-checker', kind: 'plate pattern', title: 'Moonlit Checker', description: 'A ceramic plate pattern in the exact colors of a late-night shortcut.', earnedBy: 'luma' },
+  { id: 'plate-rainbow-rim', kind: 'plate pattern', title: 'Rainbow Rim Test Tile', description: 'A test tile with a rim that catches every color of the market sign.', earnedBy: 'luma' },
   { id: 'snapshot-great-wobble', kind: 'victory snapshot', title: 'The Great Wobble', description: 'A framed snapshot of a rice ball refusing to give up.', earnedBy: 'puck' },
+  { id: 'snapshot-last-tray', kind: 'victory snapshot', title: 'The Last Tray Home', description: 'A tiny photograph of an empty tray making it safely back to the pass.', earnedBy: 'puck' },
   { id: 'radish-spark-sticker', kind: 'chef sticker', title: 'Radish Spark', description: 'A zippy little sticker that seems to vibrate when nobody is looking.', earnedBy: 'rin' },
+  { id: 'radish-fizz-pin', kind: 'chef sticker', title: 'Fizz Route Pin', description: 'A bright pin marking the fastest route between the pantry and the dance floor.', earnedBy: 'rin' },
 ];
 
 type CurioDisplayZone = 'house-keeps' | 'tea-tools' | 'spare-plates' | 'little-finds' | 'hanging-tools';
 
 function getCurioDisplayZone(item: Collectible): CurioDisplayZone {
   if (item.id.includes('chef-ladle-champion')) return 'hanging-tools';
+  if (item.id.includes('chef-ladle-night-shift')) return 'hanging-tools';
   if (item.id.includes('plate-moon-checker')) return 'spare-plates';
+  if (item.id.includes('plate-rainbow-rim')) return 'spare-plates';
   if (item.id.includes('lantern-warm-glow')) return 'tea-tools';
+  if (item.id.includes('lantern-rain-ticket')) return 'tea-tools';
   if (item.id.includes('radish-spark-sticker')) return 'little-finds';
+  if (item.id.includes('radish-fizz-pin')) return 'little-finds';
   return 'house-keeps';
 }
 
@@ -236,6 +246,7 @@ function CurioInfoCard({ item }: { item: Collectible }) {
 }
 
 function CurioHotspot({ item, className }: { item: Collectible; className: string }) {
+  const isLatest = className.includes('displayed-curio-latest');
   return (
     <button
       type="button"
@@ -243,6 +254,7 @@ function CurioHotspot({ item, className }: { item: Collectible; className: strin
       aria-label={`View curio information for ${item.title}`}
       aria-describedby={`curio-info-${item.id}`}
     >
+      {isLatest && <span className="curio-award-marker" aria-hidden="true">new</span>}
       <CurioGlyph item={item} />
       <span className="curio-place-label">{item.kind}</span>
       <CurioInfoCard item={item} />
@@ -316,6 +328,28 @@ function CurioBacksplash({ collectibles }: { collectibles: Collectible[] }) {
           <span className="background-spice-jar background-spice-jar-gold" />
           <span className="background-spice-jar background-spice-jar-coral" />
         </div>
+        <div className="background-bonsai">
+          <span className="background-bonsai-trunk" />
+          <span className="background-bonsai-branch background-bonsai-branch-one" />
+          <span className="background-bonsai-branch background-bonsai-branch-two" />
+          <span className="background-bonsai-cloud background-bonsai-cloud-one" />
+          <span className="background-bonsai-cloud background-bonsai-cloud-two" />
+          <span className="background-bonsai-cloud background-bonsai-cloud-three" />
+          <span className="background-bonsai-pot" />
+          <span className="background-tree-shelf" />
+        </div>
+        <div className="background-cherry-tree">
+          <span className="background-cherry-trunk" />
+          <span className="background-cherry-branch background-cherry-branch-one" />
+          <span className="background-cherry-branch background-cherry-branch-two" />
+          <span className="background-cherry-blossom background-cherry-blossom-one" />
+          <span className="background-cherry-blossom background-cherry-blossom-two" />
+          <span className="background-cherry-blossom background-cherry-blossom-three" />
+          <span className="background-cherry-blossom background-cherry-blossom-four" />
+          <span className="background-cherry-blossom background-cherry-blossom-five" />
+          <span className="background-cherry-pot" />
+          <span className="background-tree-shelf" />
+        </div>
       </div>
       <div className="restaurant-window restaurant-window-left">
         <span className="restaurant-window-sign">OPEN LATE</span>
@@ -353,13 +387,15 @@ function CurioBacksplash({ collectibles }: { collectibles: Collectible[] }) {
 
 function RestaurantCurioDisplays({ collectibles }: { collectibles: Collectible[] }) {
   const byZone = (zone: CurioDisplayZone) => collectibles.filter((item) => getCurioDisplayZone(item) === zone).slice(0, 2);
+  const latestCurioId = collectibles[0]?.id;
+  const displayClass = (baseClass: string, item: Collectible) => `${baseClass}${item.id === latestCurioId ? ' displayed-curio-latest' : ''}`;
   return (
     <div className="restaurant-curio-displays" aria-label="Curios displayed around the restaurant">
-      {byZone('house-keeps').map((item, index) => <CurioHotspot item={item} className={`displayed-curio displayed-curio-house-keeps-${index}`} key={item.id} />)}
-      {byZone('tea-tools').map((item, index) => <CurioHotspot item={item} className={`displayed-curio displayed-curio-tea-tools-${index}`} key={item.id} />)}
-      {byZone('spare-plates').map((item, index) => <CurioHotspot item={item} className={`displayed-curio displayed-curio-spare-plates-${index}`} key={item.id} />)}
-      {byZone('little-finds').map((item, index) => <CurioHotspot item={item} className={`displayed-curio displayed-curio-little-finds-${index}`} key={item.id} />)}
-      {byZone('hanging-tools').slice(0, 1).map((item) => <CurioHotspot item={item} className="displayed-curio displayed-curio-hanging-tools" key={item.id} />)}
+      {byZone('house-keeps').map((item, index) => <CurioHotspot item={item} className={displayClass(`displayed-curio displayed-curio-house-keeps-${index}`, item)} key={item.id} />)}
+      {byZone('tea-tools').map((item, index) => <CurioHotspot item={item} className={displayClass(`displayed-curio displayed-curio-tea-tools-${index}`, item)} key={item.id} />)}
+      {byZone('spare-plates').map((item, index) => <CurioHotspot item={item} className={displayClass(`displayed-curio displayed-curio-spare-plates-${index}`, item)} key={item.id} />)}
+      {byZone('little-finds').map((item, index) => <CurioHotspot item={item} className={displayClass(`displayed-curio displayed-curio-little-finds-${index}`, item)} key={item.id} />)}
+      {byZone('hanging-tools').slice(0, 1).map((item) => <CurioHotspot item={item} className={displayClass('displayed-curio displayed-curio-hanging-tools', item)} key={item.id} />)}
     </div>
   );
 }
