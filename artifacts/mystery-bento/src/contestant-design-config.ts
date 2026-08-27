@@ -123,7 +123,10 @@ export const contestantFoodAnimationAspectRatios: Partial<Record<string, string>
   toro: '362 / 724',
   nori: '314 / 836',
   tilda: '284 / 922',
-  rollo: '286 / 916',
+  // Rollo's transparent derivatives share a visible y-range of 231–692.
+  // The shorter viewport keeps the full pose readable while the sprite CSS
+  // still uses the original canvas to isolate each frame.
+  rollo: '320 / 461',
 };
 
 export const contestantDesignReference = {
