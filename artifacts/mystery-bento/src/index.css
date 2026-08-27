@@ -422,7 +422,7 @@
 .contest-progress span.is-active i { background: #f5c968; border-color: #f5c968; box-shadow: 2px 2px 0 rgba(0,0,0,.3); }
 .contest-race { position: relative; margin: 28px 0 2px; padding: 19px 12px 12px 54px; background: #241a30; border: 2px solid #15101b; box-shadow: inset 0 0 0 3px rgba(255,255,255,.035); overflow: hidden; }
 .race-track-label { position: absolute; inset: 5px 14px auto 54px; z-index: 6; display: flex; justify-content: space-between; }
-.race-course-viewport { position: relative; height: 284px; overflow: hidden; border: 2px solid rgba(245,201,104,.22); background: #3a2940; isolation: isolate; }
+.race-course-viewport { position: relative; height: 348px; overflow: hidden; border: 2px solid rgba(245,201,104,.22); background: #3a2940; isolation: isolate; }
 .race-course-viewport::before { content: ''; position: absolute; inset: 0; z-index: 1; background: linear-gradient(180deg, rgba(25,17,32,.2), transparent 42%, rgba(17,12,25,.35)); pointer-events: none; }
 .race-world-track { position: absolute; inset: 0 auto 0 0; z-index: 0; width: 200%; height: 100%; transform: translateX(0); }
 .race-scenery-track { position: absolute; inset: 0; z-index: 0; display: flex; width: 100%; }
@@ -437,15 +437,15 @@
 .race-scenery-lantern { position: absolute; top: 20%; left: 24%; width: 12px; height: 18px; border: 2px solid #17121e; border-radius: 5px; background: #f5c968; box-shadow: 54px 21px 0 -1px #e57d5a, 0 0 18px rgba(245,201,104,.55); }
 .race-scenery-lantern::before { content: ''; position: absolute; top: -8px; left: 3px; width: 3px; height: 7px; background: #d09a6e; border: 1px solid #17121e; }
 .race-scenery-detail { position: absolute; right: 12%; bottom: 47%; color: rgba(248,231,198,.42); font-family: var(--app-font-mono); font-size: 7px; text-transform: uppercase; letter-spacing: .13em; transform: rotate(-3deg); }
-.race-course-road { position: absolute; inset: 0; z-index: 2; width: 100%; padding-top: 20px; }
-.race-finish-line { position: absolute; top: 20px; right: 13px; bottom: 0; width: 10px; background: repeating-linear-gradient(0deg, #f5c968 0 7px, #30223c 7px 14px); opacity: .9; }
-.race-lane { position: relative; height: 58px; border-bottom: 1px dashed rgba(216,198,175,.27); }
+.race-course-road { position: absolute; inset: 0; z-index: 2; width: 100%; padding-top: 22px; }
+.race-finish-line { position: absolute; top: 22px; right: 17px; bottom: 0; width: 14px; background: repeating-linear-gradient(0deg, #f5c968 0 9px, #30223c 9px 18px); opacity: .9; }
+.race-lane { position: relative; height: 74px; border-bottom: 1px dashed rgba(216,198,175,.27); }
 .race-lane:last-child { border-bottom: 0; }
-.race-lane::before { content: ''; position: absolute; left: 0; right: 0; top: 31px; border-top: 2px solid rgba(216,198,175,.25); }
-.race-lane::after { content: ''; position: absolute; inset: 31px 0 auto; height: 3px; background: repeating-linear-gradient(90deg, rgba(245,201,104,.28) 0 9px, transparent 9px 18px); }
-.race-obstacle { position: absolute; top: 28px; z-index: 3; display: grid; justify-items: center; width: 62px; transform: translate(-50%, -50%); color: #f5e8c9; opacity: .86; transition: opacity .2s ease, filter .2s ease; }
-.race-obstacle b { display: grid; place-items: center; width: 22px; height: 22px; border: 2px solid #17121e; border-radius: 5px; background: #a34d43; color: #f5c968; font-family: var(--font-display); font-size: 16px; line-height: 1; box-shadow: 3px 3px 0 rgba(23,18,30,.4); }
-.race-obstacle small { max-width: 62px; overflow: hidden; color: rgba(248,231,198,.8); font-family: var(--app-font-mono); font-size: 6px; line-height: 1; text-align: center; text-transform: uppercase; letter-spacing: .04em; white-space: nowrap; }
+.race-lane::before { content: ''; position: absolute; left: 0; right: 0; top: 40px; border-top: 2px solid rgba(216,198,175,.25); }
+.race-lane::after { content: ''; position: absolute; inset: 40px 0 auto; height: 4px; background: repeating-linear-gradient(90deg, rgba(245,201,104,.28) 0 12px, transparent 12px 24px); }
+.race-obstacle { position: absolute; top: 37px; z-index: 3; display: grid; justify-items: center; width: 78px; transform: translate(-50%, -50%); color: #f5e8c9; opacity: .86; transition: opacity .2s ease, filter .2s ease; }
+.race-obstacle b { display: grid; place-items: center; width: 30px; height: 30px; border: 3px solid #17121e; border-radius: 7px; background: #a34d43; color: #f5c968; font-family: var(--font-display); font-size: 21px; line-height: 1; box-shadow: 4px 4px 0 rgba(23,18,30,.4); }
+.race-obstacle small { max-width: 78px; overflow: hidden; color: rgba(248,231,198,.8); font-family: var(--app-font-mono); font-size: 7px; line-height: 1; text-align: center; text-transform: uppercase; letter-spacing: .04em; white-space: nowrap; }
 .race-obstacle-upcoming { opacity: .38; filter: grayscale(.65); }
 .race-obstacle.is-current { z-index: 4; opacity: 1; animation: obstacle-pulse 1s ease-in-out infinite; }
 .race-obstacle-clear b { background: #37745c; }
@@ -453,30 +453,38 @@
 .race-obstacle-reroute b { background: #668b68; }
 .race-obstacle-slow b { background: #a34d43; }
 @keyframes obstacle-pulse { 50% { transform: translate(-50%, -50%) scale(1.16); filter: brightness(1.2); } }
-.race-runner-overlay { position: absolute; inset: 0; z-index: 5; padding-top: 20px; pointer-events: none; }
-.race-runner-lane { position: relative; height: 58px; border-bottom: 1px dashed rgba(216,198,175,.18); }
+.race-runner-overlay { position: absolute; inset: 0; z-index: 5; padding-top: 22px; pointer-events: none; }
+.race-runner-lane { position: relative; height: 74px; border-bottom: 1px dashed rgba(216,198,175,.18); }
 .race-runner-lane:last-child { border-bottom: 0; }
-.race-lane-number { position: absolute; left: -39px; top: 22px; }
+.race-lane-number { position: absolute; left: -43px; top: 30px; }
 .race-lane-name { position: absolute; left: 7px; top: 2px; z-index: 6; opacity: .86; text-shadow: 2px 2px #30223c; }
-.race-runner { position: absolute; z-index: 5; left: var(--race-intro-anchor); top: 8px; width: 48px; height: 48px; transform: translateX(-50%); }
-.race-runner .persona-portrait { width: 44px; height: 44px; margin: 0; border-width: 2px; border-radius: 10px; }
+.race-runner { position: absolute; z-index: 5; left: var(--race-intro-anchor); top: 7px; width: 66px; height: 66px; transform: translateX(-50%); }
+.race-runner-sprite { display: block; width: 66px; height: 66px; transform-origin: 50% 100%; }
+.race-runner .persona-portrait { width: 60px; height: 60px; margin: 0; border-width: 3px; border-radius: 13px; }
 .race-runner .persona-portrait-image { inset: 2px; border-radius: 7px; }
-.race-runner .persona-portrait-shine { width: 5px; height: 5px; top: 5px; right: 5px; }
+.race-runner .persona-portrait-shine { width: 6px; height: 6px; top: 6px; right: 6px; }
 .contest-race-intro .race-world-track { transform: translateX(0); }
-.contest-race-warmup .race-world-track { animation: race-world-warmup 7.6s cubic-bezier(.22,.76,.26,1) both; }
-.contest-race-matchup .race-world-track { animation: race-world-matchup 9.2s cubic-bezier(.22,.76,.26,1) both; }
-.contest-race-finale .race-world-track { animation: race-world-finale 11s cubic-bezier(.22,.76,.26,1) both; }
-.contest-race-winner .race-world-track { animation: race-world-winner .8s cubic-bezier(.22,1,.36,1) both; }
-@keyframes race-world-warmup { from { transform: translateX(0); } to { transform: translateX(-4%); } }
-@keyframes race-world-matchup { from { transform: translateX(-4%); } to { transform: translateX(-18%); } }
-@keyframes race-world-finale { from { transform: translateX(-18%); } to { transform: translateX(-36%); } }
-@keyframes race-world-winner { from { transform: translateX(-36%); } to { transform: translateX(-50%); } }
-.contest-race-intro .race-runner { left: var(--race-intro-anchor); animation: race-runner-ready .72s steps(2, end) infinite; }
+.contest-race-warmup .race-world-track { animation: race-world-warmup 7.6s linear both; }
+.contest-race-matchup .race-world-track { animation: race-world-matchup 9.2s linear both; }
+.contest-race-finale .race-world-track { animation: race-world-finale 11s linear both; }
+.contest-race-winner .race-world-track { transform: translateX(-50%); }
+@keyframes race-world-warmup { from { transform: translateX(0); } to { transform: translateX(-13.67%); } }
+@keyframes race-world-matchup { from { transform: translateX(-13.67%); } to { transform: translateX(-30.22%); } }
+@keyframes race-world-finale { from { transform: translateX(-30.22%); } to { transform: translateX(-50%); } }
 .contest-race-warmup .race-runner { left: var(--race-intro-anchor); animation: race-runner-warmup 7.6s cubic-bezier(.32,.72,.25,1) both; }
 .contest-race-matchup .race-runner { left: var(--race-warmup-anchor); animation: race-runner-matchup 9.2s cubic-bezier(.32,.72,.25,1) both; }
 .contest-race-finale .race-runner { left: var(--race-matchup-anchor); animation: race-runner-finale 11s cubic-bezier(.28,.7,.25,1) both; }
 .contest-race-winner .race-runner { left: var(--race-finale-anchor); }
-@keyframes race-runner-ready { 50% { transform: translateX(-50%) translateY(-3px) rotate(-3deg); } }
+.race-runner-reaction-ready .race-runner-sprite { animation: race-runner-ready .72s steps(2, end) infinite; }
+.race-runner-reaction-jump .race-runner-sprite { animation: race-runner-jump 1.15s cubic-bezier(.28,.82,.34,1) infinite; }
+.race-runner-reaction-dodge .race-runner-sprite { animation: race-runner-dodge 1.05s cubic-bezier(.3,.7,.35,1) infinite; }
+.race-runner-reaction-slow .race-runner-sprite { animation: race-runner-slow 1.35s ease-in-out infinite; }
+.race-runner-reaction-surge .race-runner-sprite { animation: race-runner-surge .85s cubic-bezier(.22,.9,.35,1) infinite; }
+@keyframes race-runner-ready { 50% { transform: translateY(-3px) rotate(-3deg); } }
+@keyframes race-runner-jump { 0%, 100% { transform: translateY(0) rotate(0); } 18% { transform: translateY(2px) rotate(-2deg); } 48% { transform: translateY(-23px) rotate(4deg); } 72% { transform: translateY(-7px) rotate(-2deg); } }
+@keyframes race-runner-dodge { 0%, 100% { transform: translateX(0) translateY(0) rotate(0); } 28% { transform: translateX(-11px) translateY(-3px) rotate(-5deg); } 62% { transform: translateX(12px) translateY(1px) rotate(5deg); } }
+@keyframes race-runner-slow { 0%, 100% { transform: translateY(0) rotate(0) scale(1); } 35% { transform: translateY(6px) rotate(-8deg) scale(.94); } 68% { transform: translateY(3px) rotate(6deg) scale(.97); } }
+@keyframes race-runner-surge { 0%, 100% { transform: translateX(0) translateY(0) scale(1); } 35% { transform: translateX(9px) translateY(-13px) scale(1.06); } 70% { transform: translateX(15px) translateY(-4px) scale(1.02); } }
 @keyframes race-runner-warmup { 0% { left: var(--race-intro-anchor); transform: translateX(-50%) translateY(0) rotate(0); } 30% { transform: translateX(-50%) translateY(-4px) rotate(-4deg); } 62% { transform: translateX(-50%) translateY(2px) rotate(3deg); } 100% { left: var(--race-warmup-anchor); transform: translateX(-50%) translateY(0) rotate(0); } }
 @keyframes race-runner-matchup { 0% { left: var(--race-warmup-anchor); transform: translateX(-50%) translateY(0) rotate(0); } 28% { transform: translateX(-50%) translateY(-4px) rotate(4deg); } 58% { transform: translateX(-50%) translateY(2px) rotate(-3deg); } 100% { left: var(--race-matchup-anchor); transform: translateX(-50%) translateY(0) rotate(0); } }
 @keyframes race-runner-finale { 0% { left: var(--race-matchup-anchor); transform: translateX(-50%) translateY(0) rotate(0); } 27% { transform: translateX(-50%) translateY(-3px) rotate(3deg); } 55% { transform: translateX(-50%) translateY(2px) rotate(-3deg); } 100% { left: var(--race-finale-anchor); transform: translateX(-50%) translateY(0) rotate(0); } }
@@ -603,16 +611,22 @@
   .contest-progress span { font-size: 8px; letter-spacing: .02em; }
   .contest-progress span:not(.is-active) { color: #66536f; }
   .contest-race { padding: 19px 8px 10px 45px; }
-  .race-course-viewport { height: 264px; }
+  .race-course-viewport { height: 316px; }
   .race-course-road { padding-top: 18px; }
-  .race-lane { height: 55px; }
+  .race-finish-line { top: 18px; right: 12px; width: 11px; background: repeating-linear-gradient(0deg, #f5c968 0 7px, #30223c 7px 14px); }
+  .race-lane { height: 66px; }
+  .race-lane::before { top: 36px; }
+  .race-lane::after { inset: 36px 0 auto; height: 3px; }
   .race-runner-overlay { padding-top: 18px; }
-  .race-runner-lane { height: 55px; }
-  .race-lane-number { left: -33px; top: 21px; font-size: 8px; }
+  .race-runner-lane { height: 66px; }
+  .race-lane-number { left: -36px; top: 27px; font-size: 8px; }
   .race-lane-name { left: 4px; font-size: 8px; }
-  .race-obstacle { width: 45px; }
-  .race-obstacle b { width: 18px; height: 18px; font-size: 13px; }
-  .race-obstacle small { max-width: 45px; font-size: 5px; }
+  .race-runner { top: 6px; width: 60px; height: 60px; }
+  .race-runner-sprite { width: 60px; height: 60px; }
+  .race-runner .persona-portrait { width: 54px; height: 54px; }
+  .race-obstacle { top: 33px; width: 58px; }
+  .race-obstacle b { width: 24px; height: 24px; font-size: 17px; }
+  .race-obstacle small { max-width: 58px; font-size: 6px; }
   .race-event-heading { gap: 7px; }
   .race-event-heading strong { font-size: 13px; }
   .race-event-report p { font-size: 10px; }
@@ -723,9 +737,9 @@
   *, *::before, *::after { animation-duration: .001ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; transition-duration: .001ms !important; }
   .race-world-track { animation: none !important; }
   .contest-race-intro .race-world-track { transform: translateX(0); }
-  .contest-race-warmup .race-world-track { transform: translateX(-4%); }
-  .contest-race-matchup .race-world-track { transform: translateX(-18%); }
-  .contest-race-finale .race-world-track { transform: translateX(-36%); }
+  .contest-race-warmup .race-world-track { transform: translateX(-13.67%); }
+  .contest-race-matchup .race-world-track { transform: translateX(-30.22%); }
+  .contest-race-finale .race-world-track { transform: translateX(-50%); }
   .contest-race-winner .race-world-track { transform: translateX(-50%); }
   .contest-race-intro .race-runner { left: var(--race-intro-anchor); }
   .contest-race-warmup .race-runner { left: var(--race-warmup-anchor); }
@@ -733,6 +747,6 @@
   .contest-race-finale .race-runner { left: var(--race-finale-anchor); }
   .contest-race-winner .race-runner { left: var(--race-winner-anchor); }
   .conveyor-track { animation: none; }
-  .contest-race .race-runner { animation: none; }
+  .contest-race .race-runner, .contest-race .race-runner-sprite { animation: none; }
   .selection-splash { animation: none; }
 }

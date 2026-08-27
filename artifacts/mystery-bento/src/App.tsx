@@ -59,6 +59,7 @@ type RaceObstacleKind =
   | 'steam-gadget'
   | 'bento-stack';
 type RaceEncounterResult = 'clear' | 'slow' | 'surge' | 'reroute';
+type RaceRunnerReaction = 'ready' | 'jump' | 'dodge' | 'slow' | 'surge';
 type RaceObstacle = {
   id: string;
   kind: RaceObstacleKind;
@@ -208,6 +209,21 @@ const personaObstacleKinds: Record<string, RaceObstacleKind> = {
   bibi: 'bento-stack',
 };
 
+const raceJumpObstacleKinds = new Set<RaceObstacleKind>([
+  'napkin-gust',
+  'tea-puddle',
+  'ribbon-tunnel',
+  'flour-sacks',
+  'steam-gadget',
+]);
+
+function getRaceRunnerReaction(obstacleKind: RaceObstacleKind, result: RaceEncounterResult): RaceRunnerReaction {
+  if (result === 'slow') return 'slow';
+  if (result === 'reroute') return 'dodge';
+  if (result === 'surge') return 'surge';
+  return raceJumpObstacleKinds.has(obstacleKind) ? 'jump' : 'dodge';
+}
+
 const collectiblePool = [
   { id: 'recipe-midnight-sauce', kind: 'recipe fragment', title: 'The Unfinished Midnight Sauce', description: 'A recipe-card fragment with one suspiciously important ingredient missing.', earnedBy: 'miso' },
   { id: 'recipe-after-hours-note', kind: 'recipe fragment', title: 'The After-Hours Note', description: 'A folded kitchen note that begins with “never skip the toasted sesame.”', earnedBy: 'miso' },
@@ -325,7 +341,7 @@ function buildRaceSimulation(contestants: Persona[], rng: () => number): RaceSim
             : persona.traits.chaos >= 72 && rng() > 0.48
               ? 'reroute'
               : 'clear';
-      const progressDelta = result === 'surge' ? 9 : result === 'slow' ? -8 : result === 'reroute' ? -3 : 2;
+      const progressDelta = result === 'surge' ? 12 : result === 'slow' ? -12 : result === 'reroute' ? -5 : 2;
       progress = clampRacePosition(progress + 16 + persona.traits.speed * 0.1 + progressDelta);
       const encounterCopy: Record<RaceEncounterResult, { headline: string; detail: string }> = {
         clear: { headline: 'clean line', detail: `${persona.name} reads the ${catalog.shortLabel} and keeps pace. Their routine holds.` },
@@ -333,7 +349,19 @@ function buildRaceSimulation(contestants: Persona[], rng: () => number): RaceSim
         surge: { headline: 'found a break', detail: `${persona.name} turns the ${catalog.shortLabel} into an unexpected opening. ${persona.quirk}` },
         reroute: { headline: 'rerouted', detail: `${persona.name} takes the strange line around the ${catalog.shortLabel}; ${persona.contestBehavior}` },
       };
-      encounters[obstacle.id] = { result, ...encounterCopy[result] };
+      const reaction = getRaceRunnerReaction(obstacle.kind, result);
+      const reactionCopy: Record<RaceRunnerReaction, string> = {
+        ready: 'They hold at the starting lantern.',
+        jump: 'They jump over it with a bright little hop.',
+        dodge: 'They sidestep it and keep their line.',
+        slow: 'They slow down, steady themselves, and lose a few steps.',
+        surge: 'They spring over the opening and surge ahead.',
+      };
+      encounters[obstacle.id] = {
+        result,
+        ...encounterCopy[result],
+        detail: `${encounterCopy[result].detail} ${reactionCopy[reaction]}`,
+      };
       if (obstacleIndex === 0) positions.warmup = progress;
       if (obstacleIndex === 1) positions.matchup = progress;
       if (obstacleIndex >= 2) positions.finale = progress;
@@ -790,22 +818,26 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
             <div className="race-runner-overlay">
               {contestants.map((persona, index) => {
                 const lane = race.lanes.find((candidate) => candidate.personaId === persona.id) ?? race.lanes[index];
-                const toScreenAnchor = (position: number) => `${Math.min(42, Math.max(18, 16 + position * 0.26))}%`;
+                const encounter = step !== 'winner' && currentObstacle ? lane?.encounters[currentObstacle.id] : undefined;
+                const runnerReaction = currentObstacle && encounter ? getRaceRunnerReaction(currentObstacle.kind, encounter.result) : 'ready';
+                const toScreenAnchor = (position: number) => `${Math.min(62, Math.max(18, 16 + position * 0.46))}%`;
                 return (
                   <div className="race-runner-lane" key={persona.id}>
                     <div className="race-lane-number font-mono-ui text-[10px] text-[#bca99b]">{String(index + 1).padStart(2, '0')}</div>
                     <div className="race-lane-name font-mono-ui text-[10px] uppercase tracking-wider text-[#d8c6af]">{persona.name}</div>
                     <div
-                      className={`race-runner ${winner?.id === persona.id ? 'is-winner' : ''}`}
+                      className={`race-runner race-runner-reaction-${runnerReaction} ${winner?.id === persona.id ? 'is-winner' : ''}`}
                       style={{
                         '--race-intro-anchor': toScreenAnchor(lane?.positions.intro ?? 5),
                         '--race-warmup-anchor': toScreenAnchor(lane?.positions.warmup ?? 28),
                         '--race-matchup-anchor': toScreenAnchor(lane?.positions.matchup ?? 52),
                         '--race-finale-anchor': toScreenAnchor(lane?.positions.finale ?? 78),
-                        '--race-winner-anchor': `${winner?.id === persona.id ? Math.min(68, Math.max(52, 48 + (lane?.positions.winner ?? 92) * 0.1)) : Math.min(42, Math.max(18, 16 + (lane?.positions.finale ?? 78) * 0.26))}%`,
+                        '--race-winner-anchor': `${winner?.id === persona.id ? Math.min(74, Math.max(58, 48 + (lane?.positions.winner ?? 92) * 0.18)) : toScreenAnchor(lane?.positions.finale ?? 78)}`,
                       } as CSSProperties}
                     >
-                      <PersonaPortrait persona={persona} />
+                      <span className="race-runner-sprite">
+                        <PersonaPortrait persona={persona} />
+                      </span>
                     </div>
                   </div>
                 );
