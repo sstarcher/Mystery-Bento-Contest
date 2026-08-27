@@ -422,7 +422,7 @@
 .contest-progress span.is-active i { background: #f5c968; border-color: #f5c968; box-shadow: 2px 2px 0 rgba(0,0,0,.3); }
 .contest-race { position: relative; margin: 28px 0 2px; padding: 19px 12px 12px 54px; background: #241a30; border: 2px solid #15101b; box-shadow: inset 0 0 0 3px rgba(255,255,255,.035); overflow: hidden; }
 .race-track-label { position: absolute; inset: 5px 14px auto 54px; z-index: 6; display: flex; justify-content: space-between; }
-.race-course-viewport { position: relative; height: 348px; overflow: hidden; border: 2px solid rgba(245,201,104,.22); background: #3a2940; isolation: isolate; }
+.race-course-viewport { --race-finish-anchor: calc(100% - 28px); position: relative; height: 348px; overflow: hidden; border: 2px solid rgba(245,201,104,.22); background: #3a2940; isolation: isolate; }
 .race-course-viewport::before { content: ''; position: absolute; inset: 0; z-index: 1; background: linear-gradient(180deg, rgba(25,17,32,.2), transparent 42%, rgba(17,12,25,.35)); pointer-events: none; }
 .race-world-track { position: absolute; inset: 0 auto 0 0; z-index: 0; width: 200%; height: 100%; transform: translateX(0); }
 .race-scenery-track { position: absolute; inset: 0; z-index: 0; display: flex; width: 100%; }
@@ -497,7 +497,7 @@
 @keyframes race-runner-matchup { 0% { left: var(--race-warmup-anchor); transform: translateX(-50%) translateY(0) rotate(0); } 28% { transform: translateX(-50%) translateY(-4px) rotate(4deg); } 58% { transform: translateX(-50%) translateY(2px) rotate(-3deg); } 100% { left: var(--race-matchup-anchor); transform: translateX(-50%) translateY(0) rotate(0); } }
 @keyframes race-runner-finale { 0% { left: var(--race-matchup-anchor); transform: translateX(-50%) translateY(0) rotate(0); } 27% { transform: translateX(-50%) translateY(-3px) rotate(3deg); } 55% { transform: translateX(-50%) translateY(2px) rotate(-3deg); } 100% { left: var(--race-finale-anchor); transform: translateX(-50%) translateY(0) rotate(0); } }
 .contest-race-winner .race-runner.is-winner { animation: winner-dash .8s cubic-bezier(.22,1,.36,1) both; }
-@keyframes winner-dash { from { left: var(--race-finale-anchor); transform: translateX(-50%) scale(.86); } to { left: var(--race-winner-anchor); transform: translateX(-50%) scale(1.12); } }
+@keyframes winner-dash { from { transform: translateX(-50%) scale(.98); } to { transform: translateX(-50%) scale(1.12); } }
 .contest-race-winner .race-runner.is-winner .persona-portrait { animation: winner-bob .8s ease-in-out .45s 2; }
 @keyframes winner-bob { 50% { transform: translateY(-7px) rotate(-6deg); } }
 .race-winner-reveal { display: grid; place-items: center; margin: 22px auto 0; padding: 0 8px; }
@@ -631,7 +631,7 @@
   .contest-progress span { font-size: 8px; letter-spacing: .02em; }
   .contest-progress span:not(.is-active) { color: #66536f; }
   .contest-race { padding: 19px 8px 10px 45px; }
-  .race-course-viewport { height: 316px; }
+  .race-course-viewport { --race-finish-anchor: calc(100% - 20px); height: 316px; }
   .race-course-road { padding-top: 18px; }
   .race-finish-line { top: 18px; right: 12px; width: 16px; background: repeating-linear-gradient(0deg, #f5c968 0 8px, #30223c 8px 16px); }
   .race-finish-line::before { top: -21px; padding: 2px 3px; font-size: 6px; }

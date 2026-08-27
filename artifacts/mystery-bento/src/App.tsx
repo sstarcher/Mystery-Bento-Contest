@@ -843,6 +843,7 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
                 const encounter = step !== 'winner' && currentObstacle ? lane?.encounters[currentObstacle.id] : undefined;
                 const runnerReaction = currentObstacle && encounter ? getRaceRunnerReaction(currentObstacle.kind, encounter.result) : 'ready';
                 const toScreenAnchor = (position: number) => `${Math.min(72, Math.max(14, 10 + position * 0.62))}%`;
+                const isWinner = (winner?.id ?? race.winnerId) === persona.id;
                 return (
                   <div className="race-runner-lane" key={persona.id}>
                     <div className="race-lane-number font-mono-ui text-[10px] text-[#bca99b]">{String(index + 1).padStart(2, '0')}</div>
@@ -853,8 +854,8 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
                         '--race-intro-anchor': toScreenAnchor(lane?.positions.intro ?? 5),
                         '--race-warmup-anchor': toScreenAnchor(lane?.positions.warmup ?? 28),
                         '--race-matchup-anchor': toScreenAnchor(lane?.positions.matchup ?? 52),
-                        '--race-finale-anchor': toScreenAnchor(lane?.positions.finale ?? 78),
-                        '--race-winner-anchor': `${winner?.id === persona.id ? Math.min(88, Math.max(72, 58 + (lane?.positions.winner ?? 92) * 0.31)) : toScreenAnchor(lane?.positions.finale ?? 78)}`,
+                        '--race-finale-anchor': isWinner ? 'var(--race-finish-anchor)' : toScreenAnchor(lane?.positions.finale ?? 78),
+                        '--race-winner-anchor': isWinner ? 'var(--race-finish-anchor)' : toScreenAnchor(lane?.positions.finale ?? 78),
                         '--race-runner-tempo': `${Math.max(0.72, 1.28 - persona.traits.speed * 0.0032 + persona.traits.balance * 0.001).toFixed(2)}s`,
                       } as CSSProperties}
                     >
