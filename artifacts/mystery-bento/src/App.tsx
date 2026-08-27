@@ -754,6 +754,7 @@ function ForegroundSeating() {
 }
 
 function ContestOverlay({ contestants, winner, step, contestName, memorableEvent, race, onSkip, onClose }: { contestants: Persona[]; winner: Persona | null; step: ContestStep; contestName: string; memorableEvent: string; race: RaceSimulation; onSkip: () => void; onClose: () => void }) {
+  const [showWinnerReveal, setShowWinnerReveal] = useState(false);
   const eventText = winner ? memorableEvent : 'The contestants take their places beneath the market lantern.';
   const currentObstacleIndex = step === 'intro' ? -1 : Math.min(race.obstacles.length - 1, raceStepProgress[step] - 1);
   const currentObstacle = currentObstacleIndex >= 0 ? race.obstacles[currentObstacleIndex] : null;
@@ -768,6 +769,18 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
     winner: eventText,
   };
   const stepIndex = Object.keys(contestStepLabels).indexOf(step);
+
+  useEffect(() => {
+    setShowWinnerReveal(false);
+    if (step !== 'winner' || !winner) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      setShowWinnerReveal(true);
+      return;
+    }
+    const timer = window.setTimeout(() => setShowWinnerReveal(true), 2600);
+    return () => window.clearTimeout(timer);
+  }, [step, winner]);
+
   return (
     <div className="contest-backdrop fixed inset-0 z-30 flex items-stretch justify-center" role="dialog" aria-modal="true" aria-labelledby="contest-title">
       <div className="contest-stage w-full p-5 sm:p-8">
@@ -828,7 +841,7 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
                 const lane = race.lanes.find((candidate) => candidate.personaId === persona.id) ?? race.lanes[index];
                 const encounter = step !== 'winner' && currentObstacle ? lane?.encounters[currentObstacle.id] : undefined;
                 const runnerReaction = currentObstacle && encounter ? getRaceRunnerReaction(currentObstacle.kind, encounter.result) : 'ready';
-                const toScreenAnchor = (position: number) => `${Math.min(62, Math.max(18, 16 + position * 0.46))}%`;
+                const toScreenAnchor = (position: number) => `${Math.min(72, Math.max(14, 10 + position * 0.62))}%`;
                 return (
                   <div className="race-runner-lane" key={persona.id}>
                     <div className="race-lane-number font-mono-ui text-[10px] text-[#bca99b]">{String(index + 1).padStart(2, '0')}</div>
@@ -841,6 +854,7 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
                         '--race-matchup-anchor': toScreenAnchor(lane?.positions.matchup ?? 52),
                         '--race-finale-anchor': toScreenAnchor(lane?.positions.finale ?? 78),
                         '--race-winner-anchor': `${winner?.id === persona.id ? Math.min(74, Math.max(58, 48 + (lane?.positions.winner ?? 92) * 0.18)) : toScreenAnchor(lane?.positions.finale ?? 78)}`,
+                        '--race-runner-tempo': `${Math.max(0.72, 1.28 - persona.traits.speed * 0.0032 + persona.traits.balance * 0.001).toFixed(2)}s`,
                       } as CSSProperties}
                     >
                       <span className="race-runner-sprite">
@@ -879,6 +893,20 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
             ))}
           </div>
         </div>
+        {winner && showWinnerReveal && (
+          <div className="race-winner-reveal" role="status" aria-live="polite" data-testid="winner-reveal-card">
+            <div className="race-winner-reveal-card">
+              <div className="race-winner-reveal-kicker font-mono-ui">winner's card · revealed after the finish</div>
+              <PersonaPortrait persona={winner} large />
+              <div className="race-winner-reveal-copy">
+                <span className="font-mono-ui text-[10px] uppercase tracking-[.18em] text-[#f5c968]">lane winner</span>
+                <h3 className="font-display text-3xl font-bold">{winner.name}</h3>
+                <p>{memorableEvent}</p>
+                <span className="race-winner-reveal-note">A story for the ledger, and a curio for the shelf.</span>
+              </div>
+            </div>
+          </div>
+        )}
         <div className="my-9 grid grid-cols-1 gap-5 sm:grid-cols-3">
           {contestants.map((persona, index) => (
             <div key={persona.id} className={`persona-tile rounded-lg p-4 text-center transition-transform ${winner?.id === persona.id ? 'scale-[1.04] ring-4 ring-[#f5c968]' : ''}`} data-testid={`card-contestant-${persona.id}`}>
