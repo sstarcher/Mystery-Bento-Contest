@@ -24,6 +24,7 @@ type ContestLedgerEntry = {
   id: string;
   contestName: string;
   contestants: string[];
+  winnerId?: string;
   winner: string;
   memorableEvent: string;
   collectibleId: string;
@@ -113,16 +114,20 @@ const contestStepLabels: Record<ContestStep, string> = {
 const collectiblePool = [
   { id: 'recipe-midnight-sauce', kind: 'recipe fragment', title: 'The Unfinished Midnight Sauce', description: 'A recipe-card fragment with one suspiciously important ingredient missing.', earnedBy: 'miso' },
   { id: 'recipe-after-hours-note', kind: 'recipe fragment', title: 'The After-Hours Note', description: 'A folded kitchen note that begins with “never skip the toasted sesame.”', earnedBy: 'miso' },
+  { id: 'teacup-perfect-steep', kind: 'porcelain keepsake', title: 'The Perfect Steep Cup', description: 'A tiny porcelain cup with a gold line marking the exact moment green tea becomes itself.', earnedBy: 'sencha' },
   { id: 'lantern-warm-glow', kind: 'lantern charm', title: 'Warm-Glow Wisp', description: 'A tiny charm that remembers the softest light in the alley.', earnedBy: 'toro' },
   { id: 'lantern-rain-ticket', kind: 'lantern charm', title: 'Rainy Lantern Ticket', description: 'A little ticket from a stormy night when every puddle reflected gold.', earnedBy: 'toro' },
   { id: 'chef-ladle-champion', kind: 'chef sticker', title: 'Ladle Champion', description: 'A shiny sticker for a chef who made one enormous spoon look graceful.', earnedBy: 'nori' },
   { id: 'chef-ladle-night-shift', kind: 'chef sticker', title: 'Night-Shift Ladle Patch', description: 'A stitched patch for the cook who kept the late service perfectly stirred.', earnedBy: 'nori' },
+  { id: 'wrench-do-not-relocate', kind: 'pantry tool', title: 'The Do-Not-Relocate Wrench', description: 'A perfectly labeled wrench from Tilda’s chair-and-tool maintenance system.', earnedBy: 'tilda' },
   { id: 'plate-moon-checker', kind: 'plate pattern', title: 'Moonlit Checker', description: 'A ceramic plate pattern in the exact colors of a late-night shortcut.', earnedBy: 'bibi' },
   { id: 'plate-rainbow-rim', kind: 'plate pattern', title: 'Rainbow Rim Test Tile', description: 'A test tile with a rim that catches every color of the market sign.', earnedBy: 'saffy' },
   { id: 'snapshot-great-wobble', kind: 'victory snapshot', title: 'The Great Wobble', description: 'A framed snapshot of a rice ball refusing to give up.', earnedBy: 'panko' },
   { id: 'snapshot-last-tray', kind: 'victory snapshot', title: 'The Last Tray Home', description: 'A tiny photograph of an empty tray making it safely back to the pass.', earnedBy: 'pip' },
   { id: 'radish-spark-sticker', kind: 'chef sticker', title: 'Radish Spark', description: 'A zippy little sticker that seems to vibrate when nobody is looking.', earnedBy: 'rollo' },
   { id: 'radish-fizz-pin', kind: 'chef sticker', title: 'Fizz Route Pin', description: 'A bright pin marking the fastest route between the pantry and the dance floor.', earnedBy: 'rollo' },
+  { id: 'medal-longest-noodle', kind: 'flour-stall medal', title: 'The Longest Noodle Medal', description: 'A heavy little medal awarded for pulling one scientifically unnecessary, gloriously long noodle.', earnedBy: 'uma' },
+  { id: 'kettle-mostly-safe', kind: 'workshop charm', title: 'The Mostly Safe Kettle', description: 'A copper pocket kettle with a handwritten label: “safe-ish, especially when complimented.”', earnedBy: 'kiku' },
 ];
 
 const showcaseCollectibles: Collectible[] = collectiblePool.map((item) => ({
@@ -136,12 +141,16 @@ type CurioDisplayZone = 'house-keeps' | 'tea-tools' | 'spare-plates' | 'little-f
 function getCurioDisplayZone(item: Collectible): CurioDisplayZone {
   if (item.id.includes('chef-ladle-champion')) return 'hanging-tools';
   if (item.id.includes('chef-ladle-night-shift')) return 'hanging-tools';
+  if (item.id.includes('wrench-do-not-relocate')) return 'hanging-tools';
+  if (item.id.includes('teacup-perfect-steep')) return 'tea-tools';
   if (item.id.includes('plate-moon-checker')) return 'spare-plates';
   if (item.id.includes('plate-rainbow-rim')) return 'spare-plates';
   if (item.id.includes('lantern-warm-glow')) return 'tea-tools';
   if (item.id.includes('lantern-rain-ticket')) return 'tea-tools';
   if (item.id.includes('radish-spark-sticker')) return 'little-finds';
   if (item.id.includes('radish-fizz-pin')) return 'little-finds';
+  if (item.id.includes('kettle-mostly-safe')) return 'little-finds';
+  if (item.id.includes('medal-longest-noodle')) return 'house-keeps';
   return 'house-keeps';
 }
 
@@ -230,6 +239,8 @@ function CurioGlyph({ item }: { item: Collectible }) {
     ? 'recipe'
     : item.id.includes('recipe-after-hours-note')
       ? 'note'
+      : item.id.includes('teacup-perfect-steep')
+        ? 'cup'
     : item.id.includes('lantern-warm-glow')
       ? 'lantern'
       : item.id.includes('lantern-rain-ticket')
@@ -238,6 +249,8 @@ function CurioGlyph({ item }: { item: Collectible }) {
         ? 'ladle'
         : item.id.includes('chef-ladle-night-shift')
           ? 'patch'
+          : item.id.includes('wrench-do-not-relocate')
+            ? 'wrench'
         : item.id.includes('plate-moon-checker')
           ? 'checker'
         : item.id.includes('plate-rainbow-rim')
@@ -248,6 +261,10 @@ function CurioGlyph({ item }: { item: Collectible }) {
           ? 'tray'
         : item.id.includes('radish-fizz-pin')
           ? 'pin'
+        : item.id.includes('medal-longest-noodle')
+          ? 'medal'
+        : item.id.includes('kettle-mostly-safe')
+          ? 'kettle'
             : 'radish';
   return (
     <div className={`curio-glyph curio-glyph-${glyphClass}`} aria-hidden="true">
@@ -285,7 +302,7 @@ function CurioHotspot({ item, className }: { item: Collectible; className: strin
   );
 }
 
-function CurioBacksplash({ collectibles }: { collectibles: Collectible[] }) {
+function CurioBacksplash({ collectibles, lastWinner }: { collectibles: Collectible[]; lastWinner: Persona | null }) {
   const byZone = (zone: CurioDisplayZone) => collectibles.filter((item) => getCurioDisplayZone(item) === zone);
   const houseKeeps = byZone('house-keeps');
   const teaTools = byZone('tea-tools');
@@ -401,6 +418,18 @@ function CurioBacksplash({ collectibles }: { collectibles: Collectible[] }) {
         <div className="kitchen-prep-light kitchen-prep-light-two" />
         <div className="kitchen-steam kitchen-steam-one" />
         <div className="kitchen-steam kitchen-steam-two" />
+        {lastWinner && (
+          <div className="kitchen-chef" aria-label={`${lastWinner.name}, the latest contest winner, is preparing sushi`}>
+            <span className="kitchen-chef-label">{lastWinner.name} · on shift</span>
+            <PersonaPortrait persona={lastWinner} />
+            <div className="kitchen-chef-station" aria-hidden="true">
+              <span className="kitchen-chef-board" />
+              <span className="kitchen-chef-roll kitchen-chef-roll-one" />
+              <span className="kitchen-chef-roll kitchen-chef-roll-two" />
+              <span className="kitchen-chef-knife" />
+            </div>
+          </div>
+        )}
       </div>
       <div className="curio-wall-lamp curio-wall-lamp-left" />
       <div className="curio-wall-lamp curio-wall-lamp-right" />
@@ -607,6 +636,13 @@ function Home() {
   const completionGuard = useRef(false);
   const finishContestRef = useRef<() => void>(() => undefined);
   const selectedCount = useMemo(() => ledger.length + collectibles.length, [ledger.length, collectibles.length]);
+  const lastWinner = useMemo(() => {
+    const latestEntry = ledger[0];
+    if (!latestEntry) return null;
+    return personas.find((persona) => persona.id === latestEntry.winnerId)
+      ?? personas.find((persona) => persona.name === latestEntry.winner)
+      ?? null;
+  }, [ledger]);
 
   useEffect(() => {
     setCollectibles((current) => {
@@ -655,6 +691,7 @@ function Home() {
       id: entryId,
       contestName: outcome?.contestName ?? 'Lantern Route, after closing',
       contestants: contestants.map((persona) => persona.name),
+      winnerId: winningPersona.id,
       winner: winningPersona.name,
       memorableEvent,
       collectibleId: collectible?.id ?? 'all-curios-collected',
@@ -807,7 +844,7 @@ function Home() {
     <div className="bento-app">
       <main className="min-h-[100dvh]" aria-label="Mystery Bento night market">
         <section className="scene-shell min-h-[100dvh] p-4 sm:p-6 md:p-10" aria-label="Mystery Bento night market">
-          <CurioBacksplash collectibles={collectibles} />
+          <CurioBacksplash collectibles={collectibles} lastWinner={lastWinner} />
           <RestaurantCurioDisplays collectibles={collectibles} />
           <div className="scene-content">
             <div className="restaurant-top-zone">

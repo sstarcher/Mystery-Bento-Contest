@@ -453,6 +453,9 @@
 .curio-glyph-note::before { width: 48px; height: 55px; background: #f3dfb4; border: 3px solid #30223c; box-shadow: 4px 4px 0 rgba(48,34,60,.25); transform: rotate(8deg); }
 .curio-glyph-note::after { width: 29px; height: 3px; background: #7d9c74; box-shadow: 0 9px #d8bd87, 0 18px #d8bd87; transform: rotate(8deg); }
 .curio-glyph-note .curio-glyph-detail { width: 11px; height: 11px; border: 3px solid #a34d43; border-radius: 50%; background: #f5c968; z-index: 2; right: 15px; top: 13px; }
+.curio-glyph-cup::before { width: 37px; height: 27px; top: 24px; background: #b8c99a; border: 3px solid #30223c; border-radius: 4px 4px 13px 13px; box-shadow: 4px 4px 0 rgba(48,34,60,.25); }
+.curio-glyph-cup::after { width: 53px; height: 9px; bottom: 14px; background: #d6b85f; border: 3px solid #30223c; border-radius: 50%; }
+.curio-glyph-cup .curio-glyph-detail { width: 13px; height: 16px; top: 27px; right: 15px; border: 3px solid #30223c; border-left: 0; border-radius: 0 12px 12px 0; z-index: 1; }
 .curio-glyph-lantern::before { width: 29px; height: 39px; background: #f5c968; border: 3px solid #30223c; border-radius: 10px 10px 6px 6px; box-shadow: 0 0 15px rgba(245,201,104,.54); }
 .curio-glyph-lantern::after { width: 11px; height: 8px; top: 9px; border: 2px solid #30223c; border-bottom: 0; border-radius: 8px 8px 0 0; }
 .curio-glyph-lantern .curio-glyph-detail { width: 3px; height: 27px; background: #d78b4b; z-index: 1; }
@@ -465,6 +468,9 @@
 .curio-glyph-patch::before { width: 55px; height: 41px; background: #d65f52; border: 4px solid #30223c; border-radius: 7px; box-shadow: inset 0 0 0 3px #f5c968, 4px 4px 0 rgba(48,34,60,.25); transform: rotate(5deg); }
 .curio-glyph-patch::after { width: 33px; height: 5px; background: #f5c968; box-shadow: 0 11px #f5c968; transform: rotate(5deg); }
 .curio-glyph-patch .curio-glyph-detail { width: 9px; height: 9px; border: 2px solid #30223c; border-radius: 50%; background: #83a66f; z-index: 2; right: 17px; top: 16px; }
+.curio-glyph-wrench::before { width: 10px; height: 47px; bottom: 7px; background: #9aa5a3; border: 3px solid #30223c; border-radius: 5px; transform: rotate(35deg); box-shadow: 4px 4px 0 rgba(48,34,60,.25); }
+.curio-glyph-wrench::after { width: 26px; height: 24px; top: 10px; right: 16px; background: #9aa5a3; border: 3px solid #30223c; clip-path: polygon(0 20%, 28% 0, 50% 19%, 82% 5%, 100% 23%, 75% 45%, 100% 68%, 80% 88%, 49% 70%, 26% 100%, 0 80%, 23% 51%); transform: rotate(35deg); }
+.curio-glyph-wrench .curio-glyph-detail { width: 16px; height: 4px; top: 52px; left: 33px; background: #f5c968; z-index: 2; transform: rotate(35deg); }
 .curio-glyph-checker::before { width: 67px; height: 43px; background: repeating-conic-gradient(#c96575 0 25%, #f3dfb4 0 50%) 50% / 17px 17px; border: 3px solid #30223c; border-radius: 50%; box-shadow: inset 0 -7px #d8bd87, 4px 4px 0 rgba(48,34,60,.25); transform: rotate(-8deg); }
 .curio-glyph-checker::after { width: 48px; height: 26px; border: 2px solid rgba(163,77,67,.55); border-radius: 50%; transform: rotate(-8deg); }
 .curio-glyph-tile::before { width: 49px; height: 49px; background: conic-gradient(#e57d5a 0 25%, #f5c968 0 50%, #83a66f 0 75%, #7d9c74 0); border: 4px solid #30223c; box-shadow: 4px 4px 0 rgba(48,34,60,.25); transform: rotate(11deg); }
@@ -476,12 +482,18 @@
 .curio-glyph-tray::before { width: 67px; height: 35px; background: #7d9c74; border: 4px solid #30223c; border-radius: 5px 5px 13px 13px; box-shadow: inset 0 -8px #52677a, 4px 4px 0 rgba(48,34,60,.25); }
 .curio-glyph-tray::after { width: 8px; height: 8px; top: 16px; left: 20px; border-radius: 50%; background: #f5c968; box-shadow: 14px 0 #e57d5a, 28px 0 #f3dfb4; z-index: 1; }
 .curio-glyph-tray .curio-glyph-detail { width: 43px; height: 4px; background: #d8bd87; z-index: 2; bottom: 15px; }
+.curio-glyph-medal::before { width: 15px; height: 33px; top: 8px; background: #c65d58; border: 3px solid #30223c; transform: rotate(-7deg); }
+.curio-glyph-medal::after { width: 42px; height: 42px; bottom: 7px; background: #d6b85f; border: 4px solid #30223c; border-radius: 50%; box-shadow: 4px 4px 0 rgba(48,34,60,.25); }
+.curio-glyph-medal .curio-glyph-detail { width: 17px; height: 17px; bottom: 20px; background: #f3dfb4; border: 3px solid #a34d43; clip-path: polygon(50% 0, 62% 35%, 100% 38%, 70% 59%, 80% 100%, 50% 76%, 20% 100%, 30% 59%, 0 38%, 38% 35%); z-index: 1; }
 .curio-glyph-radish::before { width: 40px; height: 37px; background: #de7260; border: 3px solid #30223c; border-radius: 50% 50% 45% 45%; box-shadow: 4px 4px 0 rgba(48,34,60,.25); }
 .curio-glyph-radish::after { width: 28px; height: 21px; top: 4px; background: #83a66f; border: 3px solid #30223c; border-radius: 50% 8px 50% 8px; transform: rotate(-22deg); }
 .curio-glyph-radish .curio-glyph-detail { width: 8px; height: 8px; background: #f5c968; border: 2px solid #30223c; border-radius: 50%; z-index: 1; top: 36px; left: 37px; }
 .curio-glyph-pin::before { width: 47px; height: 47px; background: #de7260; border: 4px solid #30223c; clip-path: polygon(50% 0, 61% 29%, 94% 31%, 68% 51%, 78% 84%, 50% 65%, 22% 84%, 32% 51%, 6% 31%, 39% 29%); box-shadow: 4px 4px 0 rgba(48,34,60,.25); transform: rotate(-9deg); }
 .curio-glyph-pin::after { width: 8px; height: 31px; bottom: 1px; background: #f5c968; border: 3px solid #30223c; border-radius: 0 0 8px 8px; transform: rotate(-9deg); }
 .curio-glyph-pin .curio-glyph-detail { width: 8px; height: 8px; border: 2px solid #30223c; border-radius: 50%; background: #f3dfb4; z-index: 2; top: 20px; left: 39px; }
+.curio-glyph-kettle::before { width: 39px; height: 35px; bottom: 13px; background: #b86f4b; border: 3px solid #30223c; border-radius: 9px 9px 15px 15px; box-shadow: inset 0 -7px #83a66f, 4px 4px 0 rgba(48,34,60,.25); }
+.curio-glyph-kettle::after { width: 27px; height: 15px; top: 23px; right: 7px; background: #b86f4b; border: 3px solid #30223c; border-left: 0; clip-path: polygon(0 35%, 68% 0, 100% 50%, 68% 100%, 0 65%); transform: rotate(-8deg); }
+.curio-glyph-kettle .curio-glyph-detail { width: 18px; height: 14px; top: 7px; left: 29px; border: 3px solid #30223c; border-bottom: 0; border-radius: 12px 12px 0 0; z-index: 2; box-shadow: -15px -8px 0 -5px #f3dfb4, -15px -8px 0 -2px #30223c; }
 .curio-glyph-shine { width: 7px; height: 4px; background: rgba(255,248,223,.72); transform: rotate(-25deg); z-index: 3; right: 18px; top: 15px; }
 .curio-room { position: relative; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 22px; min-height: 430px; padding: 32px 24px 28px; background: linear-gradient(180deg, #e9d09d, #f5e8c9 56%, #d8bd87); border: 3px solid #30223c; box-shadow: inset 0 0 0 8px rgba(255,255,255,.18), 6px 6px 0 rgba(48,34,60,.16); overflow: hidden; }
 .curio-room::before { content: ''; position: absolute; inset: 0; pointer-events: none; opacity: .42; background: repeating-linear-gradient(90deg, rgba(163,77,67,.12) 0 2px, transparent 2px 50px), repeating-linear-gradient(0deg, rgba(48,34,60,.08) 0 2px, transparent 2px 42px); }
