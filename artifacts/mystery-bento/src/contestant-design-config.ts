@@ -6,12 +6,16 @@ import misoPortrait from './assets/contestants/miso.png';
 import misoFood from './assets/contestants/miso-food.png';
 import noriPortrait from './assets/contestants/nori.png';
 import noriFood from './assets/contestants/nori-food.png';
-import noriNibFrames from './assets/contestants/nori-nib-frames.png';
+import noriNibFrame1 from './assets/contestants/nori-nib-frame-1.png';
+import noriNibFrame2 from './assets/contestants/nori-nib-frame-2.png';
+import noriNibFrame3 from './assets/contestants/nori-nib-frame-3.png';
+import noriNibFrame4 from './assets/contestants/nori-nib-frame-4.png';
+import noriNibFrame5 from './assets/contestants/nori-nib-frame-5.png';
+import noriNibFrame6 from './assets/contestants/nori-nib-frame-6.png';
 import pankoPortrait from './assets/contestants/panko.png';
 import pankoFood from './assets/contestants/panko-food.png';
 import pipPortrait from './assets/contestants/pip.png';
 import pipFood from './assets/contestants/pip-food.png';
-import pipPorridgeFrames from './assets/contestants/pip-porridge-frames.png';
 import pipPorridgeFrame1 from './assets/contestants/pip-porridge-frame-1.png';
 import pipPorridgeFrame2 from './assets/contestants/pip-porridge-frame-2.png';
 import pipPorridgeFrame3 from './assets/contestants/pip-porridge-frame-3.png';
@@ -30,7 +34,12 @@ import saffyPortrait from './assets/contestants/saffy.png';
 import saffyFood from './assets/contestants/saffy-food.png';
 import senchaPortrait from './assets/contestants/sencha.png';
 import senchaFood from './assets/contestants/sencha-food.png';
-import senchaTeaFrames from './assets/contestants/sencha-tea-frames.png';
+import senchaTeaFrame1 from './assets/contestants/sencha-tea-frame-1.png';
+import senchaTeaFrame2 from './assets/contestants/sencha-tea-frame-2.png';
+import senchaTeaFrame3 from './assets/contestants/sencha-tea-frame-3.png';
+import senchaTeaFrame4 from './assets/contestants/sencha-tea-frame-4.png';
+import senchaTeaFrame5 from './assets/contestants/sencha-tea-frame-5.png';
+import senchaTeaFrame6 from './assets/contestants/sencha-tea-frame-6.png';
 import tildaPortrait from './assets/contestants/tilda.png';
 import tildaFood from './assets/contestants/tilda-food.png';
 import tildaTofuFrame1 from './assets/contestants/tilda-tofu-frame-1.png';
@@ -41,7 +50,12 @@ import tildaTofuFrame5 from './assets/contestants/tilda-tofu-frame-5.png';
 import tildaTofuFrame6 from './assets/contestants/tilda-tofu-frame-6.png';
 import toroPortrait from './assets/contestants/toro.png';
 import toroFood from './assets/contestants/toro-food.png';
-import toroGrillFrames from './assets/contestants/toro-grill-frames.png';
+import toroGrillFrame1 from './assets/contestants/toro-grill-frame-1.png';
+import toroGrillFrame2 from './assets/contestants/toro-grill-frame-2.png';
+import toroGrillFrame3 from './assets/contestants/toro-grill-frame-3.png';
+import toroGrillFrame4 from './assets/contestants/toro-grill-frame-4.png';
+import toroGrillFrame5 from './assets/contestants/toro-grill-frame-5.png';
+import toroGrillFrame6 from './assets/contestants/toro-grill-frame-6.png';
 import umaPortrait from './assets/contestants/uma.png';
 import umaFood from './assets/contestants/uma-food.png';
 
@@ -94,21 +108,20 @@ export const contestantFoodSprites: Record<string, string> = {
   bibi: bibiFood,
 };
 
-export const contestantFoodAnimationSheets: Partial<Record<string, string>> = {
-  pip: pipPorridgeFrames,
-  sencha: senchaTeaFrames,
-  toro: toroGrillFrames,
-  nori: noriNibFrames,
-};
-
 export const contestantFoodAnimationFrames: Partial<Record<string, string[]>> = {
   pip: [pipPorridgeFrame1, pipPorridgeFrame2, pipPorridgeFrame3, pipPorridgeFrame4, pipPorridgeFrame5, pipPorridgeFrame6],
+  sencha: [senchaTeaFrame1, senchaTeaFrame2, senchaTeaFrame3, senchaTeaFrame4, senchaTeaFrame5, senchaTeaFrame6],
+  toro: [toroGrillFrame1, toroGrillFrame2, toroGrillFrame3, toroGrillFrame4, toroGrillFrame5, toroGrillFrame6],
+  nori: [noriNibFrame1, noriNibFrame2, noriNibFrame3, noriNibFrame4, noriNibFrame5, noriNibFrame6],
   tilda: [tildaTofuFrame1, tildaTofuFrame2, tildaTofuFrame3, tildaTofuFrame4, tildaTofuFrame5, tildaTofuFrame6],
   rollo: [rolloRadishFrame1, rolloRadishFrame2, rolloRadishFrame3, rolloRadishFrame4, rolloRadishFrame5, rolloRadishFrame6],
 };
 
 export const contestantFoodAnimationAspectRatios: Partial<Record<string, string>> = {
-  nori: '313.5 / 836',
+  pip: '362 / 724',
+  sencha: '362 / 724',
+  toro: '362 / 724',
+  nori: '314 / 836',
   tilda: '284 / 922',
   rollo: '286 / 916',
 };

@@ -6,7 +6,7 @@ import { Toaster } from '@/components/ui/toaster';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import NotFound from '@/pages/not-found';
 import { Route, Router as WouterRouter, Switch, useLocation } from 'wouter';
-import { contestantDesigns, contestantFoodAnimationAspectRatios, contestantFoodAnimationFrames, contestantFoodAnimationSheets, contestantFoodSprites, contestantPortraits } from './contestant-design-config';
+import { contestantDesigns, contestantFoodAnimationAspectRatios, contestantFoodAnimationFrames, contestantFoodSprites, contestantPortraits } from './contestant-design-config';
 
 type MeterState = { progress: number; lastAcknowledgement: string };
 type Persona = {
@@ -20,7 +20,6 @@ type Persona = {
   memorableEvent: string;
   portraitSrc: string;
   foodSpriteSrc: string;
-  foodAnimationSheetSrc?: string;
   foodAnimationFrameSrcs?: string[];
   foodAnimationAspectRatio?: string;
 };
@@ -68,7 +67,6 @@ const personas: Persona[] = contestantDesigns.map((design) => ({
   memorableEvent: design.memorableEvent,
   portraitSrc: contestantPortraits[design.id],
   foodSpriteSrc: contestantFoodSprites[design.id],
-  foodAnimationSheetSrc: contestantFoodAnimationSheets[design.id],
   foodAnimationFrameSrcs: contestantFoodAnimationFrames[design.id],
   foodAnimationAspectRatio: contestantFoodAnimationAspectRatios[design.id],
 }));
@@ -891,15 +889,6 @@ function Home() {
                     <div className={`counter-chef counter-chef-${activeChef.id}`} aria-label={`${activeChef.name}, the active chef, is preparing food at the conveyor bar`}>
                       {activeChef.foodAnimationFrameSrcs ? (
                         <AnimatedChefSprite persona={activeChef} />
-                      ) : activeChef.foodAnimationSheetSrc ? (
-                        <span
-                          className="counter-chef-sprite"
-                          role="img"
-                          aria-label={`${activeChef.name} cooking animation`}
-                          style={{ aspectRatio: activeChef.foodAnimationAspectRatio ?? '362 / 724' }}
-                        >
-                          <img className="counter-chef-sheet" src={activeChef.foodAnimationSheetSrc} alt="" />
-                        </span>
                       ) : (
                         <img className="counter-chef-image" src={activeChef.foodSpriteSrc} alt="" />
                       )}

@@ -249,18 +249,12 @@
 .kitchen-return-sign span { color: rgba(248,231,198,.68); font-family: var(--app-font-mono); font-size: 7px; letter-spacing: .16em; text-transform: uppercase; }
 .counter-chef { position: absolute; bottom: 100%; left: 50%; z-index: 1; width: min(244px, 27vw); height: 260px; overflow: hidden; transform: translateX(-50%); pointer-events: none; }
 .counter-chef-image { position: absolute; top: 0; left: 50%; display: block; width: 100%; height: auto; max-width: none; transform: translateX(-50%); image-rendering: pixelated; }
-.counter-chef-sprite { position: absolute; top: -105px; left: 0; display: block; width: 100%; aspect-ratio: 362 / 724; overflow: hidden; }
+.counter-chef-sprite { position: absolute; top: -105px; left: 50%; display: block; width: 100%; aspect-ratio: 362 / 724; overflow: hidden; transform: translateX(-50%); }
 .counter-chef-frame-image { position: absolute; inset: 0; display: block; width: 100%; height: 100%; object-fit: fill; image-rendering: pixelated; }
-.counter-chef-rollo .counter-chef-sprite { top: -130px; left: 50%; width: min(160px, 38vw); transform: translateX(-50%); }
-.counter-chef-sheet { position: absolute; top: 0; left: 0; display: block; width: 600%; height: 100%; max-width: none; animation: counter-chef-cook-cycle 1.8s steps(1, end) infinite; image-rendering: pixelated; }
-@keyframes counter-chef-cook-cycle {
-  0%, 16.666% { transform: translateX(0); }
-  16.667%, 33.333% { transform: translateX(-16.666667%); }
-  33.334%, 50% { transform: translateX(-33.333333%); }
-  50.001%, 66.666% { transform: translateX(-50%); }
-  66.667%, 83.333% { transform: translateX(-66.666667%); }
-  83.334%, 100% { transform: translateX(-83.333333%); }
-}
+.counter-chef-sencha .counter-chef-sprite { top: -65px; width: min(202px, 38vw); }
+.counter-chef-nori .counter-chef-sprite { top: -125px; width: min(190px, 38vw); }
+.counter-chef-tilda .counter-chef-sprite { top: -147px; width: min(174px, 38vw); }
+.counter-chef-rollo .counter-chef-sprite { top: -130px; width: min(160px, 38vw); }
 .curio-wall-lamp { position: absolute; top: 82px; z-index: 3; width: 16px; height: 27px; border: 2px solid #17121e; background: #f5c968; box-shadow: 0 0 22px rgba(245,201,104,.48); }
 .curio-wall-lamp::before { content: ''; position: absolute; left: 3px; top: -8px; width: 6px; height: 7px; border: 2px solid #17121e; border-bottom: 0; border-radius: 7px 7px 0 0; }
 .curio-wall-lamp-left { left: 5%; }
@@ -627,6 +621,9 @@
   .kitchen-return-sign strong { font-size: 16px; }
   .kitchen-return-sign span { font-size: 6px; }
   .counter-chef { width: min(190px, 47vw); height: 205px; }
+  .counter-chef-sencha .counter-chef-sprite { top: -55px; width: min(160px, 38vw); }
+  .counter-chef-nori .counter-chef-sprite { top: -89px; width: min(145px, 38vw); }
+  .counter-chef-tilda .counter-chef-sprite { top: -134px; width: min(145px, 38vw); }
   .counter-chef-rollo .counter-chef-sprite { top: -110px; width: min(130px, 38vw); }
   .kitchen-hood { left: 5%; right: 5%; height: 27px; }
   .kitchen-hood span { font-size: 6px; }
@@ -651,7 +648,6 @@
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .001ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; transition-duration: .001ms !important; }
-  .counter-chef-sheet { animation: none !important; transform: translateX(0); }
   .conveyor-track { animation: none; }
   .contest-race-intro .race-runner, .contest-race-warmup .race-runner { left: 5%; }
   .contest-race-matchup .race-runner { left: var(--race-mid); }
