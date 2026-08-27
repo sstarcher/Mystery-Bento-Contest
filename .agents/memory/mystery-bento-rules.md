@@ -26,3 +26,9 @@ The open-kitchen center is reserved for its current state: the Japanese return s
 **Why:** The wall curios were scaled up for readability, which can otherwise make the central kitchen story collide with the sign or chef.
 
 **How to apply:** Keep responsive curio placements away from the kitchen center and recheck both desktop and mobile after backdrop scale changes.
+
+The supplied cooking-character sheet has a baked-in neutral checkerboard rather than an alpha channel; transparent sprites are needed before compositing the artwork into the restaurant scene.
+
+**Why:** Rendering the sheet directly would expose the checkerboard as a background, especially when the winner sprite is enlarged behind the counter.
+
+**How to apply:** Preserve the original sheet as reference and use transparent per-character derivatives for scene compositing while keeping the existing portrait assets for contest cards.

@@ -6,7 +6,7 @@ import { Toaster } from '@/components/ui/toaster';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import NotFound from '@/pages/not-found';
 import { Route, Router as WouterRouter, Switch, useLocation } from 'wouter';
-import { contestantDesigns, contestantPortraits } from './contestant-design-config';
+import { contestantDesigns, contestantFoodSprites, contestantPortraits } from './contestant-design-config';
 
 type MeterState = { progress: number; lastAcknowledgement: string };
 type Persona = {
@@ -19,6 +19,7 @@ type Persona = {
   palette: { primary: string; accent: string; neutral: string };
   memorableEvent: string;
   portraitSrc: string;
+  foodSpriteSrc: string;
 };
 type ContestLedgerEntry = {
   id: string;
@@ -63,6 +64,7 @@ const personas: Persona[] = contestantDesigns.map((design) => ({
   palette: design.palette,
   memorableEvent: design.memorableEvent,
   portraitSrc: contestantPortraits[design.id],
+  foodSpriteSrc: contestantFoodSprites[design.id],
 }));
 
 const foodItems: FoodItem[] = [
@@ -422,18 +424,6 @@ function CurioBacksplash({ collectibles, lastWinner }: { collectibles: Collectib
           <div className="kitchen-return-sign" aria-hidden="true">
             <strong lang="ja">すぐ戻ります</strong>
             <span>be right back</span>
-          </div>
-        )}
-        {lastWinner && (
-          <div className="kitchen-chef" aria-label={`${lastWinner.name}, the latest contest winner, is preparing sushi`}>
-            <span className="kitchen-chef-label">{lastWinner.name} · on shift</span>
-            <PersonaPortrait persona={lastWinner} />
-            <div className="kitchen-chef-station" aria-hidden="true">
-              <span className="kitchen-chef-board" />
-              <span className="kitchen-chef-roll kitchen-chef-roll-one" />
-              <span className="kitchen-chef-roll kitchen-chef-roll-two" />
-              <span className="kitchen-chef-knife" />
-            </div>
           </div>
         )}
       </div>
@@ -865,6 +855,11 @@ function Home() {
               <div className="relative mt-6">
                 <span className="pixel-star left-[8%] top-2" aria-hidden="true">+</span><span className="pixel-star right-[13%] top-10 text-sm" aria-hidden="true">+</span><span className="pixel-star right-[28%] top-0 text-xs" aria-hidden="true">+</span>
                 <div className="restaurant-counter">
+                  {lastWinner && (
+                    <div className="counter-chef" aria-label={`${lastWinner.name}, the latest contest winner, is preparing food at the conveyor bar`}>
+                      <img className="counter-chef-image" src={lastWinner.foodSpriteSrc} alt="" />
+                    </div>
+                  )}
                   <div className="conveyor rounded-xl p-3 sm:p-4">
                     <div className="conveyor-window" aria-label="Moving plated bento selections">
                       <div className="conveyor-track">

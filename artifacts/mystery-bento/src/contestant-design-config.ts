@@ -1,15 +1,27 @@
 import bibiPortrait from './assets/contestants/bibi.png';
+import bibiFood from './assets/contestants/bibi-food.png';
 import kikuPortrait from './assets/contestants/kiku.png';
+import kikuFood from './assets/contestants/kiku-food.png';
 import misoPortrait from './assets/contestants/miso.png';
+import misoFood from './assets/contestants/miso-food.png';
 import noriPortrait from './assets/contestants/nori.png';
+import noriFood from './assets/contestants/nori-food.png';
 import pankoPortrait from './assets/contestants/panko.png';
+import pankoFood from './assets/contestants/panko-food.png';
 import pipPortrait from './assets/contestants/pip.png';
+import pipFood from './assets/contestants/pip-food.png';
 import rolloPortrait from './assets/contestants/rollo.png';
+import rolloFood from './assets/contestants/rollo-food.png';
 import saffyPortrait from './assets/contestants/saffy.png';
+import saffyFood from './assets/contestants/saffy-food.png';
 import senchaPortrait from './assets/contestants/sencha.png';
+import senchaFood from './assets/contestants/sencha-food.png';
 import tildaPortrait from './assets/contestants/tilda.png';
+import tildaFood from './assets/contestants/tilda-food.png';
 import toroPortrait from './assets/contestants/toro.png';
+import toroFood from './assets/contestants/toro-food.png';
 import umaPortrait from './assets/contestants/uma.png';
+import umaFood from './assets/contestants/uma-food.png';
 
 export type ContestantDesign = {
   id: string;
@@ -43,6 +55,21 @@ export const contestantPortraits: Record<string, string> = {
   saffy: saffyPortrait,
   kiku: kikuPortrait,
   bibi: bibiPortrait,
+};
+
+export const contestantFoodSprites: Record<string, string> = {
+  pip: pipFood,
+  sencha: senchaFood,
+  toro: toroFood,
+  nori: noriFood,
+  tilda: tildaFood,
+  rollo: rolloFood,
+  miso: misoFood,
+  uma: umaFood,
+  panko: pankoFood,
+  saffy: saffyFood,
+  kiku: kikuFood,
+  bibi: bibiFood,
 };
 
 export const contestantDesignReference = {
