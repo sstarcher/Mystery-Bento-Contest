@@ -207,7 +207,7 @@ function FoodSelectionSplash({ item }: { item: FoodItem }) {
         </div>
         <div className="mt-4 flex items-center justify-between gap-3 border-t border-[#64516b] pt-3 font-mono-ui text-[10px] uppercase tracking-wider text-[#f5c968]">
           <span>clue collected</span>
-          <span>+7–16 mystery points</span>
+          <span>meter remembers</span>
         </div>
       </div>
     </div>
@@ -603,31 +603,29 @@ function Home() {
     if (!winningPersona || completionGuard.current) return;
     completionGuard.current = true;
     const now = new Date().toISOString();
-    const template = collectiblePool.find((item) => item.earnedBy === winningPersona.id) ?? collectiblePool[0];
-    const alreadyOwned = collectibles.some((item) => item.id === template.id || item.id.startsWith(`${template.id}-`));
-    const collectibleId = alreadyOwned ? `${template.id}-${Date.now()}` : template.id;
+    const isOwned = (template: (typeof collectiblePool)[number]) => collectibles.some((item) => item.id === template.id || item.id.startsWith(`${template.id}-`));
+    const availableCurios = collectiblePool.filter((item) => !isOwned(item));
+    const template = availableCurios.find((item) => item.earnedBy === winningPersona.id) ?? availableCurios[0];
     const memorableEvent = outcome?.memorableEvent ?? `${winningPersona.name} finds a curious shortcut.`;
     const entryId = `contest-${Date.now()}`;
-    const collectible: Collectible = {
+    const collectible: Collectible | null = template ? {
       ...template,
-      id: collectibleId,
-      title: alreadyOwned ? `${template.title} · echo` : template.title,
       earnedBy: winningPersona.name,
       earnedAt: now,
-    };
+    } : null;
     setLedger((current) => [{
       id: entryId,
       contestName: outcome?.contestName ?? 'Lantern Route, after closing',
       contestants: contestants.map((persona) => persona.name),
       winner: winningPersona.name,
       memorableEvent,
-      collectibleId,
+      collectibleId: collectible?.id ?? 'all-curios-collected',
       completedAt: now,
     }, ...current].slice(0, 20));
-    setCollectibles((current) => [collectible, ...current].slice(0, 30));
+    if (collectible) setCollectibles((current) => [collectible, ...current].slice(0, 30));
     setMeter({ progress: 0, lastAcknowledgement: `${winningPersona.name} left a story on the counter.` });
     setAcknowledgement(`${winningPersona.name} left a story on the counter.`);
-    setLiveStatus(`Contest complete. ${winningPersona.name} wins and earns ${collectible.title}.`);
+    setLiveStatus(collectible ? `Contest complete. ${winningPersona.name} wins and earns ${collectible.title}.` : `Contest complete. ${winningPersona.name} wins. Every curio is already on the shelf.`);
     setContestOpen(false);
     setContestStep('intro');
     setWinner(null);
@@ -809,7 +807,6 @@ function Home() {
                                   <span className="plate-number font-mono-ui text-[10px] text-[#a34d43]">0{index + 1}</span>
                                 </div>
                                 <div className="food-name font-display mt-3 text-base font-bold leading-4">{item.name}</div>
-                                <div className="food-points mt-2 font-mono-ui text-[9px] uppercase tracking-[.14em] text-[#f5c968]">+7–16 clue points</div>
                               </button>
                             ))}
                           </div>
