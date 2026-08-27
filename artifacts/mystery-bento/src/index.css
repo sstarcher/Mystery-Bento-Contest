@@ -242,6 +242,23 @@
 .kitchen-prep-light-one { left: 24%; } .kitchen-prep-light-two { right: 24%; background: #e57d5a; box-shadow: 0 0 19px rgba(229,125,90,.64); }
 .kitchen-steam { position: absolute; top: 237px; width: 18px; height: 52px; border-left: 3px dotted rgba(245,232,201,.45); transform: rotate(7deg); }
 .kitchen-steam-one { left: 27%; } .kitchen-steam-two { right: 27%; transform: rotate(-7deg); }
+.kitchen-return-sign { position: absolute; top: 153px; left: 50%; z-index: 2; display: grid; justify-items: center; gap: 5px; width: 158px; padding: 11px 12px 10px; transform: translateX(-50%) rotate(-2deg); color: #f5e8c9; background: #342139; border: 3px solid #17121e; box-shadow: inset 0 0 0 2px rgba(245,201,104,.38), 5px 5px 0 rgba(16,10,23,.28); text-align: center; }
+.kitchen-return-sign::before, .kitchen-return-sign::after { content: ''; position: absolute; top: -10px; width: 5px; height: 11px; background: #a17a66; border: 2px solid #17121e; }
+.kitchen-return-sign::before { left: 20px; } .kitchen-return-sign::after { right: 20px; }
+.kitchen-return-sign strong { color: #f5c968; font-family: var(--font-display); font-size: 20px; line-height: 1; letter-spacing: .08em; }
+.kitchen-return-sign span { color: rgba(248,231,198,.68); font-family: var(--app-font-mono); font-size: 7px; letter-spacing: .16em; text-transform: uppercase; }
+.kitchen-chef { position: absolute; top: 137px; left: 50%; z-index: 2; display: grid; justify-items: center; width: 155px; transform: translateX(-50%); }
+.kitchen-chef .persona-portrait { width: 86px; height: 86px; margin: 0; border-width: 3px; border-radius: 14px; box-shadow: 4px 4px 0 rgba(23,18,30,.34); }
+.kitchen-chef .persona-portrait-image { inset: 3px; border-radius: 10px; }
+.kitchen-chef .persona-portrait-shine { top: 7px; right: 7px; width: 7px; height: 7px; }
+.kitchen-chef-label { position: relative; z-index: 3; margin-bottom: 5px; padding: 4px 7px; color: #30223c; background: #f5c968; border: 2px solid #17121e; box-shadow: 3px 3px 0 rgba(23,18,30,.34); font-family: var(--app-font-mono); font-size: 7px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; white-space: nowrap; }
+.kitchen-chef-station { position: absolute; top: 100px; left: 50%; width: 146px; height: 79px; transform: translateX(-50%); }
+.kitchen-chef-board { position: absolute; bottom: 3px; left: 8px; width: 130px; height: 42px; border: 3px solid #17121e; border-radius: 4px; background: #c58d6a; box-shadow: inset 0 -8px rgba(76,43,43,.25), 4px 4px 0 rgba(16,10,23,.25); }
+.kitchen-chef-board::before { content: ''; position: absolute; top: 7px; left: 11px; width: 103px; height: 3px; background: rgba(245,201,104,.58); box-shadow: 0 12px rgba(61,35,40,.33); }
+.kitchen-chef-roll { position: absolute; bottom: 29px; width: 27px; height: 27px; border: 3px solid #17121e; border-radius: 50%; background: #f3dfb4; box-shadow: inset 0 0 0 6px #d65f52, 3px 3px 0 rgba(16,10,23,.24); }
+.kitchen-chef-roll-one { left: 41px; } .kitchen-chef-roll-two { left: 77px; background: #f5e8c9; box-shadow: inset 0 0 0 6px #83a66f, 3px 3px 0 rgba(16,10,23,.24); }
+.kitchen-chef-knife { position: absolute; right: 1px; bottom: 36px; width: 48px; height: 8px; border: 2px solid #17121e; border-radius: 2px 8px 8px 2px; background: #d8bd87; transform: rotate(-18deg); box-shadow: 0 4px 0 rgba(16,10,23,.22); }
+.kitchen-chef-knife::after { content: ''; position: absolute; left: -14px; top: 1px; width: 12px; height: 5px; border: 2px solid #17121e; background: #52677a; transform: rotate(18deg); }
 .curio-wall-lamp { position: absolute; top: 82px; z-index: 3; width: 16px; height: 27px; border: 2px solid #17121e; background: #f5c968; box-shadow: 0 0 22px rgba(245,201,104,.48); }
 .curio-wall-lamp::before { content: ''; position: absolute; left: 3px; top: -8px; width: 6px; height: 7px; border: 2px solid #17121e; border-bottom: 0; border-radius: 7px 7px 0 0; }
 .curio-wall-lamp-left { left: 5%; }
@@ -255,19 +272,19 @@
 .curio-info-kind, .curio-info-earned { position: relative; z-index: 1; color: #a34d43; font-size: 8px; text-transform: uppercase; letter-spacing: .1em; }
 .curio-info-description { position: relative; z-index: 1; color: #765752; font-family: var(--font-sans); font-size: 11px; line-height: 1.35; }
 .curio-hotspot:hover .curio-info-card, .curio-hotspot:focus .curio-info-card, .curio-hotspot:focus-visible .curio-info-card { visibility: visible; opacity: 1; transform: translate(-50%, 0); }
-.displayed-curio { position: absolute; display: grid; place-items: center; width: 57px; height: 54px; color: rgba(248,231,198,.9); isolation: isolate; }
-.displayed-curio .curio-glyph { transform: scale(.55); margin: -11px 0 -12px; }
+.displayed-curio { position: absolute; display: grid; place-items: center; width: 86px; height: 80px; color: rgba(248,231,198,.9); isolation: isolate; }
+.displayed-curio .curio-glyph { transform: scale(1.08); margin: -2px 0; }
 .displayed-curio .curio-place-label { display: none; }
-.displayed-curio-house-keeps-0 { top: 311px; left: calc(5% + 22px); }
-.displayed-curio-house-keeps-1 { top: 316px; left: calc(5% + 151px); }
-.displayed-curio-tea-tools-0 { top: 311px; right: calc(5% + 151px); }
-.displayed-curio-tea-tools-1 { top: 316px; right: calc(5% + 22px); }
-.displayed-curio-spare-plates-0 { top: 463px; left: calc(13% + 19px); }
-.displayed-curio-spare-plates-1 { top: 468px; left: calc(13% + 135px); }
-.displayed-curio-little-finds-0 { top: 463px; right: calc(13% + 135px); }
-.displayed-curio-little-finds-1 { top: 468px; right: calc(13% + 19px); }
-.displayed-curio-hanging-tools { top: 249px; left: calc(41% + 81px); }
-.displayed-curio-hanging-tools .curio-glyph { transform: scale(.62) rotate(5deg); }
+.displayed-curio-house-keeps-0 { top: 319px; left: calc(5% + 18px); }
+.displayed-curio-house-keeps-1 { top: 324px; left: calc(5% + 143px); }
+.displayed-curio-tea-tools-0 { top: 319px; right: calc(5% + 143px); }
+.displayed-curio-tea-tools-1 { top: 324px; right: calc(5% + 18px); }
+.displayed-curio-spare-plates-0 { top: 471px; left: calc(13% + 15px); }
+.displayed-curio-spare-plates-1 { top: 476px; left: calc(13% + 129px); }
+.displayed-curio-little-finds-0 { top: 471px; right: calc(13% + 129px); }
+.displayed-curio-little-finds-1 { top: 476px; right: calc(13% + 15px); }
+.displayed-curio-hanging-tools { top: 257px; left: calc(60% + 18px); }
+.displayed-curio-hanging-tools .curio-glyph { transform: scale(1.2) rotate(5deg); }
 .displayed-curio-hanging-tools .curio-info-card { top: calc(100% + 13px); bottom: auto; transform: translate(-50%, -8px); }
 .displayed-curio-hanging-tools .curio-info-card::after { top: -9px; bottom: auto; transform: translateX(-50%) rotate(225deg); }
 .displayed-curio-hanging-tools:hover .curio-info-card, .displayed-curio-hanging-tools:focus .curio-info-card, .displayed-curio-hanging-tools:focus-visible .curio-info-card { transform: translate(-50%, 0); }
@@ -564,18 +581,18 @@
   .compact-meter { width: min(190px, 54vw); }
   .compact-meter h2 { font-size: 9px; }
   .compact-meter > div:last-child span:first-child { max-width: 98px; }
-  .displayed-curio { width: 34px; height: 36px; }
-  .displayed-curio .curio-glyph { transform: scale(.39); margin: -18px 0 -21px; }
-  .displayed-curio-house-keeps-0 { top: 224px; left: calc(3% + 12px); }
-  .displayed-curio-house-keeps-1 { top: 227px; left: calc(3% + 67px); }
-  .displayed-curio-tea-tools-0 { top: 224px; right: calc(3% + 67px); }
-  .displayed-curio-tea-tools-1 { top: 227px; right: calc(3% + 12px); }
-  .displayed-curio-spare-plates-0 { top: 333px; left: calc(3% + 12px); }
-  .displayed-curio-spare-plates-1 { top: 336px; left: calc(3% + 67px); }
-  .displayed-curio-little-finds-0 { top: 333px; right: calc(3% + 67px); }
-  .displayed-curio-little-finds-1 { top: 336px; right: calc(3% + 12px); }
-  .displayed-curio-hanging-tools { top: 406px; left: calc(31% + 48px); }
-  .displayed-curio-hanging-tools .curio-glyph { transform: scale(.44) rotate(5deg); }
+  .displayed-curio { width: 54px; height: 58px; }
+  .displayed-curio .curio-glyph { transform: scale(.76); margin: -3px 0; }
+  .displayed-curio-house-keeps-0 { top: 221px; left: calc(3% + 1px); }
+  .displayed-curio-house-keeps-1 { top: 224px; left: calc(3% + 64px); }
+  .displayed-curio-tea-tools-0 { top: 221px; right: calc(3% + 64px); }
+  .displayed-curio-tea-tools-1 { top: 224px; right: calc(3% + 1px); }
+  .displayed-curio-spare-plates-0 { top: 330px; left: calc(3% + 1px); }
+  .displayed-curio-spare-plates-1 { top: 333px; left: calc(3% + 64px); }
+  .displayed-curio-little-finds-0 { top: 330px; right: calc(3% + 64px); }
+  .displayed-curio-little-finds-1 { top: 333px; right: calc(3% + 1px); }
+  .displayed-curio-hanging-tools { top: 404px; left: calc(31% + 38px); }
+  .displayed-curio-hanging-tools .curio-glyph { transform: scale(.84) rotate(5deg); }
   .background-shelf { width: 118px; height: 70px; gap: 3px; padding: 19px 6px 8px; border-width: 2px; }
   .background-shelf::before { top: 5px; left: 7px; right: 7px; }
   .background-shelf::after { right: -5px; bottom: -7px; left: -5px; height: 6px; border-width: 2px; }
@@ -602,6 +619,19 @@
   .curio-info-card strong { font-size: 13px; }
   .curio-info-description { font-size: 10px; }
   .open-kitchen { top: 76px; left: 25%; right: 25%; height: 325px; }
+  .kitchen-return-sign { top: 113px; width: 126px; padding: 8px 8px 7px; gap: 4px; }
+  .kitchen-return-sign strong { font-size: 16px; }
+  .kitchen-return-sign span { font-size: 6px; }
+  .kitchen-chef { top: 104px; width: 136px; }
+  .kitchen-chef .persona-portrait { width: 68px; height: 68px; border-radius: 11px; }
+  .kitchen-chef .persona-portrait-image { border-radius: 7px; }
+  .kitchen-chef-label { margin-bottom: 3px; padding: 3px 5px; font-size: 6px; }
+  .kitchen-chef-station { top: 79px; width: 126px; height: 67px; }
+  .kitchen-chef-board { left: 5px; width: 116px; height: 36px; }
+  .kitchen-chef-board::before { left: 9px; width: 92px; }
+  .kitchen-chef-roll { bottom: 25px; width: 23px; height: 23px; }
+  .kitchen-chef-roll-one { left: 35px; } .kitchen-chef-roll-two { left: 66px; }
+  .kitchen-chef-knife { right: -1px; bottom: 31px; width: 41px; }
   .kitchen-hood { left: 5%; right: 5%; height: 27px; }
   .kitchen-hood span { font-size: 6px; }
   .kitchen-rack { top: 43px; left: 0; right: 0; height: 65px; }

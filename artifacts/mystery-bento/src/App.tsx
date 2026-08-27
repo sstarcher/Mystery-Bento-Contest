@@ -418,6 +418,12 @@ function CurioBacksplash({ collectibles, lastWinner }: { collectibles: Collectib
         <div className="kitchen-prep-light kitchen-prep-light-two" />
         <div className="kitchen-steam kitchen-steam-one" />
         <div className="kitchen-steam kitchen-steam-two" />
+        {!lastWinner && (
+          <div className="kitchen-return-sign" aria-hidden="true">
+            <strong lang="ja">すぐ戻ります</strong>
+            <span>be right back</span>
+          </div>
+        )}
         {lastWinner && (
           <div className="kitchen-chef" aria-label={`${lastWinner.name}, the latest contest winner, is preparing sushi`}>
             <span className="kitchen-chef-label">{lastWinner.name} · on shift</span>
