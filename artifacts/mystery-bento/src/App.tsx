@@ -112,6 +112,12 @@ const collectiblePool = [
   { id: 'radish-fizz-pin', kind: 'chef sticker', title: 'Fizz Route Pin', description: 'A bright pin marking the fastest route between the pantry and the dance floor.', earnedBy: 'rin' },
 ];
 
+const showcaseCollectibles: Collectible[] = collectiblePool.map((item) => ({
+  ...item,
+  earnedBy: personas.find((persona) => persona.id === item.earnedBy)?.name ?? item.earnedBy,
+  earnedAt: new Date().toISOString(),
+}));
+
 type CurioDisplayZone = 'house-keeps' | 'tea-tools' | 'spare-plates' | 'little-finds' | 'hanging-tools';
 
 function getCurioDisplayZone(item: Collectible): CurioDisplayZone {
@@ -583,6 +589,14 @@ function Home() {
   const completionGuard = useRef(false);
   const finishContestRef = useRef<() => void>(() => undefined);
   const selectedCount = useMemo(() => ledger.length + collectibles.length, [ledger.length, collectibles.length]);
+
+  useEffect(() => {
+    setCollectibles((current) => {
+      const ownedIds = new Set(current.map((item) => item.id));
+      const missing = showcaseCollectibles.filter((item) => !ownedIds.has(item.id));
+      return missing.length ? [...missing, ...current].slice(0, 30) : current;
+    });
+  }, [setCollectibles]);
 
   const queueContest = (message: string) => {
     if (contestOpen || contestQueued.current) return;
