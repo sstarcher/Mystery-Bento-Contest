@@ -59,7 +59,7 @@ type RaceObstacleKind =
   | 'steam-gadget'
   | 'bento-stack';
 type RaceEncounterResult = 'clear' | 'slow' | 'surge' | 'reroute';
-type RaceRunnerReaction = 'ready' | 'jump' | 'dodge' | 'slow' | 'surge';
+type RaceRunnerReaction = 'ready' | 'jump' | 'dodge' | 'slide' | 'duck' | 'stumble' | 'weave' | 'surge';
 type RaceObstacle = {
   id: string;
   kind: RaceObstacleKind;
@@ -218,9 +218,10 @@ const raceJumpObstacleKinds = new Set<RaceObstacleKind>([
 ]);
 
 function getRaceRunnerReaction(obstacleKind: RaceObstacleKind, result: RaceEncounterResult): RaceRunnerReaction {
-  if (result === 'slow') return 'slow';
-  if (result === 'reroute') return 'dodge';
-  if (result === 'surge') return 'surge';
+  if (result === 'slow') return obstacleKind === 'tea-puddle' || obstacleKind === 'crumb-trail' ? 'slide' : 'stumble';
+  if (result === 'reroute') return obstacleKind === 'shortcut-reflection' || obstacleKind === 'cushion-pile' ? 'weave' : 'dodge';
+  if (result === 'surge') return raceJumpObstacleKinds.has(obstacleKind) ? 'jump' : 'surge';
+  if (obstacleKind === 'wobble-stack' || obstacleKind === 'bento-stack') return 'duck';
   return raceJumpObstacleKinds.has(obstacleKind) ? 'jump' : 'dodge';
 }
 
@@ -312,7 +313,10 @@ function buildRaceSimulation(contestants: Persona[], rng: () => number): RaceSim
   });
 
   const lanes = contestants.map((persona) => {
-    let progress = 5 + persona.traits.speed * 0.08;
+    const startingStagger = (persona.traits.speed - 50) * 0.11
+      + (persona.traits.chaos - 50) * 0.07
+      + rng() * 8 - 4;
+    let progress = 6 + persona.traits.speed * 0.06 + startingStagger;
     const encounters: Record<string, RaceEncounter> = {};
     const positions: Record<ContestStep, number> = {
       intro: clampRacePosition(progress),
@@ -341,8 +345,9 @@ function buildRaceSimulation(contestants: Persona[], rng: () => number): RaceSim
             : persona.traits.chaos >= 72 && rng() > 0.48
               ? 'reroute'
               : 'clear';
-      const progressDelta = result === 'surge' ? 12 : result === 'slow' ? -12 : result === 'reroute' ? -5 : 2;
-      progress = clampRacePosition(progress + 16 + persona.traits.speed * 0.1 + progressDelta);
+      const progressDelta = result === 'surge' ? 16 : result === 'slow' ? -16 : result === 'reroute' ? -7 : 3;
+      const pace = 14 + persona.traits.speed * 0.09 + persona.traits.focus * 0.03;
+      progress = clampRacePosition(progress + pace + progressDelta);
       const encounterCopy: Record<RaceEncounterResult, { headline: string; detail: string }> = {
         clear: { headline: 'clean line', detail: `${persona.name} reads the ${catalog.shortLabel} and keeps pace. Their routine holds.` },
         slow: { headline: 'slowed down', detail: `${persona.name} loses a few steps at the ${catalog.shortLabel}; ${persona.contestBehavior.toLowerCase()}` },
@@ -354,7 +359,10 @@ function buildRaceSimulation(contestants: Persona[], rng: () => number): RaceSim
         ready: 'They hold at the starting lantern.',
         jump: 'They jump over it with a bright little hop.',
         dodge: 'They sidestep it and keep their line.',
-        slow: 'They slow down, steady themselves, and lose a few steps.',
+        slide: 'They slide around it, lose a few steps, and recover.',
+        duck: 'They duck beneath it and keep moving.',
+        stumble: 'They stumble, steady themselves, and lose a few steps.',
+        weave: 'They weave through the clutter and find a stranger line.',
         surge: 'They spring over the opening and surge ahead.',
       };
       encounters[obstacle.id] = {
@@ -375,7 +383,7 @@ function buildRaceSimulation(contestants: Persona[], rng: () => number): RaceSim
       + persona.traits.luck * 0.14
       + (100 - persona.traits.chaos) * 0.06
       + rng() * 8 - 4;
-    const finishPosition = clampRacePosition(progress + persona.traits.focus * 0.04 + persona.traits.luck * 0.03 + rng() * 5 - 2.5);
+    const finishPosition = clampRacePosition(progress + persona.traits.focus * 0.08 + persona.traits.luck * 0.06 + persona.traits.chaos * 0.03 + rng() * 10 - 5);
     positions.winner = finishPosition;
     return { personaId: persona.id, positions, finishPosition, finishScore, encounters };
   });
