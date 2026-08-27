@@ -157,14 +157,6 @@ const contestNextStep: Partial<Record<ContestStep, ContestStep>> = {
   finale: 'winner',
 };
 
-const contestStepLabels: Record<ContestStep, string> = {
-  intro: 'arrival',
-  warmup: 'warm-up',
-  matchup: 'main course',
-  finale: 'final stretch',
-  winner: 'recap',
-};
-
 const raceStepProgress: Record<ContestStep, number> = {
   intro: 0,
   warmup: 1,
@@ -762,14 +754,20 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
   const currentObstacleCopy = currentObstacle
     ? `${currentObstacle.label}: ${currentObstacle.description}`
     : 'The route is being set. Four trouble spots are waiting beyond the starting lantern.';
-  const stepCopy: Record<ContestStep, string> = {
-    intro: 'The curtain lifts. No votes, no wagers — just a few peculiar regulars and one very good story.',
-    warmup: `The first hazard is live. ${currentObstacleCopy}`,
-    matchup: `The route bends through the market. ${currentObstacleCopy}`,
-    finale: `The finish lane is narrowing. ${currentObstacleCopy}`,
-    winner: eventText,
+  const getReachedObstacleIndex = (lane: RaceLaneSimulation | undefined) => {
+    if (!lane || step === 'intro') return -1;
+    const progress = lane.positions[step];
+    return race.obstacles.reduce((reachedIndex, obstacle, obstacleIndex) => (
+      progress >= obstacle.position ? obstacleIndex : reachedIndex
+    ), -1);
   };
-  const stepIndex = Object.keys(contestStepLabels).indexOf(step);
+  const getCurrentLaneObstacleIndex = (lane: RaceLaneSimulation | undefined) => {
+    const reachedIndex = getReachedObstacleIndex(lane);
+    const stageObstacleIndex = Math.min(race.obstacles.length - 1, Math.max(0, raceStepProgress[step] - 1));
+    if (step === 'intro' || step === 'winner' || reachedIndex < stageObstacleIndex) return -1;
+    return reachedIndex;
+  };
+  const displayedContestants = winner ? [winner] : contestants;
 
   useEffect(() => {
     setShowWinnerReveal(false);
@@ -784,19 +782,11 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
 
   return (
     <div className="contest-backdrop fixed inset-0 z-30 flex items-stretch justify-center" role="dialog" aria-modal="true" aria-labelledby="contest-title">
-      <div className="contest-stage w-full p-5 sm:p-8">
-        <div className="mb-5 flex items-start justify-between gap-4">
-          <div><div className="font-mono-ui text-[10px] uppercase tracking-[.2em] text-[#f5c968]">live from the back alley</div><h2 id="contest-title" className="mt-2 font-display text-3xl font-bold tracking-tight sm:text-5xl">{contestName}</h2></div>
+      <div className="contest-stage w-full p-3 sm:p-5">
+        <div className="mb-3 flex items-start justify-between gap-4">
+          <h2 id="contest-title" className="font-display text-3xl font-bold tracking-tight sm:text-5xl">{contestName}</h2>
           <button type="button" className="flex items-center gap-2 border border-[#806a85] px-3 py-2 text-xs font-bold text-[#f8e7c6] hover:bg-[#f5c968] hover:text-[#30223c]" onClick={onSkip} data-testid="button-skip-contest"><SkipForward className="h-4 w-4" aria-hidden="true" />Skip scene</button>
         </div>
-        <div className="contest-phase-row">
-          <span className="font-mono-ui text-[10px] uppercase tracking-[.16em] text-[#f5c968]">act {stepIndex + 1} of 5 · {contestStepLabels[step]}</span>
-          <span className="font-mono-ui text-[10px] uppercase tracking-[.12em] text-[#bca99b]">quick spectator match · under a minute</span>
-        </div>
-        <div className="contest-progress" aria-label={`Contest progress: act ${stepIndex + 1} of 5`}>
-          {Object.entries(contestStepLabels).map(([key, label], index) => <span key={key} className={index <= stepIndex ? 'is-active' : ''}><i aria-hidden="true" />{label}</span>)}
-        </div>
-        <p className="max-w-xl text-sm leading-6 text-[#d8c6af]">{stepCopy[step]}</p>
         <div className={`contest-race contest-race-${step}`} aria-label="Animated contest race">
           <div className="race-track-label font-mono-ui text-[9px] uppercase tracking-[.16em] text-[#bca99b]"><span>start</span><span>finish</span></div>
           <div className="race-course-viewport">
@@ -814,14 +804,16 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
                 <div className="race-finish-line" aria-hidden="true" />
                 {contestants.map((persona) => {
                   const lane = race.lanes.find((candidate) => candidate.personaId === persona.id);
+                  const reachedObstacleIndex = getReachedObstacleIndex(lane);
+                  const laneCurrentObstacleIndex = getCurrentLaneObstacleIndex(lane);
                   return (
                     <div className="race-lane" key={persona.id}>
                       {race.obstacles.map((obstacle, obstacleIndex) => {
                         const encounter = lane?.encounters[obstacle.id];
-                        const obstacleState = obstacleIndex <= currentObstacleIndex ? `race-obstacle-${encounter?.result ?? 'clear'}` : 'race-obstacle-upcoming';
+                        const obstacleState = obstacleIndex <= reachedObstacleIndex ? `race-obstacle-${encounter?.result ?? 'clear'}` : 'race-obstacle-upcoming';
                         return (
                           <span
-                            className={`race-obstacle race-obstacle-${obstacle.kind} ${obstacleState} ${obstacleIndex === currentObstacleIndex ? 'is-current' : ''}`}
+                            className={`race-obstacle race-obstacle-${obstacle.kind} ${obstacleState} ${obstacleIndex === laneCurrentObstacleIndex ? 'is-current' : ''}`}
                             style={{ left: `${obstacle.position}%` }}
                             key={`${persona.id}-${obstacle.id}`}
                             title={obstacle.label}
@@ -840,8 +832,10 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
             <div className="race-runner-overlay">
               {contestants.map((persona, index) => {
                 const lane = race.lanes.find((candidate) => candidate.personaId === persona.id) ?? race.lanes[index];
-                const encounter = step !== 'winner' && currentObstacle ? lane?.encounters[currentObstacle.id] : undefined;
-                const runnerReaction = currentObstacle && encounter ? getRaceRunnerReaction(currentObstacle.kind, encounter.result) : 'ready';
+                const laneCurrentObstacleIndex = getCurrentLaneObstacleIndex(lane);
+                const laneCurrentObstacle = laneCurrentObstacleIndex >= 0 ? race.obstacles[laneCurrentObstacleIndex] : null;
+                const encounter = laneCurrentObstacle ? lane?.encounters[laneCurrentObstacle.id] : undefined;
+                const runnerReaction = laneCurrentObstacle && encounter ? getRaceRunnerReaction(laneCurrentObstacle.kind, encounter.result) : 'ready';
                 const toScreenAnchor = (position: number) => `${Math.min(72, Math.max(14, 10 + position * 0.62))}%`;
                 const isWinner = (winner?.id ?? race.winnerId) === persona.id;
                 return (
@@ -877,11 +871,13 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
             <div className="race-encounter-row" aria-label="Contestant obstacle results">
               {contestants.map((persona) => {
                 const lane = race.lanes.find((candidate) => candidate.personaId === persona.id);
-                const encounter = currentObstacle ? lane?.encounters[currentObstacle.id] : null;
+                const laneCurrentObstacleIndex = getCurrentLaneObstacleIndex(lane);
+                const laneCurrentObstacle = laneCurrentObstacleIndex >= 0 ? race.obstacles[laneCurrentObstacleIndex] : null;
+                const encounter = laneCurrentObstacle ? lane?.encounters[laneCurrentObstacle.id] : null;
                 return (
                   <span className={`race-encounter race-encounter-${encounter?.result ?? 'clear'}`} key={persona.id}>
                     <b>{persona.name.split(' ')[0]}</b>
-                    {encounter ? encounter.headline : 'ready'}
+                    {laneCurrentObstacle && encounter ? `${laneCurrentObstacle.shortLabel}: ${encounter.headline}` : 'approaching'}
                   </span>
                 );
               })}
@@ -910,7 +906,7 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
           </div>
         )}
         <div className="my-9 grid grid-cols-1 gap-5 sm:grid-cols-3">
-          {contestants.map((persona, index) => (
+          {displayedContestants.map((persona, index) => (
             <div key={persona.id} className={`persona-tile rounded-lg p-4 text-center transition-transform ${winner?.id === persona.id ? 'scale-[1.04] ring-4 ring-[#f5c968]' : ''}`} data-testid={`card-contestant-${persona.id}`}>
               <PersonaPortrait persona={persona} large={winner?.id === persona.id} />
               <h3 className="font-display text-lg font-bold">{persona.name}</h3>
