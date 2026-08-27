@@ -117,6 +117,7 @@ const personas: Persona[] = contestantDesigns.map((design) => ({
   foodAnimationFrameSrcs: contestantFoodAnimationFrames[design.id],
   foodAnimationAspectRatio: contestantFoodAnimationAspectRatios[design.id],
 }));
+const animatedContestants = personas.filter((persona) => (persona.foodAnimationFrameSrcs?.length ?? 0) >= 2);
 
 const foodItems: FoodItem[] = [
   { id: 'tamago', name: 'Sunset tamago', note: 'soft, sweet, perfectly tucked', glyph: 'circle', color: '#ed9560' },
@@ -146,7 +147,7 @@ const contestDurations: Record<ContestStep, number> = {
   warmup: 7600,
   matchup: 9200,
   finale: 11000,
-  winner: 6500,
+  winner: 16500,
 };
 
 const contestNextStep: Partial<Record<ContestStep, ContestStep>> = {
@@ -394,7 +395,7 @@ function buildRaceSimulation(contestants: Persona[], rng: () => number): RaceSim
 
 function resolveContest(contestants: Persona[], rng: () => number): ContestOutcome {
   const race = buildRaceSimulation(contestants, rng);
-  const winner = contestants.find((persona) => persona.id === race.winnerId) ?? contestants[0] ?? personas[0];
+  const winner = contestants.find((persona) => persona.id === race.winnerId) ?? contestants[0] ?? animatedContestants[0] ?? personas[0];
   return {
     winner,
     memorableEvent: winner.memorableEvent,
@@ -853,7 +854,7 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
                         '--race-warmup-anchor': toScreenAnchor(lane?.positions.warmup ?? 28),
                         '--race-matchup-anchor': toScreenAnchor(lane?.positions.matchup ?? 52),
                         '--race-finale-anchor': toScreenAnchor(lane?.positions.finale ?? 78),
-                        '--race-winner-anchor': `${winner?.id === persona.id ? Math.min(74, Math.max(58, 48 + (lane?.positions.winner ?? 92) * 0.18)) : toScreenAnchor(lane?.positions.finale ?? 78)}`,
+                        '--race-winner-anchor': `${winner?.id === persona.id ? Math.min(88, Math.max(72, 58 + (lane?.positions.winner ?? 92) * 0.31)) : toScreenAnchor(lane?.positions.finale ?? 78)}`,
                         '--race-runner-tempo': `${Math.max(0.72, 1.28 - persona.traits.speed * 0.0032 + persona.traits.balance * 0.001).toFixed(2)}s`,
                       } as CSSProperties}
                     >
@@ -985,7 +986,9 @@ function Home() {
       ?? personas.find((persona) => persona.name === latestEntry.winner)
       ?? null;
   }, [ledger]);
-  const activeChef = lastWinner ?? personas.find((persona) => persona.id === 'toro') ?? null;
+  const activeChef = lastWinner?.foodAnimationFrameSrcs?.length
+    ? lastWinner
+    : animatedContestants.find((persona) => persona.id === 'toro') ?? animatedContestants[0] ?? null;
 
   useEffect(() => {
     setCollectibles((current) => {
@@ -1055,7 +1058,7 @@ function Home() {
 
   const launchContest = () => {
     const rng = createRng(Date.now() ^ Math.floor(Math.random() * 0xffffffff));
-    const selected = shuffleWithRng(personas, rng).slice(0, rng() > 0.62 ? 4 : 3);
+    const selected = shuffleWithRng(animatedContestants, rng).slice(0, rng() > 0.62 ? 4 : 3);
     const outcome = resolveContest(selected, rng);
     contestOutcome.current = outcome;
     completionGuard.current = false;
