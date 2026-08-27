@@ -251,6 +251,7 @@
 .counter-chef-image { position: absolute; top: 0; left: 50%; display: block; width: 100%; height: auto; max-width: none; transform: translateX(-50%); image-rendering: pixelated; }
 .counter-chef-sprite { position: absolute; top: -105px; left: 0; display: block; width: 100%; aspect-ratio: 362 / 724; overflow: hidden; }
 .counter-chef-frame-image { position: absolute; inset: 0; display: block; width: 100%; height: 100%; object-fit: fill; image-rendering: pixelated; }
+.counter-chef-rollo .counter-chef-sprite { top: -130px; left: 50%; width: min(160px, 38vw); transform: translateX(-50%); }
 .counter-chef-sheet { position: absolute; top: 0; left: 0; display: block; width: 600%; height: 100%; max-width: none; animation: counter-chef-cook-cycle 1.8s steps(1, end) infinite; image-rendering: pixelated; }
 @keyframes counter-chef-cook-cycle {
   0%, 16.666% { transform: translateX(0); }
@@ -626,6 +627,7 @@
   .kitchen-return-sign strong { font-size: 16px; }
   .kitchen-return-sign span { font-size: 6px; }
   .counter-chef { width: min(190px, 47vw); height: 205px; }
+  .counter-chef-rollo .counter-chef-sprite { top: -110px; width: min(130px, 38vw); }
   .kitchen-hood { left: 5%; right: 5%; height: 27px; }
   .kitchen-hood span { font-size: 6px; }
   .kitchen-rack { top: 43px; left: 0; right: 0; height: 65px; }

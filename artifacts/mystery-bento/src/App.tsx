@@ -670,7 +670,7 @@ function Home() {
       ?? personas.find((persona) => persona.name === latestEntry.winner)
       ?? null;
   }, [ledger]);
-  const activeChef = personas.find((persona) => persona.id === 'pip') ?? lastWinner ?? null;
+  const activeChef = personas.find((persona) => persona.id === 'rollo') ?? lastWinner ?? null;
 
   useEffect(() => {
     setCollectibles((current) => {
@@ -888,7 +888,7 @@ function Home() {
                 <span className="pixel-star left-[8%] top-2" aria-hidden="true">+</span><span className="pixel-star right-[13%] top-10 text-sm" aria-hidden="true">+</span><span className="pixel-star right-[28%] top-0 text-xs" aria-hidden="true">+</span>
                 <div className="restaurant-counter">
                   {activeChef && (
-                    <div className="counter-chef" aria-label={`${activeChef.name}, the active chef, is preparing food at the conveyor bar`}>
+                    <div className={`counter-chef counter-chef-${activeChef.id}`} aria-label={`${activeChef.name}, the active chef, is preparing food at the conveyor bar`}>
                       {activeChef.foodAnimationFrameSrcs ? (
                         <AnimatedChefSprite persona={activeChef} />
                       ) : activeChef.foodAnimationSheetSrc ? (

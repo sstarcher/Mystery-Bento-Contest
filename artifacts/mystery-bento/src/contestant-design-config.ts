@@ -20,6 +20,12 @@ import pipPorridgeFrame5 from './assets/contestants/pip-porridge-frame-5.png';
 import pipPorridgeFrame6 from './assets/contestants/pip-porridge-frame-6.png';
 import rolloPortrait from './assets/contestants/rollo.png';
 import rolloFood from './assets/contestants/rollo-food.png';
+import rolloRadishFrame1 from './assets/contestants/rollo-radish-frame-1.png';
+import rolloRadishFrame2 from './assets/contestants/rollo-radish-frame-2.png';
+import rolloRadishFrame3 from './assets/contestants/rollo-radish-frame-3.png';
+import rolloRadishFrame4 from './assets/contestants/rollo-radish-frame-4.png';
+import rolloRadishFrame5 from './assets/contestants/rollo-radish-frame-5.png';
+import rolloRadishFrame6 from './assets/contestants/rollo-radish-frame-6.png';
 import saffyPortrait from './assets/contestants/saffy.png';
 import saffyFood from './assets/contestants/saffy-food.png';
 import senchaPortrait from './assets/contestants/sencha.png';
@@ -27,6 +33,12 @@ import senchaFood from './assets/contestants/sencha-food.png';
 import senchaTeaFrames from './assets/contestants/sencha-tea-frames.png';
 import tildaPortrait from './assets/contestants/tilda.png';
 import tildaFood from './assets/contestants/tilda-food.png';
+import tildaTofuFrame1 from './assets/contestants/tilda-tofu-frame-1.png';
+import tildaTofuFrame2 from './assets/contestants/tilda-tofu-frame-2.png';
+import tildaTofuFrame3 from './assets/contestants/tilda-tofu-frame-3.png';
+import tildaTofuFrame4 from './assets/contestants/tilda-tofu-frame-4.png';
+import tildaTofuFrame5 from './assets/contestants/tilda-tofu-frame-5.png';
+import tildaTofuFrame6 from './assets/contestants/tilda-tofu-frame-6.png';
 import toroPortrait from './assets/contestants/toro.png';
 import toroFood from './assets/contestants/toro-food.png';
 import toroGrillFrames from './assets/contestants/toro-grill-frames.png';
@@ -91,10 +103,14 @@ export const contestantFoodAnimationSheets: Partial<Record<string, string>> = {
 
 export const contestantFoodAnimationFrames: Partial<Record<string, string[]>> = {
   pip: [pipPorridgeFrame1, pipPorridgeFrame2, pipPorridgeFrame3, pipPorridgeFrame4, pipPorridgeFrame5, pipPorridgeFrame6],
+  tilda: [tildaTofuFrame1, tildaTofuFrame2, tildaTofuFrame3, tildaTofuFrame4, tildaTofuFrame5, tildaTofuFrame6],
+  rollo: [rolloRadishFrame1, rolloRadishFrame2, rolloRadishFrame3, rolloRadishFrame4, rolloRadishFrame5, rolloRadishFrame6],
 };
 
 export const contestantFoodAnimationAspectRatios: Partial<Record<string, string>> = {
   nori: '313.5 / 836',
+  tilda: '284 / 922',
+  rollo: '286 / 916',
 };
 
 export const contestantDesignReference = {
