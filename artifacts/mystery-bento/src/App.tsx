@@ -106,6 +106,14 @@ const collectiblePool = [
   { id: 'radish-spark-sticker', kind: 'chef sticker', title: 'Radish Spark', description: 'A zippy little sticker that seems to vibrate when nobody is looking.', earnedBy: 'rin' },
 ];
 
+type CurioPlacement = 'wall' | 'counter' | 'shelf';
+
+function getCurioPlacement(item: Collectible): CurioPlacement {
+  if (item.id.includes('recipe-midnight-sauce') || item.id.includes('chef-ladle-champion')) return 'counter';
+  if (item.id.includes('lantern-warm-glow') || item.id.includes('snapshot-great-wobble') || item.id.includes('plate-moon-checker') || item.id.includes('radish-spark-sticker')) return 'wall';
+  return 'shelf';
+}
+
 function createRng(seed: number) {
   let state = seed >>> 0;
   return () => {
@@ -214,10 +222,69 @@ function CurioGlyph({ item }: { item: Collectible }) {
   );
 }
 
-function CurioBacksplash({ collectibles }: { collectibles: Collectible[] }) {
-  const displayed = collectibles.slice(0, 6);
+function CurioInfoCard({ item }: { item: Collectible }) {
+  return (
+    <span className="curio-info-card" id={`curio-info-${item.id}`} role="tooltip">
+      <strong>{item.title}</strong>
+      <span className="curio-info-kind">{item.kind}</span>
+      <span className="curio-info-description">{item.description}</span>
+      <span className="curio-info-earned">earned by {item.earnedBy}</span>
+    </span>
+  );
+}
+
+function CurioHotspot({ item, className }: { item: Collectible; className: string }) {
+  return (
+    <button
+      type="button"
+      className={`curio-hotspot ${className}`}
+      aria-label={`View curio information for ${item.title}`}
+      aria-describedby={`curio-info-${item.id}`}
+    >
+      <CurioGlyph item={item} />
+      <span className="curio-place-label">{item.kind}</span>
+      <CurioInfoCard item={item} />
+    </button>
+  );
+}
+
+function CurioBacksplash() {
   return (
     <div className="curio-backsplash" aria-hidden="true">
+      <div className="restaurant-background-dressing">
+        <div className="background-shelf background-shelf-left">
+          <span className="background-shelf-title">house keeps</span>
+          <span className="background-shelf-slot" />
+          <span className="background-shelf-jar background-shelf-jar-amber" />
+          <span className="background-shelf-bowl" />
+          <span className="background-shelf-slot background-shelf-slot-small" />
+        </div>
+        <div className="background-shelf background-shelf-right">
+          <span className="background-shelf-title">tea + tools</span>
+          <span className="background-shelf-jar background-shelf-jar-blue" />
+          <span className="background-shelf-jar background-shelf-jar-green" />
+          <span className="background-shelf-slot" />
+          <span className="background-shelf-bowl background-shelf-bowl-coral" />
+        </div>
+        <div className="background-shelf background-shelf-low-left">
+          <span className="background-shelf-title">spare plates</span>
+          <span className="background-shelf-plate" />
+          <span className="background-shelf-plate background-shelf-plate-coral" />
+          <span className="background-shelf-slot background-shelf-slot-small" />
+        </div>
+        <div className="background-shelf background-shelf-low-right">
+          <span className="background-shelf-title">little finds</span>
+          <span className="background-shelf-slot" />
+          <span className="background-shelf-slot background-shelf-slot-small" />
+          <span className="background-shelf-jar background-shelf-jar-amber" />
+        </div>
+        <div className="background-utensil-rail">
+          <span className="background-utensil background-utensil-spatula" />
+          <span className="background-utensil background-utensil-ladle" />
+          <span className="background-utensil background-utensil-whisk" />
+          <span className="background-utensil background-utensil-tongs" />
+        </div>
+      </div>
       <div className="restaurant-window restaurant-window-left">
         <span className="restaurant-window-sign">OPEN LATE</span>
         <span className="restaurant-window-light restaurant-window-light-one" />
@@ -233,22 +300,30 @@ function CurioBacksplash({ collectibles }: { collectibles: Collectible[] }) {
         <strong className="font-display">maki · miso · mystery</strong>
         <span className="font-mono-ui text-[8px] uppercase tracking-wider">served after dark</span>
       </div>
-      <div className="restaurant-noren">
-        <span>NO.</span><span>07</span><span>SUSHI</span><span>BAR</span>
-      </div>
-      <div className="curio-room-title">
-        <span className="font-mono-ui text-[9px] uppercase tracking-[.18em]">backroom curios</span>
-        <span className="font-mono-ui text-[9px] uppercase tracking-wider">{collectibles.length ? `${collectibles.length} kept` : 'shelf waiting'}</span>
+      <div className="open-kitchen">
+        <div className="kitchen-hood"><span className="font-mono-ui text-[8px] uppercase tracking-[.18em]">open kitchen · staff at work</span></div>
+        <div className="kitchen-rack">
+          <span className="kitchen-pot kitchen-pot-one" />
+          <span className="kitchen-pot kitchen-pot-two" />
+          <span className="kitchen-bowl kitchen-bowl-one" />
+          <span className="kitchen-bowl kitchen-bowl-two" />
+        </div>
+        <div className="kitchen-prep-light kitchen-prep-light-one" />
+        <div className="kitchen-prep-light kitchen-prep-light-two" />
+        <div className="kitchen-steam kitchen-steam-one" />
+        <div className="kitchen-steam kitchen-steam-two" />
       </div>
       <div className="curio-wall-lamp curio-wall-lamp-left" />
       <div className="curio-wall-lamp curio-wall-lamp-right" />
-      <div className="curio-backshelf curio-backshelf-top">
-        {displayed.slice(0, 3).map((item) => <div className="backsplash-curio" key={item.id}><CurioGlyph item={item} /><span>{item.title}</span></div>)}
-      </div>
-      <div className="curio-backshelf curio-backshelf-bottom">
-        {displayed.slice(3, 6).map((item) => <div className="backsplash-curio" key={item.id}><CurioGlyph item={item} /><span>{item.title}</span></div>)}
-      </div>
-      {!displayed.length && <div className="curio-empty-shelf font-mono-ui text-[10px] uppercase tracking-[.14em]">finish a contest to place the first keepsake</div>}
+    </div>
+  );
+}
+
+function RestaurantWallCurios({ collectibles }: { collectibles: Collectible[] }) {
+  const wallCurios = collectibles.filter((item) => getCurioPlacement(item) === 'wall').slice(0, 4);
+  return (
+    <div className="restaurant-wall-curios" aria-label="Curios displayed around the restaurant">
+      {wallCurios.map((item, index) => <CurioHotspot item={item} className={`restaurant-wall-curio restaurant-wall-curio-${index}`} key={item.id} />)}
     </div>
   );
 }
@@ -262,33 +337,31 @@ function PersonaPortrait({ persona, large = false }: { persona: Persona; large?:
   );
 }
 
-function Header({ onOpenCurio, ledgerCount, curioCount }: { onOpenCurio: (view: 'shelf' | 'ledger') => void; ledgerCount: number; curioCount: number }) {
+function RestaurantControls({ onOpenCurio, ledgerCount, curioCount }: { onOpenCurio: (view: 'shelf' | 'ledger') => void; ledgerCount: number; curioCount: number }) {
   return (
-    <header className="topbar border-b-2 border-[#17121e]">
-      <div className="mx-auto flex min-h-[72px] max-w-6xl items-center justify-between gap-4 px-5 py-3 md:px-8">
-        <div className="flex items-center gap-3">
-          <div className="logo-mark" aria-hidden="true"><div className="logo-bento" /></div>
-          <div>
-            <div className="font-display text-lg font-bold tracking-tight">Mystery Bento</div>
-            <div className="font-mono-ui text-[10px] uppercase tracking-[.16em] text-[#f5c968]">after-hours food club</div>
-          </div>
+    <div className="restaurant-controls">
+      <div className="restaurant-brand-lockup">
+        <div className="restaurant-brand-mark" aria-hidden="true"><div className="logo-bento" /></div>
+        <div>
+          <div className="font-display text-lg font-bold tracking-tight">Mystery Bento</div>
+          <div className="font-mono-ui text-[9px] uppercase tracking-[.16em] text-[#f5c968]">after-hours sushi club</div>
         </div>
-        <nav className="flex items-center gap-2" aria-label="Collection navigation">
-          <button type="button" onClick={() => onOpenCurio('shelf')} className="curio-button flex items-center gap-2 rounded-md border border-[#66536f] px-3 py-2 text-xs font-bold text-[#f8e7c6] hover:border-[#f5c968]" data-testid="button-open-shelf">
-            <Sparkles className="h-4 w-4 text-[#f5c968]" aria-hidden="true" /><span className="hidden sm:inline">Curio shelf</span><span className="font-mono-ui text-[#f5c968]">{curioCount}</span>
-          </button>
-          <button type="button" onClick={() => onOpenCurio('ledger')} className="curio-button flex items-center gap-2 rounded-md border border-[#66536f] px-3 py-2 text-xs font-bold text-[#f8e7c6] hover:border-[#f5c968]" data-testid="button-open-ledger">
-            <BookOpen className="h-4 w-4 text-[#f5c968]" aria-hidden="true" /><span className="hidden sm:inline">Ledger</span><span className="font-mono-ui text-[#f5c968]">{ledgerCount}</span>
-          </button>
-        </nav>
       </div>
-    </header>
+      <nav className="restaurant-nav" aria-label="Collection navigation">
+        <button type="button" onClick={() => onOpenCurio('shelf')} className="curio-button" data-testid="button-open-shelf">
+          <Sparkles className="h-3.5 w-3.5 text-[#f5c968]" aria-hidden="true" /><span>Curios</span><span className="font-mono-ui text-[#f5c968]">{curioCount}</span>
+        </button>
+        <button type="button" onClick={() => onOpenCurio('ledger')} className="curio-button" data-testid="button-open-ledger">
+          <BookOpen className="h-3.5 w-3.5 text-[#f5c968]" aria-hidden="true" /><span>Ledger</span><span className="font-mono-ui text-[#f5c968]">{ledgerCount}</span>
+        </button>
+      </nav>
+    </div>
   );
 }
 
-function Meter({ meter, onPointerStart, onPointerEnd, onMeterKeyDown, onMeterKeyUp, onContextMenu, meterPulse, isHolding }: { meter: MeterState; onPointerStart: (event: PointerEvent<HTMLDivElement>) => void; onPointerEnd: () => void; onMeterKeyDown: (event: KeyboardEvent<HTMLDivElement>) => void; onMeterKeyUp: (event: KeyboardEvent<HTMLDivElement>) => void; onContextMenu: (event: MouseEvent<HTMLDivElement>) => void; meterPulse: boolean; isHolding: boolean }) {
+function Meter({ meter, onPointerStart, onPointerEnd, onMeterClick, onMeterKeyDown, onMeterKeyUp, onContextMenu, meterPulse, isHolding, compact = false }: { meter: MeterState; onPointerStart: (event: PointerEvent<HTMLDivElement>) => void; onPointerEnd: () => void; onMeterClick: () => void; onMeterKeyDown: (event: KeyboardEvent<HTMLDivElement>) => void; onMeterKeyUp: (event: KeyboardEvent<HTMLDivElement>) => void; onContextMenu: (event: MouseEvent<HTMLDivElement>) => void; meterPulse: boolean; isHolding: boolean; compact?: boolean }) {
   return (
-    <section className={`rounded-xl bg-[#f2d7a0] p-4 text-[#30223c] ${meterPulse ? 'bump' : ''}`} aria-labelledby="meter-heading">
+    <section className={`meter-shell rounded-xl bg-[#f2d7a0] p-4 text-[#30223c] ${compact ? 'compact-meter' : ''} ${meterPulse ? 'bump' : ''}`} aria-labelledby="meter-heading">
       <div className="mb-2 flex items-end justify-between gap-3">
         <div>
           <h2 id="meter-heading" className="font-display text-sm font-bold uppercase tracking-[.12em]">Mystery Bento Meter</h2>
@@ -296,13 +369,52 @@ function Meter({ meter, onPointerStart, onPointerEnd, onMeterKeyDown, onMeterKey
         </div>
         <div className="meter-rune" role="img" aria-label={`${meter.progress} percent charged`}><span>{meter.progress}</span></div>
       </div>
-      <div className={`meter-track ${isHolding ? 'is-holding' : ''}`} role="progressbar" aria-label="Mystery Bento Meter" aria-valuemin={0} aria-valuemax={100} aria-valuenow={meter.progress} tabIndex={0} onPointerDown={onPointerStart} onPointerUp={onPointerEnd} onPointerCancel={onPointerEnd} onPointerLeave={onPointerEnd} onKeyDown={onMeterKeyDown} onKeyUp={onMeterKeyUp} onContextMenu={onContextMenu} data-testid="meter-charge-control">
+      <div className={`meter-track ${isHolding ? 'is-holding' : ''}`} role="progressbar" aria-label="Mystery Bento Meter" aria-valuemin={0} aria-valuemax={100} aria-valuenow={meter.progress} tabIndex={0} onPointerDown={onPointerStart} onPointerUp={onPointerEnd} onPointerCancel={onPointerEnd} onPointerLeave={onPointerEnd} onClick={onMeterClick} onKeyDown={onMeterKeyDown} onKeyUp={onMeterKeyUp} onContextMenu={onContextMenu} data-testid="meter-charge-control">
         <div className={`meter-fill ${meter.progress >= 100 ? 'is-full' : ''}`} style={{ width: `${meter.progress}%` }} />
       </div>
       <div className="mt-2 flex items-center justify-between font-mono-ui text-[10px] uppercase tracking-wider text-[#765752]">
         <span data-testid="status-meter-acknowledgement">{meter.lastAcknowledgement}</span><span>{meter.progress >= 100 ? 'contest ready' : 'collecting'}</span>
       </div>
     </section>
+  );
+}
+
+function RestaurantCurioShelf({ collectibles }: { collectibles: Collectible[] }) {
+  const displayed = collectibles.slice(0, 6);
+  return (
+    <section className="restaurant-curio-shelf" aria-labelledby="restaurant-curio-title">
+      <div className="restaurant-curio-heading">
+        <div>
+          <div className="font-mono-ui text-[9px] uppercase tracking-[.18em] text-[#f5c968]">the house keeps</div>
+          <h2 id="restaurant-curio-title" className="font-display mt-1 text-xl font-bold">Restaurant Curios</h2>
+        </div>
+        <span className="font-mono-ui text-[10px] uppercase tracking-[.14em] text-[#d8c6af]">{collectibles.length ? `${collectibles.length} on display` : 'shelf awaiting a story'}</span>
+      </div>
+      <div className="restaurant-curio-plinth">
+        {displayed.length ? displayed.map((item) => (
+          <article className="restaurant-curio-object" key={item.id} data-testid={`restaurant-curio-${item.id}`}>
+            <CurioGlyph item={item} />
+            <span>{item.title}</span>
+          </article>
+        )) : <div className="restaurant-curio-empty">Finish a Persona Contest and the first keepsake will take its place here.</div>}
+      </div>
+    </section>
+  );
+}
+
+function ForegroundSeating() {
+  return (
+    <div className="foreground-seating" aria-hidden="true">
+      <div className="seating-floor-line" />
+      {[0, 1, 2, 3, 4, 5].map((chair) => (
+        <div className="restaurant-chair" key={chair}>
+          <div className="chair-back"><span /></div>
+          <div className="chair-seat" />
+          <div className="chair-leg chair-leg-left" />
+          <div className="chair-leg chair-leg-right" />
+        </div>
+      ))}
+    </div>
   );
 }
 
@@ -422,6 +534,8 @@ function Home() {
   const completionGuard = useRef(false);
   const finishContestRef = useRef<() => void>(() => undefined);
   const selectedCount = useMemo(() => ledger.length + collectibles.length, [ledger.length, collectibles.length]);
+  const counterCurios = useMemo(() => collectibles.filter((item) => getCurioPlacement(item) === 'counter').slice(0, 2), [collectibles]);
+  const shelfCurios = useMemo(() => collectibles.filter((item) => getCurioPlacement(item) === 'shelf'), [collectibles]);
 
   const cancelHold = () => {
     if (holdTimer.current) window.clearTimeout(holdTimer.current);
@@ -524,6 +638,17 @@ function Home() {
   const handleMeterKeyDown = (event: KeyboardEvent<HTMLDivElement>) => { if ((event.key === 'Enter' || event.key === ' ') && !event.repeat) { event.preventDefault(); startHold(); } };
   const handleMeterKeyUp = (event: KeyboardEvent<HTMLDivElement>) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); cancelHold(); } };
   const handleMeterContextMenu = (event: MouseEvent<HTMLDivElement>) => { if (isHolding) event.preventDefault(); };
+  const handleMeterClick = () => {
+    if (meter.progress >= 100 || contestOpen || contestQueued.current) return;
+    cancelHold();
+    setMeter({ progress: 100, lastAcknowledgement: 'The bento hums warmly…' });
+    setAcknowledgement('The bento hums warmly…');
+    setLiveStatus('The bento hums warmly. The Mystery Bento Meter is full.');
+    setMeterPulse(true);
+    window.setTimeout(() => setMeterPulse(false), 420);
+    contestQueued.current = true;
+    window.setTimeout(launchContest, 520);
+  };
   const skipContest = () => {
     if (completionGuard.current) return;
     const winningPersona = winner ?? contestOutcome.current?.winner ?? contestants[0] ?? personas[0];
@@ -585,61 +710,69 @@ function Home() {
 
   return (
     <div className="bento-app">
-      <Header onOpenCurio={setCurioView} ledgerCount={ledger.length} curioCount={collectibles.length} />
-      <main className="min-h-[calc(100dvh-72px)]" aria-label="Mystery Bento night market">
-        <section className="scene-shell min-h-[calc(100dvh-72px)] p-4 sm:p-6 md:p-10" aria-label="Mystery Bento night market">
-          <CurioBacksplash collectibles={collectibles} />
+      <main className="min-h-[100dvh]" aria-label="Mystery Bento night market">
+        <section className="scene-shell min-h-[100dvh] p-4 sm:p-6 md:p-10" aria-label="Mystery Bento night market">
+          <CurioBacksplash />
+          <RestaurantWallCurios collectibles={collectibles} />
           <div className="scene-content">
-            <div className="mb-6 flex items-start justify-between gap-4">
-              <div className="stall-sign max-w-[260px] px-4 py-3 sm:px-6"><div className="font-mono-ui text-[10px] uppercase tracking-[.2em]">no. 07 · alley counter</div><div className="font-display mt-1 text-2xl font-bold sm:text-3xl">MYSTERY BENTO</div></div>
-              <div className="relative mr-2 mt-2 hidden gap-4 sm:flex"><div className="lantern relative" /><div className="lantern relative bg-[#e57d5a]" /></div>
+            <div className="restaurant-top-zone">
+              <RestaurantControls onOpenCurio={setCurioView} ledgerCount={ledger.length} curioCount={collectibles.length} />
+              <div className="restaurant-meter-bay">
+                <div className="lantern relative" aria-hidden="true" />
+                <div className="font-mono-ui text-[9px] uppercase tracking-[.14em] text-[#f5c968]">after-hours service</div>
+                <div className="lantern relative bg-[#e57d5a]" aria-hidden="true" />
+              </div>
             </div>
-            <div className="relative mb-6">
-              <span className="pixel-star left-[8%] top-2" aria-hidden="true">+</span><span className="pixel-star right-[13%] top-10 text-sm" aria-hidden="true">+</span><span className="pixel-star right-[28%] top-0 text-xs" aria-hidden="true">+</span>
-              <p className="mb-3 font-mono-ui text-[10px] uppercase tracking-[.2em] text-[#bca99b]">the conveyor is carrying tonight's clues</p>
-              <div className="restaurant-counter">
-                <div className="restaurant-counter-label font-mono-ui text-[9px] uppercase tracking-[.18em]">sushi bar · moving service</div>
-                <div className="conveyor rounded-xl p-3 sm:p-4">
-                  <div className="conveyor-window" aria-label="Moving plated bento selections">
-                    <div className="conveyor-track">
-                      {[0, 1].map((copy) => (
-                        <div className="conveyor-group" key={`conveyor-group-${copy}`}>
-                          {foodItems.map((item, index) => (
-                            <button
-                              type="button"
-                              key={`${item.id}-${copy}`}
-                              onClick={() => selectFood(item)}
-                              disabled={meter.progress >= 100 || contestOpen}
-                              tabIndex={copy === 0 ? 0 : -1}
-                              className="food-button"
-                              data-testid={`button-select-food-${item.id}${copy ? '-repeat' : ''}`}
-                            >
-                              <div className="food-illustration">
-                                <div className="plate-display">
-                                  <div className="plate"><FoodGlyph item={item} /></div>
-                                  <span className="plate-glint" aria-hidden="true" />
+            <div className="restaurant-bar-stack">
+              <div className="relative mt-6">
+                <span className="pixel-star left-[8%] top-2" aria-hidden="true">+</span><span className="pixel-star right-[13%] top-10 text-sm" aria-hidden="true">+</span><span className="pixel-star right-[28%] top-0 text-xs" aria-hidden="true">+</span>
+                <div className="restaurant-counter">
+                  {counterCurios.length > 0 && (
+                    <div className="counter-curio-cluster" aria-label="Curios displayed on the counter">
+                      {counterCurios.map((item) => <CurioHotspot item={item} className="counter-curio-item" key={item.id} />)}
+                    </div>
+                  )}
+                  <div className="conveyor rounded-xl p-3 sm:p-4">
+                    <div className="conveyor-window" aria-label="Moving plated bento selections">
+                      <div className="conveyor-track">
+                        {[0, 1].map((copy) => (
+                          <div className="conveyor-group" key={`conveyor-group-${copy}`}>
+                            {foodItems.map((item, index) => (
+                              <button
+                                type="button"
+                                key={`${item.id}-${copy}`}
+                                onClick={() => selectFood(item)}
+                                disabled={meter.progress >= 100 || contestOpen}
+                                tabIndex={copy === 0 ? 0 : -1}
+                                className="food-button"
+                                data-testid={`button-select-food-${item.id}${copy ? '-repeat' : ''}`}
+                              >
+                                <div className="food-illustration">
+                                  <div className="plate-display">
+                                    <div className="plate"><FoodGlyph item={item} /></div>
+                                    <span className="plate-glint" aria-hidden="true" />
+                                  </div>
+                                  <span className="plate-number font-mono-ui text-[10px] text-[#a34d43]">0{index + 1}</span>
                                 </div>
-                                <span className="plate-number font-mono-ui text-[10px] text-[#a34d43]">0{index + 1}</span>
-                              </div>
-                              <div className="food-name font-display mt-3 text-base font-bold leading-4">{item.name}</div>
-                              <div className="food-points mt-2 font-mono-ui text-[9px] uppercase tracking-[.14em] text-[#f5c968]">+7–16 clue points</div>
-                            </button>
-                          ))}
-                        </div>
-                      ))}
+                                <div className="food-name font-display mt-3 text-base font-bold leading-4">{item.name}</div>
+                                <div className="food-points mt-2 font-mono-ui text-[9px] uppercase tracking-[.14em] text-[#f5c968]">+7–16 clue points</div>
+                              </button>
+                            ))}
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   </div>
+                  <div className="conveyor-line mt-1 rounded-full" />
+                  <div className="bar-meter-rail">
+                    <span className="font-mono-ui text-[8px] uppercase tracking-[.14em]">mystery bento meter</span>
+                  <Meter compact meter={meter} onPointerStart={(event) => { event.currentTarget.setPointerCapture?.(event.pointerId); startHold(); }} onPointerEnd={cancelHold} onMeterClick={handleMeterClick} onMeterKeyDown={handleMeterKeyDown} onMeterKeyUp={handleMeterKeyUp} onContextMenu={handleMeterContextMenu} meterPulse={meterPulse} isHolding={isHolding} />
+                  </div>
                 </div>
-                <div className="conveyor-line mt-3 rounded-full" />
               </div>
+              <ForegroundSeating />
             </div>
-            <div className="grid gap-4 md:grid-cols-[1fr_1.4fr] md:items-end">
-              <div className="rounded-xl border-2 border-[#65506d] bg-[#261d31] p-4 text-[#f8e7c6] sm:p-5">
-                <div className="flex items-start gap-3"><div className="grid h-9 w-9 shrink-0 place-items-center border border-[#f5c968] text-[#f5c968]"><Sparkles className="h-4 w-4" aria-hidden="true" /></div><div><div className="font-mono-ui text-[10px] uppercase tracking-[.14em] text-[#f5c968]">stall note</div><p className="mt-1 text-sm leading-5 text-[#d8c6af]">Every selection changes the night. There is no wrong answer, only a stranger story.</p></div></div>
-                <div className="ack-bubble mt-4 rounded-md px-3 py-2 text-xs font-bold" aria-live="polite" data-testid="status-acknowledgement">{acknowledgement}</div>
-              </div>
-              <Meter meter={meter} onPointerStart={(event) => { event.currentTarget.setPointerCapture?.(event.pointerId); startHold(); }} onPointerEnd={cancelHold} onMeterKeyDown={handleMeterKeyDown} onMeterKeyUp={handleMeterKeyUp} onContextMenu={handleMeterContextMenu} meterPulse={meterPulse} isHolding={isHolding} />
-            </div>
+            {shelfCurios.length > 0 && <RestaurantCurioShelf collectibles={shelfCurios} />}
           </div>
           {foodSplash && <FoodSelectionSplash key={foodSplash.key} item={foodSplash.item} />}
         </section>
