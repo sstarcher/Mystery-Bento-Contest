@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState, type CSSProperties, type KeyboardEvent, type MouseEvent, type PointerEvent } from 'react';
-import { BookOpen, ChevronRight, Eye, LockKeyhole, RotateCcw, SkipForward, Sparkles, X } from 'lucide-react';
+import { BookOpen, ChevronRight, Eye, LockKeyhole, RotateCcw, SkipForward, Sparkles, Volume2, VolumeX, X } from 'lucide-react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ErrorBoundary } from '@/components/error-boundary';
 import { Toaster } from '@/components/ui/toaster';
@@ -94,6 +94,7 @@ const queryClient = new QueryClient();
 const METER_KEY = 'mystery-bento-meter';
 const LEDGER_KEY = 'mystery-bento-ledger';
 const CURIO_KEY = 'mystery-bento-curios';
+const VOICE_ANNOUNCER_KEY = 'mystery-bento-voice-announcer';
 
 const personas: Persona[] = contestantDesigns.map((design) => ({
   id: design.id,
@@ -155,6 +156,12 @@ const contestNextStep: Partial<Record<ContestStep, ContestStep>> = {
   warmup: 'matchup',
   matchup: 'finale',
   finale: 'winner',
+};
+
+const contestPreviousStep: Partial<Record<ContestStep, ContestStep>> = {
+  warmup: 'intro',
+  matchup: 'warmup',
+  finale: 'matchup',
 };
 
 const raceStepProgress: Record<ContestStep, number> = {
@@ -748,6 +755,15 @@ function ForegroundSeating() {
 
 function ContestOverlay({ contestants, winner, step, contestName, memorableEvent, race, onSkip, onClose }: { contestants: Persona[]; winner: Persona | null; step: ContestStep; contestName: string; memorableEvent: string; race: RaceSimulation; onSkip: () => void; onClose: () => void }) {
   const [showWinnerReveal, setShowWinnerReveal] = useState(false);
+  const [voiceEnabled, setVoiceEnabled] = useState(() => {
+    try {
+      return window.localStorage.getItem(VOICE_ANNOUNCER_KEY) !== 'off';
+    } catch {
+      return true;
+    }
+  });
+  const voiceSupported = typeof window !== 'undefined' && 'speechSynthesis' in window;
+  const announcedStep = useRef<ContestStep | null>(null);
   const eventText = winner ? memorableEvent : 'The contestants take their places beneath the market lantern.';
   const currentObstacleIndex = step === 'intro' ? -1 : Math.min(race.obstacles.length - 1, raceStepProgress[step] - 1);
   const currentObstacle = currentObstacleIndex >= 0 ? race.obstacles[currentObstacleIndex] : null;
@@ -768,6 +784,29 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
     return reachedIndex;
   };
   const displayedContestants = winner ? [winner] : contestants;
+  const reportAnnouncement = step === 'intro'
+    ? `The ${contestName} is ready. ${contestants.map((persona) => persona.name).join(', ')} are at the starting lantern. Four kitchen obstacles are ahead.`
+    : step === 'winner' && winner
+      ? `Finish report. ${winner.name} wins the ${contestName}. ${memorableEvent}`
+      : `${currentObstacle?.label ?? 'Starting lantern'}. ${currentObstacle?.description ?? 'The route is being set.'} ${contestants.map((persona) => {
+        const lane = race.lanes.find((candidate) => candidate.personaId === persona.id);
+        const laneCurrentObstacleIndex = getCurrentLaneObstacleIndex(lane);
+        const laneCurrentObstacle = laneCurrentObstacleIndex >= 0 ? race.obstacles[laneCurrentObstacleIndex] : null;
+        const encounter = laneCurrentObstacle ? lane?.encounters[laneCurrentObstacle.id] : null;
+        return encounter && laneCurrentObstacle ? `${persona.name}: ${encounter.headline} at the ${laneCurrentObstacle.shortLabel}.` : `${persona.name} is approaching.`;
+      }).join(' ')}`;
+
+  const toggleVoice = () => {
+    const nextValue = !voiceEnabled;
+    setVoiceEnabled(nextValue);
+    announcedStep.current = nextValue ? null : step;
+    try {
+      window.localStorage.setItem(VOICE_ANNOUNCER_KEY, nextValue ? 'on' : 'off');
+    } catch {
+      // Speech remains available even when local storage is unavailable.
+    }
+    if (!nextValue && voiceSupported) window.speechSynthesis.cancel();
+  };
 
   useEffect(() => {
     setShowWinnerReveal(false);
@@ -779,6 +818,34 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
     const timer = window.setTimeout(() => setShowWinnerReveal(true), 2600);
     return () => window.clearTimeout(timer);
   }, [step, winner]);
+
+  useEffect(() => {
+    if (!voiceEnabled || !voiceSupported || announcedStep.current === step) return;
+    announcedStep.current = step;
+    const timer = window.setTimeout(() => {
+      const synthesis = window.speechSynthesis;
+      synthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(reportAnnouncement);
+      const voices = synthesis.getVoices();
+      utterance.voice = voices.find((voice) => voice.lang.toLowerCase() === 'en-us')
+        ?? voices.find((voice) => voice.lang.toLowerCase().startsWith('en-'))
+        ?? voices[0]
+        ?? null;
+      utterance.lang = 'en-US';
+      utterance.rate = 1.08;
+      utterance.pitch = 0.92;
+      utterance.volume = 0.9;
+      synthesis.speak(utterance);
+    }, 240);
+    return () => {
+      window.clearTimeout(timer);
+      window.speechSynthesis.cancel();
+    };
+  }, [reportAnnouncement, step, voiceEnabled, voiceSupported]);
+
+  useEffect(() => () => {
+    if (voiceSupported) window.speechSynthesis.cancel();
+  }, [voiceSupported]);
 
   return (
     <div className="contest-backdrop fixed inset-0 z-30 flex items-stretch justify-center" role="dialog" aria-modal="true" aria-labelledby="contest-title">
@@ -838,6 +905,13 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
                 const runnerReaction = laneCurrentObstacle && encounter ? getRaceRunnerReaction(laneCurrentObstacle.kind, encounter.result) : 'ready';
                 const toScreenAnchor = (position: number) => `${Math.min(72, Math.max(14, 10 + position * 0.62))}%`;
                 const isWinner = (winner?.id ?? race.winnerId) === persona.id;
+                const previousStep = contestPreviousStep[step];
+                const startProgress = lane && previousStep ? lane.positions[previousStep] : lane?.positions.intro ?? 0;
+                const endProgress = lane?.positions[step] ?? startProgress;
+                const reactionProgress = laneCurrentObstacle ? (laneCurrentObstacle.position - startProgress) / Math.max(1, endProgress - startProgress) : 0;
+                const reactionDelay = laneCurrentObstacle && step !== 'winner'
+                  ? `${Math.max(0, Math.min(0.9, reactionProgress)) * contestDurations[step] / 1000}s`
+                  : '0s';
                 return (
                   <div className="race-runner-lane" key={persona.id}>
                     <div className="race-lane-number font-mono-ui text-[10px] text-[#bca99b]">{String(index + 1).padStart(2, '0')}</div>
@@ -851,6 +925,7 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
                         '--race-finale-anchor': isWinner ? 'var(--race-finish-anchor)' : toScreenAnchor(lane?.positions.finale ?? 78),
                         '--race-winner-anchor': isWinner ? 'var(--race-finish-anchor)' : toScreenAnchor(lane?.positions.finale ?? 78),
                         '--race-runner-tempo': `${Math.max(0.72, 1.28 - persona.traits.speed * 0.0032 + persona.traits.balance * 0.001).toFixed(2)}s`,
+                        '--race-reaction-delay': reactionDelay,
                       } as CSSProperties}
                     >
                       <span className="race-runner-sprite">
@@ -866,6 +941,18 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
             <div className="race-event-heading">
               <span className="font-mono-ui text-[9px] uppercase tracking-[.16em] text-[#f5c968]">{step === 'winner' ? 'finish report' : 'course report'}</span>
               <strong>{currentObstacle?.label ?? 'Starting lantern'}</strong>
+              <button
+                type="button"
+                className="race-voice-toggle"
+                onClick={toggleVoice}
+                disabled={!voiceSupported}
+                aria-pressed={voiceEnabled}
+                aria-label={voiceSupported ? `${voiceEnabled ? 'Mute' : 'Enable'} spoken race reports` : 'Spoken race reports are unavailable in this browser'}
+                title={voiceSupported ? `${voiceEnabled ? 'Mute' : 'Enable'} spoken race reports` : 'Spoken race reports are unavailable in this browser'}
+              >
+                {voiceEnabled && voiceSupported ? <Volume2 className="h-3.5 w-3.5" aria-hidden="true" /> : <VolumeX className="h-3.5 w-3.5" aria-hidden="true" />}
+                <span>{voiceSupported ? (voiceEnabled ? 'announcer on' : 'announcer off') : 'voice unavailable'}</span>
+              </button>
             </div>
             <p>{step === 'winner' && winner ? `${winner.name} takes the finish after the last hazard.` : currentObstacleCopy}</p>
             <div className="race-encounter-row" aria-label="Contestant obstacle results">
@@ -885,7 +972,7 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
           </div>
           <div className="race-obstacle-list" aria-label="Course hazards">
             {race.obstacles.map((obstacle, index) => (
-              <span className={index === currentObstacleIndex ? 'is-current' : index < currentObstacleIndex ? 'is-cleared' : ''} key={obstacle.id}>
+              <span className={step !== 'winner' && index === currentObstacleIndex ? 'is-current' : index < currentObstacleIndex || step === 'winner' ? 'is-cleared' : ''} key={obstacle.id}>
                 <i aria-hidden="true">{obstacle.icon}</i>{obstacle.shortLabel}
               </span>
             ))}
