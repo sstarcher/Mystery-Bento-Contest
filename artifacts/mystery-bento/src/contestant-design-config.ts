@@ -6,20 +6,24 @@ import misoPortrait from './assets/contestants/miso.png';
 import misoFood from './assets/contestants/miso-food.png';
 import noriPortrait from './assets/contestants/nori.png';
 import noriFood from './assets/contestants/nori-food.png';
+import noriNibFrames from './assets/contestants/nori-nib-frames.png';
 import pankoPortrait from './assets/contestants/panko.png';
 import pankoFood from './assets/contestants/panko-food.png';
 import pipPortrait from './assets/contestants/pip.png';
 import pipFood from './assets/contestants/pip-food.png';
+import pipPorridgeFrames from './assets/contestants/pip-porridge-frames.png';
 import rolloPortrait from './assets/contestants/rollo.png';
 import rolloFood from './assets/contestants/rollo-food.png';
 import saffyPortrait from './assets/contestants/saffy.png';
 import saffyFood from './assets/contestants/saffy-food.png';
 import senchaPortrait from './assets/contestants/sencha.png';
 import senchaFood from './assets/contestants/sencha-food.png';
+import senchaTeaFrames from './assets/contestants/sencha-tea-frames.png';
 import tildaPortrait from './assets/contestants/tilda.png';
 import tildaFood from './assets/contestants/tilda-food.png';
 import toroPortrait from './assets/contestants/toro.png';
 import toroFood from './assets/contestants/toro-food.png';
+import toroGrillFrames from './assets/contestants/toro-grill-frames.png';
 import umaPortrait from './assets/contestants/uma.png';
 import umaFood from './assets/contestants/uma-food.png';
 
@@ -70,6 +74,17 @@ export const contestantFoodSprites: Record<string, string> = {
   saffy: saffyFood,
   kiku: kikuFood,
   bibi: bibiFood,
+};
+
+export const contestantFoodAnimationSheets: Partial<Record<string, string>> = {
+  pip: pipPorridgeFrames,
+  sencha: senchaTeaFrames,
+  toro: toroGrillFrames,
+  nori: noriNibFrames,
+};
+
+export const contestantFoodAnimationAspectRatios: Partial<Record<string, string>> = {
+  nori: '313.5 / 836',
 };
 
 export const contestantDesignReference = {

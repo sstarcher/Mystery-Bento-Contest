@@ -6,7 +6,7 @@ import { Toaster } from '@/components/ui/toaster';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import NotFound from '@/pages/not-found';
 import { Route, Router as WouterRouter, Switch, useLocation } from 'wouter';
-import { contestantDesigns, contestantFoodSprites, contestantPortraits } from './contestant-design-config';
+import { contestantDesigns, contestantFoodAnimationAspectRatios, contestantFoodAnimationSheets, contestantFoodSprites, contestantPortraits } from './contestant-design-config';
 
 type MeterState = { progress: number; lastAcknowledgement: string };
 type Persona = {
@@ -20,6 +20,8 @@ type Persona = {
   memorableEvent: string;
   portraitSrc: string;
   foodSpriteSrc: string;
+  foodAnimationSheetSrc?: string;
+  foodAnimationAspectRatio?: string;
 };
 type ContestLedgerEntry = {
   id: string;
@@ -65,6 +67,8 @@ const personas: Persona[] = contestantDesigns.map((design) => ({
   memorableEvent: design.memorableEvent,
   portraitSrc: contestantPortraits[design.id],
   foodSpriteSrc: contestantFoodSprites[design.id],
+  foodAnimationSheetSrc: contestantFoodAnimationSheets[design.id],
+  foodAnimationAspectRatio: contestantFoodAnimationAspectRatios[design.id],
 }));
 
 const foodItems: FoodItem[] = [
@@ -639,6 +643,7 @@ function Home() {
       ?? personas.find((persona) => persona.name === latestEntry.winner)
       ?? null;
   }, [ledger]);
+  const activeChef = personas.find((persona) => persona.id === 'pip') ?? lastWinner ?? null;
 
   useEffect(() => {
     setCollectibles((current) => {
@@ -840,7 +845,7 @@ function Home() {
     <div className="bento-app">
       <main className="min-h-[100dvh]" aria-label="Mystery Bento night market">
         <section className="scene-shell min-h-[100dvh] p-4 sm:p-6 md:p-10" aria-label="Mystery Bento night market">
-          <CurioBacksplash collectibles={collectibles} lastWinner={lastWinner} />
+          <CurioBacksplash collectibles={collectibles} lastWinner={activeChef} />
           <RestaurantCurioDisplays collectibles={collectibles} />
           <div className="scene-content">
             <div className="restaurant-top-zone">
@@ -855,9 +860,20 @@ function Home() {
               <div className="relative mt-6">
                 <span className="pixel-star left-[8%] top-2" aria-hidden="true">+</span><span className="pixel-star right-[13%] top-10 text-sm" aria-hidden="true">+</span><span className="pixel-star right-[28%] top-0 text-xs" aria-hidden="true">+</span>
                 <div className="restaurant-counter">
-                  {lastWinner && (
-                    <div className="counter-chef" aria-label={`${lastWinner.name}, the latest contest winner, is preparing food at the conveyor bar`}>
-                      <img className="counter-chef-image" src={lastWinner.foodSpriteSrc} alt="" />
+                  {activeChef && (
+                    <div className="counter-chef" aria-label={`${activeChef.name}, the active chef, is preparing food at the conveyor bar`}>
+                      {activeChef.foodAnimationSheetSrc ? (
+                        <span
+                          className="counter-chef-sprite"
+                          role="img"
+                          aria-label={`${activeChef.name} cooking animation`}
+                          style={{ aspectRatio: activeChef.foodAnimationAspectRatio ?? '362 / 724' }}
+                        >
+                          <img className="counter-chef-sheet" src={activeChef.foodAnimationSheetSrc} alt="" />
+                        </span>
+                      ) : (
+                        <img className="counter-chef-image" src={activeChef.foodSpriteSrc} alt="" />
+                      )}
                     </div>
                   )}
                   <div className="conveyor rounded-xl p-3 sm:p-4">
