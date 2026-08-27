@@ -223,14 +223,26 @@ function FoodSelectionSplash({ item }: { item: FoodItem }) {
 function CurioGlyph({ item }: { item: Collectible }) {
   const glyphClass = item.id.includes('recipe-midnight-sauce')
     ? 'recipe'
+    : item.id.includes('recipe-after-hours-note')
+      ? 'note'
     : item.id.includes('lantern-warm-glow')
       ? 'lantern'
+      : item.id.includes('lantern-rain-ticket')
+        ? 'ticket'
       : item.id.includes('chef-ladle-champion')
         ? 'ladle'
+        : item.id.includes('chef-ladle-night-shift')
+          ? 'patch'
         : item.id.includes('plate-moon-checker')
           ? 'checker'
+        : item.id.includes('plate-rainbow-rim')
+          ? 'tile'
           : item.id.includes('snapshot-great-wobble')
             ? 'snapshot'
+        : item.id.includes('snapshot-last-tray')
+          ? 'tray'
+        : item.id.includes('radish-fizz-pin')
+          ? 'pin'
             : 'radish';
   return (
     <div className={`curio-glyph curio-glyph-${glyphClass}`} aria-hidden="true">
