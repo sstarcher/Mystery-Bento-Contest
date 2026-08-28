@@ -48,14 +48,14 @@ content_type = "audio/mpeg"
 id = "r6Q_BB4EB_k_uQQn9CiZH"
 uri = "file://artifacts/mystery-bento/ANNOUNCER_PHRASES.md"
 type = "text"
-title = "Mystery Bento announcer catalog — obstacle narration and result clips"
-description = "Updated checklist covering the 11 longer obstacle narrations and 8 reusable contestant-result clips, with organized runtime paths and live-playback status."
+title = "Mystery Bento announcer catalog — reactions and race pacing"
+description = "Updated checklist with the Bento Stack alternate, seven physical reactions, and two pace/lead-change clips, including organized runtime paths and verification status."
 logical_id = "c7c80e49-70b0-4127-984d-a5658510520f"
-content_hash = "sha256:5c500bc2bd1b04eba51ad4573a5dd187f85d143f98a380fe8f6e386d30352672"
-size = 15800
-mtime_ms = 1787885175368
-storage_uri = "gcs://replit-rams-assets-reed/rams/assets/repl:0415d3d6-78aa-421d-9ee2-fdcbdbf7feb8/c7c80e49-70b0-4127-984d-a5658510520f/b542478e-d1ae-4403-8721-22a7284125a6"
-storage_version_token = "1787885247413352"
+content_hash = "sha256:f661e65ab8557bdb4be5d11b64199a8b754016e6ce9970acf41d26b18718cac9"
+size = 16983
+mtime_ms = 1787885415404
+storage_uri = "gcs://replit-rams-assets-reed/rams/assets/repl:0415d3d6-78aa-421d-9ee2-fdcbdbf7feb8/c7c80e49-70b0-4127-984d-a5658510520f/13a1d59b-bd32-44a5-b05f-2712506092bb"
+storage_version_token = "1787885437995122"
 content_type = "text/markdown"
 
 [[outputs]]

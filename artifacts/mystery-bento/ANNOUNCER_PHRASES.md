@@ -281,7 +281,9 @@ Longer alternate versions can be used when the race needs more drama:
 - [ ] The steam gadget has filled the lane with fog! — asset received; live
   playback pending
   (`public/audio/announcer/obstacles/steam-gadget-filled-lane-with-fog.mp3`)
-- [ ] The bento stack has narrowed the final lane!
+- [ ] The bento stack has narrowed the final lane! — asset received; live
+  playback pending
+  (`public/audio/announcer/obstacles/bento-stack-narrowed-final-lane.mp3`)
 
 ### 5. Universal contestant result clips
 
@@ -315,13 +317,23 @@ the separate name-plus-result delivery does not sound natural:
 
 These should stay short and reusable across obstacles.
 
-- [ ] Jumps over it and keeps moving!
-- [ ] Sidesteps it and holds the line!
-- [ ] Slides around it and recovers!
-- [ ] Ducks beneath it and keeps moving!
-- [ ] Stumbles, steadies, and carries on!
-- [ ] Weaves through and finds a stranger line!
-- [ ] Surges through the opening!
+- [ ] Jumps over it and keeps moving! — asset received; live playback pending
+  (`public/audio/announcer/reactions/jumps-over-it-and-keeps-moving.mp3`)
+- [ ] Sidesteps it and holds the line! — asset received; live playback pending
+  (`public/audio/announcer/reactions/sidesteps-it-and-holds-the-line.mp3`)
+- [ ] Slides around it and recovers! — asset received; live playback pending
+  (`public/audio/announcer/reactions/slides-around-it-and-recovers.mp3`)
+- [ ] Ducks beneath it and keeps moving! — asset received; live playback
+  pending
+  (`public/audio/announcer/reactions/ducks-beneath-it-and-keeps-moving.mp3`)
+- [ ] Stumbles, steadies, and carries on! — asset received; live playback
+  pending
+  (`public/audio/announcer/reactions/stumbles-steadies-and-carries-on.mp3`)
+- [ ] Weaves through and finds a stranger line! — asset received; live
+  playback pending
+  (`public/audio/announcer/reactions/weaves-through-and-finds-a-stranger-line.mp3`)
+- [ ] Surges through the opening! — asset received; live playback pending
+  (`public/audio/announcer/reactions/surges-through-the-opening.mp3`)
 
 Recommended composition:
 
@@ -334,8 +346,11 @@ Recommended composition:
 These clips give the announcer a way to bridge the visual race without
 describing every frame.
 
-- [ ] The pack is still together!
-- [ ] The field is beginning to stretch!
+- [ ] The pack is still together! — asset received; live playback pending
+  (`public/audio/announcer/pace-lead-changes/pack-still-together.mp3`)
+- [ ] The field is beginning to stretch! — asset received; live playback
+  pending
+  (`public/audio/announcer/pace-lead-changes/field-beginning-to-stretch.mp3`)
 - [ ] There’s a new leader on the lantern route!
 - [ ] The lead has changed hands!
 - [ ] That gap is closing quickly!
