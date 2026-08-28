@@ -18,7 +18,7 @@ source_uri = "file://mystery-bento-implementation-plan.md"
 
 [[outputs]]
 id = "ax8FCBd6ujAx8OvKDieBK"
-uri = "file://artifacts/mystery-bento/public/audio/mystery-bento-announcer-demo.mp3"
+uri = "file://artifacts/mystery-bento/assets/source-audio/announcer/race-demo-full.mp3"
 type = "audio"
 title = "Mystery Bento announcer demo"
 description = "Pre-rendered ElevenLabs announcer clip used by the first race sequence. Eddie — Warm & Conversational voice, with the full Midnight Maki Match report."
@@ -32,7 +32,7 @@ content_type = "audio/mpeg"
 
 [[outputs]]
 id = "uNz-L4CdFk4oeOVtY9Zr6"
-uri = "file://artifacts/mystery-bento/public/audio/mystery-bento-race-start.mp3"
+uri = "file://artifacts/mystery-bento/public/audio/announcer/race-start.mp3"
 type = "audio"
 title = "British Football Announcer — race start"
 description = "Reusable race-start announcement segment now used at the intro of every Mystery Bento contest."
@@ -60,7 +60,7 @@ content_type = "text/markdown"
 
 [[outputs]]
 id = "zZKK7yJmk64v-sUulQgxA"
-uri = "file://artifacts/mystery-bento/public/audio/mystery-bento-finish-takes-the-win.mp3"
+uri = "file://artifacts/mystery-bento/public/audio/announcer/finish-takes-the-win.mp3"
 type = "audio"
 title = "Mystery Bento — takes the win"
 description = "Reusable British football-announcer finish fragment for appending after a separate winner-name clip."
@@ -74,7 +74,7 @@ content_type = "audio/mpeg"
 
 [[outputs]]
 id = "A-zLG4aBoBE_IveFBDBDI"
-uri = "file://artifacts/mystery-bento/public/audio/mystery-bento-pip-takes-the-win-preview.mp3"
+uri = "file://artifacts/mystery-bento/public/audio/previews/pip-takes-the-win.mp3"
 type = "audio"
 title = "Pip takes the win — back-to-back preview"
 description = "Direct concatenation of the Pip winner-name clip followed immediately by the reusable takes-the-win result clip."

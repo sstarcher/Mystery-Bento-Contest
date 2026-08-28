@@ -49,7 +49,7 @@ manifest beside the files later with the exact text, voice name, and duration.
 The first reusable segment is:
 
 ```text
-public/audio/mystery-bento-race-start.mp3
+public/audio/announcer/race-start.mp3
 ```
 
 Source text:
@@ -64,7 +64,7 @@ finish before advancing beyond the intro stage.
 The first reusable winner-result fragment is:
 
 ```text
-public/audio/mystery-bento-finish-takes-the-win.mp3
+public/audio/announcer/finish-takes-the-win.mp3
 ```
 
 Source text:
@@ -83,7 +83,7 @@ separate winner sentence for each character.
 The first installed winner-name clip is:
 
 ```text
-public/audio/mystery-bento-winner-name-pip.mp3
+public/audio/announcer/winner-name-pip.mp3
 ```
 
 Source text:
@@ -93,7 +93,7 @@ Source text:
 A back-to-back listening preview is also available:
 
 ```text
-public/audio/mystery-bento-pip-takes-the-win-preview.mp3
+public/audio/previews/pip-takes-the-win.mp3
 ```
 
 It combines `winner-name-pip` immediately followed by

@@ -95,7 +95,7 @@ const METER_KEY = 'mystery-bento-meter';
 const LEDGER_KEY = 'mystery-bento-ledger';
 const CURIO_KEY = 'mystery-bento-curios';
 const VOICE_ANNOUNCER_KEY = 'mystery-bento-voice-announcer';
-const RACE_START_AUDIO_SRC = `${import.meta.env.BASE_URL}audio/mystery-bento-race-start.mp3`;
+const RACE_START_AUDIO_SRC = `${import.meta.env.BASE_URL}audio/announcer/race-start.mp3`;
 
 const personas: Persona[] = contestantDesigns.map((design) => ({
   id: design.id,
