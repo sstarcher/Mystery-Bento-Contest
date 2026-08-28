@@ -95,8 +95,7 @@ const METER_KEY = 'mystery-bento-meter';
 const LEDGER_KEY = 'mystery-bento-ledger';
 const CURIO_KEY = 'mystery-bento-curios';
 const VOICE_ANNOUNCER_KEY = 'mystery-bento-voice-announcer';
-const ANNOUNCER_DEMO_USED_KEY = 'mystery-bento-announcer-demo-used';
-const ANNOUNCER_AUDIO_SRC = `${import.meta.env.BASE_URL}audio/mystery-bento-announcer-demo.mp3`;
+const RACE_START_AUDIO_SRC = `${import.meta.env.BASE_URL}audio/mystery-bento-race-start.mp3`;
 
 const personas: Persona[] = contestantDesigns.map((design) => ({
   id: design.id,
@@ -755,7 +754,7 @@ function ForegroundSeating() {
   );
 }
 
-function ContestOverlay({ contestants, winner, step, contestName, memorableEvent, race, playDemoAnnouncer, onSkip, onClose }: { contestants: Persona[]; winner: Persona | null; step: ContestStep; contestName: string; memorableEvent: string; race: RaceSimulation; playDemoAnnouncer: boolean; onSkip: () => void; onClose: () => void }) {
+function ContestOverlay({ contestants, winner, step, contestName, memorableEvent, race, onRaceStartAudioComplete, onSkip, onClose }: { contestants: Persona[]; winner: Persona | null; step: ContestStep; contestName: string; memorableEvent: string; race: RaceSimulation; onRaceStartAudioComplete: () => void; onSkip: () => void; onClose: () => void }) {
   const [showWinnerReveal, setShowWinnerReveal] = useState(false);
   const [voiceEnabled, setVoiceEnabled] = useState(() => {
     try {
@@ -766,6 +765,7 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
   });
   const [audioNeedsGesture, setAudioNeedsGesture] = useState(false);
   const announcerAudio = useRef<HTMLAudioElement | null>(null);
+  const raceStartAudioCompleteNotified = useRef(false);
   const currentObstacleIndex = step === 'intro' ? -1 : Math.min(race.obstacles.length - 1, raceStepProgress[step] - 1);
   const currentObstacle = currentObstacleIndex >= 0 ? race.obstacles[currentObstacleIndex] : null;
   const currentObstacleCopy = currentObstacle
@@ -785,6 +785,11 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
     return reachedIndex;
   };
   const displayedContestants = winner ? [winner] : contestants;
+  const completeRaceStartAudio = () => {
+    if (raceStartAudioCompleteNotified.current) return;
+    raceStartAudioCompleteNotified.current = true;
+    onRaceStartAudioComplete();
+  };
 
   const toggleVoice = () => {
     if (voiceEnabled && audioNeedsGesture && announcerAudio.current) {
@@ -803,6 +808,7 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
     if (!nextValue && announcerAudio.current) {
       announcerAudio.current.pause();
       announcerAudio.current.currentTime = 0;
+      completeRaceStartAudio();
     }
   };
 
@@ -818,21 +824,26 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
   }, [step, winner]);
 
   useEffect(() => {
-    if (!playDemoAnnouncer) return;
-    const audio = new Audio(ANNOUNCER_AUDIO_SRC);
+    const audio = new Audio(RACE_START_AUDIO_SRC);
     audio.preload = 'auto';
     audio.volume = 0.94;
+    audio.addEventListener('ended', completeRaceStartAudio);
     audio.addEventListener('error', () => setAudioNeedsGesture(true));
     announcerAudio.current = audio;
     return () => {
+      audio.removeEventListener('ended', completeRaceStartAudio);
       audio.pause();
       audio.currentTime = 0;
       announcerAudio.current = null;
     };
-  }, [playDemoAnnouncer]);
+  }, []);
 
   useEffect(() => {
-    if (!playDemoAnnouncer || !voiceEnabled || step !== 'intro' || !announcerAudio.current) return;
+    if (step !== 'intro') return;
+    if (!voiceEnabled || !announcerAudio.current) {
+      completeRaceStartAudio();
+      return;
+    }
     const timer = window.setTimeout(() => {
       const audio = announcerAudio.current;
       if (!audio) return;
@@ -842,7 +853,15 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
         .catch(() => setAudioNeedsGesture(true));
     }, 240);
     return () => window.clearTimeout(timer);
-  }, [playDemoAnnouncer, step, voiceEnabled]);
+  }, [step, voiceEnabled]);
+
+  useEffect(() => {
+    if (step === 'intro') return;
+    const audio = announcerAudio.current;
+    if (!audio) return;
+    audio.pause();
+    audio.currentTime = 0;
+  }, [step]);
 
   return (
     <div className="contest-backdrop fixed inset-0 z-30 flex items-stretch justify-center" role="dialog" aria-modal="true" aria-labelledby="contest-title">
@@ -938,19 +957,17 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
             <div className="race-event-heading">
               <span className="font-mono-ui text-[9px] uppercase tracking-[.16em] text-[#f5c968]">{step === 'winner' ? 'finish report' : 'course report'}</span>
               <strong>{currentObstacle?.label ?? 'Starting lantern'}</strong>
-              {playDemoAnnouncer && (
-                <button
-                  type="button"
-                  className="race-voice-toggle"
-                  onClick={toggleVoice}
-                  aria-pressed={voiceEnabled}
-                  aria-label={audioNeedsGesture ? 'Play the announcer demo' : `${voiceEnabled ? 'Mute' : 'Enable'} the announcer demo`}
-                  title={audioNeedsGesture ? 'Play the announcer demo' : `${voiceEnabled ? 'Mute' : 'Enable'} the announcer demo`}
-                >
-                  {voiceEnabled && !audioNeedsGesture ? <Volume2 className="h-3.5 w-3.5" aria-hidden="true" /> : <VolumeX className="h-3.5 w-3.5" aria-hidden="true" />}
-                  <span>{audioNeedsGesture ? 'play announcer' : (voiceEnabled ? 'announcer on' : 'announcer off')}</span>
-                </button>
-              )}
+              <button
+                type="button"
+                className="race-voice-toggle"
+                onClick={toggleVoice}
+                aria-pressed={voiceEnabled}
+                aria-label={audioNeedsGesture ? 'Play the race start announcement' : `${voiceEnabled ? 'Mute' : 'Enable'} the race start announcement`}
+                title={audioNeedsGesture ? 'Play the race start announcement' : `${voiceEnabled ? 'Mute' : 'Enable'} the race start announcement`}
+              >
+                {voiceEnabled && !audioNeedsGesture ? <Volume2 className="h-3.5 w-3.5" aria-hidden="true" /> : <VolumeX className="h-3.5 w-3.5" aria-hidden="true" />}
+                <span>{audioNeedsGesture ? 'play race start' : (voiceEnabled ? 'race start on' : 'race start off')}</span>
+              </button>
             </div>
             <p>{step === 'winner' && winner ? `${winner.name} takes the finish after the last hazard.` : currentObstacleCopy}</p>
             <div className="race-encounter-row" aria-label="Contestant obstacle results">
@@ -1051,10 +1068,11 @@ function Home() {
   const [foodSplash, setFoodSplash] = useState<{ item: FoodItem; key: number } | null>(null);
   const [contestants, setContestants] = useState<Persona[]>([]);
   const [winner, setWinner] = useState<Persona | null>(null);
-  const [playDemoAnnouncer, setPlayDemoAnnouncer] = useState(false);
+  const [raceStartAudioReady, setRaceStartAudioReady] = useState(false);
   const [liveStatus, setLiveStatus] = useState(acknowledgement);
   const holdTimer = useRef<number | null>(null);
   const contestTimer = useRef<number | null>(null);
+  const contestIntroStartedAt = useRef<number | null>(null);
   const foodSplashTimer = useRef<number | null>(null);
   const foodSplashSequence = useRef(0);
   const contestQueued = useRef(false);
@@ -1132,7 +1150,8 @@ function Home() {
     setContestStep('intro');
     setWinner(null);
     setContestants([]);
-    setPlayDemoAnnouncer(false);
+    setRaceStartAudioReady(false);
+    contestIntroStartedAt.current = null;
     contestOutcome.current = null;
     contestQueued.current = false;
   };
@@ -1142,18 +1161,12 @@ function Home() {
     const rng = createRng(Date.now() ^ Math.floor(Math.random() * 0xffffffff));
     const selected = shuffleWithRng(animatedContestants, rng).slice(0, rng() > 0.62 ? 4 : 3);
     const outcome = resolveContest(selected, rng);
-    let shouldPlayDemo = true;
-    try {
-      shouldPlayDemo = window.localStorage.getItem(ANNOUNCER_DEMO_USED_KEY) !== 'yes';
-      if (shouldPlayDemo) window.localStorage.setItem(ANNOUNCER_DEMO_USED_KEY, 'yes');
-    } catch {
-      // The first contest remains eligible when local storage is unavailable.
-    }
     contestOutcome.current = outcome;
     completionGuard.current = false;
+    setRaceStartAudioReady(false);
+    contestIntroStartedAt.current = Date.now();
     setContestants(selected);
     setWinner(null);
-    setPlayDemoAnnouncer(shouldPlayDemo);
     setContestStep('intro');
     setContestOpen(true);
     setLiveStatus(`${outcome.contestName} is ready. Contestants: ${selected.map((persona) => persona.name).join(', ')}.`);
@@ -1236,8 +1249,13 @@ function Home() {
   }, []);
   useEffect(() => {
     if (!contestOpen) return;
+    if (contestStep === 'intro' && !raceStartAudioReady) return;
     const nextStep = contestNextStep[contestStep];
     if (!nextStep) return;
+    const introElapsed = contestIntroStartedAt.current === null ? 0 : Date.now() - contestIntroStartedAt.current;
+    const stepDuration = contestStep === 'intro'
+      ? Math.max(0, contestDurations.intro - introElapsed)
+      : contestDurations[contestStep];
     contestTimer.current = window.setTimeout(() => {
       if (nextStep === 'winner') {
         const outcome = contestOutcome.current ?? resolveContest(contestants, createRng(Date.now()));
@@ -1255,9 +1273,9 @@ function Home() {
       };
       setContestStep(nextStep);
       setLiveStatus(stageMessages[nextStep]);
-    }, contestDurations[contestStep]);
+    }, stepDuration);
     return () => { if (contestTimer.current) window.clearTimeout(contestTimer.current); };
-  }, [contestOpen, contestStep, contestants]);
+  }, [contestOpen, contestStep, contestants, raceStartAudioReady]);
   useEffect(() => {
     if (!contestOpen || contestStep !== 'winner') return;
     contestTimer.current = window.setTimeout(() => finishContestRef.current(), contestDurations.winner);
@@ -1271,12 +1289,6 @@ function Home() {
     setLedger([]);
     setCollectibles([]);
     setCurioView(null);
-    setPlayDemoAnnouncer(false);
-    try {
-      window.localStorage.removeItem(ANNOUNCER_DEMO_USED_KEY);
-    } catch {
-      // Resetting the visible app state does not depend on local storage.
-    }
     contestQueued.current = false;
     completionGuard.current = false;
     contestOutcome.current = null;
@@ -1355,7 +1367,7 @@ function Home() {
 
       </main>
       <div className="sr-only" role="status" aria-live="polite" data-testid="live-contest-status">{liveStatus}</div>
-      {contestOpen && contestOutcome.current && <ContestOverlay contestants={contestants} winner={winner} step={contestStep} contestName={contestOutcome.current.contestName} memorableEvent={contestOutcome.current.memorableEvent} race={contestOutcome.current.race} playDemoAnnouncer={playDemoAnnouncer} onSkip={skipContest} onClose={finishContest} />}
+      {contestOpen && contestOutcome.current && <ContestOverlay contestants={contestants} winner={winner} step={contestStep} contestName={contestOutcome.current.contestName} memorableEvent={contestOutcome.current.memorableEvent} race={contestOutcome.current.race} onRaceStartAudioComplete={() => setRaceStartAudioReady(true)} onSkip={skipContest} onClose={finishContest} />}
       {curioView && <CurioOverlay view={curioView} ledger={ledger} collectibles={collectibles} onClose={() => setCurioView(null)} onReset={resetMemory} />}
       <span className="sr-only">{selectedCount ? `${selectedCount} memories kept nearby` : 'local memory is empty'}</span>
     </div>

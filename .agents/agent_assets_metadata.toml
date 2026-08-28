@@ -29,3 +29,31 @@ mtime_ms = 1787876761381
 storage_uri = "gcs://replit-rams-assets-reed/rams/assets/repl:0415d3d6-78aa-421d-9ee2-fdcbdbf7feb8/54d8798c-9230-4f0a-aeff-ee27ed3c01dc/92f0fa7f-a6d8-4d3a-86ff-54b62b237251"
 storage_version_token = "1787876853438803"
 content_type = "audio/mpeg"
+
+[[outputs]]
+id = "uNz-L4CdFk4oeOVtY9Zr6"
+uri = "file://artifacts/mystery-bento/public/audio/mystery-bento-race-start.mp3"
+type = "audio"
+title = "British Football Announcer — race start"
+description = "Reusable race-start announcement segment now used at the intro of every Mystery Bento contest."
+logical_id = "731709c5-a3b6-4dc9-9535-d63d142d754f"
+content_hash = "sha256:b3b54d60d20a56e83791b1515a45052d42299d44d3640a50ce72ca303c11a56c"
+size = 150394
+mtime_ms = 1787877278798
+storage_uri = "gcs://replit-rams-assets-reed/rams/assets/repl:0415d3d6-78aa-421d-9ee2-fdcbdbf7feb8/731709c5-a3b6-4dc9-9535-d63d142d754f/681d847d-20c6-409f-aad7-ae956873fdba"
+storage_version_token = "1787877592686342"
+content_type = "audio/mpeg"
+
+[[outputs]]
+id = "r6Q_BB4EB_k_uQQn9CiZH"
+uri = "file://artifacts/mystery-bento/ANNOUNCER_PHRASES.md"
+type = "text"
+title = "Mystery Bento announcer phrase plan"
+description = "Composable script catalog for race starts, character names, obstacles, reactions, transitions, finish calls, and closers."
+logical_id = "c7c80e49-70b0-4127-984d-a5658510520f"
+content_hash = "sha256:eeec70b6d91386e6548674228b443299980a50d3b926b11a9bb1117aac7f1ff0"
+size = 8690
+mtime_ms = 1787877694223
+storage_uri = "gcs://replit-rams-assets-reed/rams/assets/repl:0415d3d6-78aa-421d-9ee2-fdcbdbf7feb8/c7c80e49-70b0-4127-984d-a5658510520f/8b2650b9-a619-4a32-a4c2-41bc92e4a0c6"
+storage_version_token = "1787878157211728"
+content_type = "text/markdown"
