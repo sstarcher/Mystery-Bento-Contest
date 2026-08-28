@@ -15,3 +15,17 @@ storage_uri = "gcs://replit-rams-assets-reed/rams/assets/conversation:4732112d-2
 storage_version_token = "1787779547898225"
 content_type = "text/markdown"
 source_uri = "file://mystery-bento-implementation-plan.md"
+
+[[outputs]]
+id = "ax8FCBd6ujAx8OvKDieBK"
+uri = "file://artifacts/mystery-bento/public/audio/mystery-bento-announcer-demo.mp3"
+type = "audio"
+title = "Mystery Bento announcer demo"
+description = "Pre-rendered ElevenLabs announcer clip used by the first race sequence. Eddie — Warm & Conversational voice, with the full Midnight Maki Match report."
+logical_id = "54d8798c-9230-4f0a-aeff-ee27ed3c01dc"
+content_hash = "sha256:8fec0d3a85b4de32b3fe8112589745a037ab84846f4d5743671e67f55fee0e4c"
+size = 783299
+mtime_ms = 1787876761381
+storage_uri = "gcs://replit-rams-assets-reed/rams/assets/repl:0415d3d6-78aa-421d-9ee2-fdcbdbf7feb8/54d8798c-9230-4f0a-aeff-ee27ed3c01dc/92f0fa7f-a6d8-4d3a-86ff-54b62b237251"
+storage_version_token = "1787876853438803"
+content_type = "audio/mpeg"
