@@ -57,3 +57,31 @@ mtime_ms = 1787877694223
 storage_uri = "gcs://replit-rams-assets-reed/rams/assets/repl:0415d3d6-78aa-421d-9ee2-fdcbdbf7feb8/c7c80e49-70b0-4127-984d-a5658510520f/8b2650b9-a619-4a32-a4c2-41bc92e4a0c6"
 storage_version_token = "1787878157211728"
 content_type = "text/markdown"
+
+[[outputs]]
+id = "zZKK7yJmk64v-sUulQgxA"
+uri = "file://artifacts/mystery-bento/public/audio/mystery-bento-finish-takes-the-win.mp3"
+type = "audio"
+title = "Mystery Bento — takes the win"
+description = "Reusable British football-announcer finish fragment for appending after a separate winner-name clip."
+logical_id = "230dbb42-4363-4e38-9c75-32bc69eff6db"
+content_hash = "sha256:fac1cbcefeb7c0f5f8747024bba533a25a324898f798df6f068957f48e0df584"
+size = 34202
+mtime_ms = 1787881661077
+storage_uri = "gcs://replit-rams-assets-reed/rams/assets/repl:0415d3d6-78aa-421d-9ee2-fdcbdbf7feb8/230dbb42-4363-4e38-9c75-32bc69eff6db/7f677a21-77b1-4889-aa91-8a5a069deb99"
+storage_version_token = "1787881718298111"
+content_type = "audio/mpeg"
+
+[[outputs]]
+id = "A-zLG4aBoBE_IveFBDBDI"
+uri = "file://artifacts/mystery-bento/public/audio/mystery-bento-pip-takes-the-win-preview.mp3"
+type = "audio"
+title = "Pip takes the win — back-to-back preview"
+description = "Direct concatenation of the Pip winner-name clip followed immediately by the reusable takes-the-win result clip."
+logical_id = "5e82eed2-449e-4ed5-bbf7-e5e6ba66bb47"
+content_hash = "sha256:4ab5b1c5aaa179a6ed28c71a38896626658027c97ecc0b7baac68e71e0a03092"
+size = 25121
+mtime_ms = 1787881775029
+storage_uri = "gcs://replit-rams-assets-reed/rams/assets/repl:0415d3d6-78aa-421d-9ee2-fdcbdbf7feb8/5e82eed2-449e-4ed5-bbf7-e5e6ba66bb47/8b6177cf-ed18-40ad-8658-c22087f6ba5e"
+storage_version_token = "1787881795624185"
+content_type = "audio/mpeg"

@@ -38,12 +38,13 @@ result-clear-01.mp3
 reaction-jump-01.mp3
 lead-change-01.mp3
 finish-winner-01.mp3
+finish-takes-the-win-01.mp3
 ```
 
 The number is a voice/performance variant, not a race number. Keep a small
 manifest beside the files later with the exact text, voice name, and duration.
 
-## Current installed clip
+## Current installed clips
 
 The first reusable segment is:
 
@@ -59,6 +60,44 @@ Source text:
 
 It is used at the intro of every contest. The race waits for this clip to
 finish before advancing beyond the intro stage.
+
+The first reusable winner-result fragment is:
+
+```text
+public/audio/mystery-bento-finish-takes-the-win.mp3
+```
+
+Source text:
+
+> takes the win
+
+Use it after the separate winner-name clip:
+
+```text
+[winner-name] + finish-takes-the-win
+```
+
+This keeps the result fragment reusable for every persona without generating a
+separate winner sentence for each character.
+
+The first installed winner-name clip is:
+
+```text
+public/audio/mystery-bento-winner-name-pip.mp3
+```
+
+Source text:
+
+> Pip
+
+A back-to-back listening preview is also available:
+
+```text
+public/audio/mystery-bento-pip-takes-the-win-preview.mp3
+```
+
+It combines `winner-name-pip` immediately followed by
+`finish-takes-the-win`, so the assembled call is “Pip takes the win.”
 
 ## Recommended first generation batch
 
