@@ -48,14 +48,14 @@ content_type = "audio/mpeg"
 id = "r6Q_BB4EB_k_uQQn9CiZH"
 uri = "file://artifacts/mystery-bento/ANNOUNCER_PHRASES.md"
 type = "text"
-title = "Mystery Bento announcer phrase plan"
-description = "Composable script catalog for race starts, character names, obstacles, reactions, transitions, finish calls, and closers."
+title = "Mystery Bento announcer generation checklist"
+description = "Checkbox-based phrase generation plan with verified race-start and Pip preview items marked complete, while unwired winner narration remains open."
 logical_id = "c7c80e49-70b0-4127-984d-a5658510520f"
-content_hash = "sha256:eeec70b6d91386e6548674228b443299980a50d3b926b11a9bb1117aac7f1ff0"
-size = 8690
-mtime_ms = 1787877694223
-storage_uri = "gcs://replit-rams-assets-reed/rams/assets/repl:0415d3d6-78aa-421d-9ee2-fdcbdbf7feb8/c7c80e49-70b0-4127-984d-a5658510520f/8b2650b9-a619-4a32-a4c2-41bc92e4a0c6"
-storage_version_token = "1787878157211728"
+content_hash = "sha256:4b9a84b0b643de2cc5974ac4ddaa3dcfba3e10b61639c634c24a9f37ee7d4912"
+size = 10507
+mtime_ms = 1787884290839
+storage_uri = "gcs://replit-rams-assets-reed/rams/assets/repl:0415d3d6-78aa-421d-9ee2-fdcbdbf7feb8/c7c80e49-70b0-4127-984d-a5658510520f/982e89ee-16e4-4d08-80d3-a9b6949ea8de"
+storage_version_token = "1787884314881065"
 content_type = "text/markdown"
 
 [[outputs]]
