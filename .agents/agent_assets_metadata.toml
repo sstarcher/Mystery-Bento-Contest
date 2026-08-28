@@ -18,7 +18,7 @@ source_uri = "file://mystery-bento-implementation-plan.md"
 
 [[outputs]]
 id = "ax8FCBd6ujAx8OvKDieBK"
-uri = "file://artifacts/mystery-bento/assets/source-audio/announcer/race-demo-full.mp3"
+uri = "file://artifacts/mystery-bento/assets/source-audio/announcer/race-starts/race-start-primary.mp3"
 type = "audio"
 title = "Mystery Bento announcer demo"
 description = "Pre-rendered ElevenLabs announcer clip used by the first race sequence. Eddie — Warm & Conversational voice, with the full Midnight Maki Match report."
@@ -32,7 +32,7 @@ content_type = "audio/mpeg"
 
 [[outputs]]
 id = "uNz-L4CdFk4oeOVtY9Zr6"
-uri = "file://artifacts/mystery-bento/public/audio/announcer/race-start.mp3"
+uri = "file://artifacts/mystery-bento/public/audio/announcer/race-starts/race-start-primary.mp3"
 type = "audio"
 title = "British Football Announcer — race start"
 description = "Reusable race-start announcement segment now used at the intro of every Mystery Bento contest."
@@ -48,19 +48,19 @@ content_type = "audio/mpeg"
 id = "r6Q_BB4EB_k_uQQn9CiZH"
 uri = "file://artifacts/mystery-bento/ANNOUNCER_PHRASES.md"
 type = "text"
-title = "Mystery Bento announcer generation checklist"
-description = "Checkbox-based phrase generation plan with verified race-start and Pip preview items marked complete, while unwired winner narration remains open."
+title = "Mystery Bento announcer checklist with contestant blurbs"
+description = "Updated checkbox catalog with a separate tiny, funny, name-free blurb for each of the 12 mascots."
 logical_id = "c7c80e49-70b0-4127-984d-a5658510520f"
-content_hash = "sha256:4b9a84b0b643de2cc5974ac4ddaa3dcfba3e10b61639c634c24a9f37ee7d4912"
-size = 10507
-mtime_ms = 1787884290839
-storage_uri = "gcs://replit-rams-assets-reed/rams/assets/repl:0415d3d6-78aa-421d-9ee2-fdcbdbf7feb8/c7c80e49-70b0-4127-984d-a5658510520f/982e89ee-16e4-4d08-80d3-a9b6949ea8de"
-storage_version_token = "1787884314881065"
+content_hash = "sha256:bd9736194c19543698e1c9406d8ce9c6df09f7988273707916d497bb7aa3749a"
+size = 12348
+mtime_ms = 1787884615351
+storage_uri = "gcs://replit-rams-assets-reed/rams/assets/repl:0415d3d6-78aa-421d-9ee2-fdcbdbf7feb8/c7c80e49-70b0-4127-984d-a5658510520f/cd3e95dc-f5ef-4ece-9f2a-1ab88b286b8a"
+storage_version_token = "1787884623708240"
 content_type = "text/markdown"
 
 [[outputs]]
 id = "zZKK7yJmk64v-sUulQgxA"
-uri = "file://artifacts/mystery-bento/public/audio/announcer/finish-takes-the-win.mp3"
+uri = "file://artifacts/mystery-bento/public/audio/announcer/finish-results/takes-the-win.mp3"
 type = "audio"
 title = "Mystery Bento — takes the win"
 description = "Reusable British football-announcer finish fragment for appending after a separate winner-name clip."
@@ -84,4 +84,158 @@ size = 25121
 mtime_ms = 1787881775029
 storage_uri = "gcs://replit-rams-assets-reed/rams/assets/repl:0415d3d6-78aa-421d-9ee2-fdcbdbf7feb8/5e82eed2-449e-4ed5-bbf7-e5e6ba66bb47/8b6177cf-ed18-40ad-8658-c22087f6ba5e"
 storage_version_token = "1787881795624185"
+content_type = "audio/mpeg"
+
+[[outputs]]
+id = "p70IDX2qO3-1gP4q3XAq9"
+uri = "file://artifacts/mystery-bento/public/audio/announcer/obstacles/tea-puddle-ahead.mp3"
+type = "audio"
+title = "Mystery Bento — Tea puddle ahead"
+description = "Reusable obstacle-callout clip for the Tea puddle ahead phrase."
+logical_id = "b72baa24-d209-489f-8c36-552612a4fe3c"
+content_hash = "sha256:7a5280ff933c1f1ea96e18b73a11e549b87c5dfd5e6dc73c970917220f40b6d6"
+size = 35038
+mtime_ms = 1787884683645
+storage_uri = "gcs://replit-rams-assets-reed/rams/assets/repl:0415d3d6-78aa-421d-9ee2-fdcbdbf7feb8/b72baa24-d209-489f-8c36-552612a4fe3c/94af5eaa-a506-4db6-a862-9eab83c9d11d"
+storage_version_token = "1787884740634343"
+content_type = "audio/mpeg"
+
+[[outputs]]
+id = "Fme3BE75ytOdjTKBY4Nvl"
+uri = "file://artifacts/mystery-bento/public/audio/announcer/obstacles/wobble-stack-ahead.mp3"
+type = "audio"
+title = "Mystery Bento — Wobble stack ahead"
+description = "Reusable obstacle-callout clip for the Wobble stack ahead phrase."
+logical_id = "39e7af08-73b1-4b4f-9440-b3610784d9ff"
+content_hash = "sha256:7dc285e9633ecffae98405647ae1b712e267d8385587a76c52080cbc613e70d8"
+size = 35038
+mtime_ms = 1787884754328
+storage_uri = "gcs://replit-rams-assets-reed/rams/assets/repl:0415d3d6-78aa-421d-9ee2-fdcbdbf7feb8/39e7af08-73b1-4b4f-9440-b3610784d9ff/f09163f6-e8f9-4383-8229-c6193595394a"
+storage_version_token = "1787884773449526"
+content_type = "audio/mpeg"
+
+[[outputs]]
+id = "XwazOuH7AC6vuPA6sjDXr"
+uri = "file://artifacts/mystery-bento/public/audio/announcer/obstacles/moon-reflection-ahead.mp3"
+type = "audio"
+title = "Mystery Bento — Moon reflection ahead"
+description = "Reusable obstacle-callout clip for the Moon reflection ahead phrase."
+logical_id = "022f3a4f-8c6d-4c8a-b4c3-dc89ead7dc03"
+content_hash = "sha256:f8947027ffcb77c301edd20cae20a1010ff25134e8f461032e48c5a22d4d5626"
+size = 37128
+mtime_ms = 1787884787930
+storage_uri = "gcs://replit-rams-assets-reed/rams/assets/repl:0415d3d6-78aa-421d-9ee2-fdcbdbf7feb8/022f3a4f-8c6d-4c8a-b4c3-dc89ead7dc03/f998f3ba-7ae6-4e23-91f1-2c9c73438566"
+storage_version_token = "1787884810788017"
+content_type = "audio/mpeg"
+
+[[outputs]]
+id = "VsEdC0AiIdDy-PsF2WlVg"
+uri = "file://artifacts/mystery-bento/public/audio/announcer/obstacles/broken-cart-across-the-course.mp3"
+type = "audio"
+title = "Mystery Bento — Broken cart across the course"
+description = "Reusable obstacle-callout clip for the Broken cart across the course phrase."
+logical_id = "adea7657-04f1-4e1a-93e8-3689285f10f5"
+content_hash = "sha256:6e845f2adbf47b46fa8f72375385451fa44220d4e404af1cdadc7efd15f0ee53"
+size = 41725
+mtime_ms = 1787884834434
+storage_uri = "gcs://replit-rams-assets-reed/rams/assets/repl:0415d3d6-78aa-421d-9ee2-fdcbdbf7feb8/adea7657-04f1-4e1a-93e8-3689285f10f5/cefdeff6-84d8-4135-9e10-933d28670ea7"
+storage_version_token = "1787884854075892"
+content_type = "audio/mpeg"
+
+[[outputs]]
+id = "kS6yo9MnKiRSEHCcjXa3i"
+uri = "file://artifacts/mystery-bento/public/audio/announcer/obstacles/ribbon-tunnel-ahead.mp3"
+type = "audio"
+title = "Mystery Bento — Ribbon tunnel ahead"
+description = "Reusable obstacle-callout clip for the Ribbon tunnel ahead phrase."
+logical_id = "8463d041-8103-43c5-813d-3c97ff6d7c35"
+content_hash = "sha256:310a8f055db2e44e1a67ebe89aae692abb5d23cda62f351cc1425c50a04bfec3"
+size = 35874
+mtime_ms = 1787884881729
+storage_uri = "gcs://replit-rams-assets-reed/rams/assets/repl:0415d3d6-78aa-421d-9ee2-fdcbdbf7feb8/8463d041-8103-43c5-813d-3c97ff6d7c35/9c6ecf7d-da6c-4580-b9cc-79277ea1c600"
+storage_version_token = "1787884897252607"
+content_type = "audio/mpeg"
+
+[[outputs]]
+id = "vO8XhO8v7-na3TtvRS-2m"
+uri = "file://artifacts/mystery-bento/public/audio/announcer/obstacles/cushion-pile-ahead.mp3"
+type = "audio"
+title = "Mystery Bento — Cushion pile ahead"
+description = "Reusable obstacle-callout clip for the Cushion pile ahead phrase."
+logical_id = "3cdb1b5d-d81f-4a90-8a72-d2a9e9d35130"
+content_hash = "sha256:bd5559f7955a9a8364ee84563edfc3b02fe1d1b81241e9a50a008056fe46e1a3"
+size = 37128
+mtime_ms = 1787884908419
+storage_uri = "gcs://replit-rams-assets-reed/rams/assets/repl:0415d3d6-78aa-421d-9ee2-fdcbdbf7feb8/3cdb1b5d-d81f-4a90-8a72-d2a9e9d35130/e4d8bbd6-3fef-4ed7-8070-c6e278b69070"
+storage_version_token = "1787884927712850"
+content_type = "audio/mpeg"
+
+[[outputs]]
+id = "ePBTpFMMPbb_flBTkRQzY"
+uri = "file://artifacts/mystery-bento/public/audio/announcer/obstacles/flour-sacks-coming-into-the-lane.mp3"
+type = "audio"
+title = "Mystery Bento — Flour sacks coming into the lane"
+description = "Reusable obstacle-callout clip for the Flour sacks coming into the lane phrase."
+logical_id = "b56bdcbc-9ae6-47c8-b20e-22af6d99243f"
+content_hash = "sha256:dcbd9189e838283dbe74e92802fc4c0a6286def52b106e7b54e774ce05455c95"
+size = 43815
+mtime_ms = 1787884937370
+storage_uri = "gcs://replit-rams-assets-reed/rams/assets/repl:0415d3d6-78aa-421d-9ee2-fdcbdbf7feb8/b56bdcbc-9ae6-47c8-b20e-22af6d99243f/49002d00-941b-4267-840a-ebde48bec021"
+storage_version_token = "1787884961927126"
+content_type = "audio/mpeg"
+
+[[outputs]]
+id = "yar-VVMQxUyDHpuy5PFIS"
+uri = "file://artifacts/mystery-bento/public/audio/announcer/obstacles/crumb-trail-ahead.mp3"
+type = "audio"
+title = "Mystery Bento — Crumb trail ahead"
+description = "Reusable obstacle-callout clip for the Crumb trail ahead phrase."
+logical_id = "8ce9852c-e420-42af-a489-a9d32e10e523"
+content_hash = "sha256:8f8dfee08441414d186dd3baa1e323bfbb13a4d7811df3c187c8ffee77d6a371"
+size = 33784
+mtime_ms = 1787884975637
+storage_uri = "gcs://replit-rams-assets-reed/rams/assets/repl:0415d3d6-78aa-421d-9ee2-fdcbdbf7feb8/8ce9852c-e420-42af-a489-a9d32e10e523/7d4b434e-96e7-49ec-a89b-f2b604335043"
+storage_version_token = "1787884999304951"
+content_type = "audio/mpeg"
+
+[[outputs]]
+id = "M89ro8XJDk-5oasZ-LFki"
+uri = "file://artifacts/mystery-bento/public/audio/announcer/obstacles/garnish-gate-ahead.mp3"
+type = "audio"
+title = "Mystery Bento — Garnish gate ahead"
+description = "Reusable obstacle-callout clip for the Garnish gate ahead phrase."
+logical_id = "7da63b6f-df05-42c3-9560-0d6a36163738"
+content_hash = "sha256:e3c5fc93794c7087c5af3d72fa7b8b5c4eefed18f5c19379feedb04dfb30576c"
+size = 36710
+mtime_ms = 1787885009382
+storage_uri = "gcs://replit-rams-assets-reed/rams/assets/repl:0415d3d6-78aa-421d-9ee2-fdcbdbf7feb8/7da63b6f-df05-42c3-9560-0d6a36163738/f0ecb23c-bada-431a-8806-af0e14943cae"
+storage_version_token = "1787885029729635"
+content_type = "audio/mpeg"
+
+[[outputs]]
+id = "Hx0FYDO-ypuS2n7IZM76X"
+uri = "file://artifacts/mystery-bento/public/audio/announcer/obstacles/steam-gadget-ahead.mp3"
+type = "audio"
+title = "Mystery Bento — Steam gadget ahead"
+description = "Reusable obstacle-callout clip for the Steam gadget ahead phrase."
+logical_id = "e640fa39-ff4b-4c9d-a982-c9d609f59c90"
+content_hash = "sha256:c7027902c5d729043650854e476e24208adba8ffdab9ab8aceeb8edeeb74d673"
+size = 38799
+mtime_ms = 1787885042833
+storage_uri = "gcs://replit-rams-assets-reed/rams/assets/repl:0415d3d6-78aa-421d-9ee2-fdcbdbf7feb8/e640fa39-ff4b-4c9d-a982-c9d609f59c90/ded5123d-3a15-47b1-b872-9e2e656c2af2"
+storage_version_token = "1787885061955081"
+content_type = "audio/mpeg"
+
+[[outputs]]
+id = "3a_vuCqaduD2Ca0j6j_w3"
+uri = "file://artifacts/mystery-bento/public/audio/announcer/obstacles/bento-stack-at-the-finish.mp3"
+type = "audio"
+title = "Mystery Bento — Bento stack at the finish"
+description = "Reusable obstacle-callout clip for the Bento stack at the finish phrase."
+logical_id = "132a5df3-c2d6-495b-bff4-224959740681"
+content_hash = "sha256:d89248f444d8326bd6666875128b53bbc0f4af33c4788114209810b97e43ca0c"
+size = 40471
+mtime_ms = 1787885073012
+storage_uri = "gcs://replit-rams-assets-reed/rams/assets/repl:0415d3d6-78aa-421d-9ee2-fdcbdbf7feb8/132a5df3-c2d6-495b-bff4-224959740681/d560f77a-ad8d-43b9-8f76-2e80f4fd7717"
+storage_version_token = "1787885094698452"
 content_type = "audio/mpeg"

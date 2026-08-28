@@ -55,7 +55,7 @@ manifest beside the files later with the exact text, voice name, and duration.
   to hold the race until the audio `ended` event.
 
 ```text
-public/audio/announcer/race-start.mp3
+public/audio/announcer/race-starts/race-start-primary.mp3
 ```
 
 Source text:
@@ -67,14 +67,14 @@ Source text:
 Source asset:
 
 ```text
-assets/source-audio/announcer/race-demo-full.mp3
+assets/source-audio/announcer/race-starts/race-start-primary.mp3
 ```
 
 - [ ] Winner-result fragment — asset exists, but live winner narration is not
   wired into the contest yet.
 
 ```text
-public/audio/announcer/finish-takes-the-win.mp3
+public/audio/announcer/finish-results/takes-the-win.mp3
 ```
 
 Source text:
@@ -84,7 +84,7 @@ Source text:
 Use it after the separate winner-name clip:
 
 ```text
-[winner-name] + finish-takes-the-win
+character-names/[winner-name] + finish-takes-the-win
 ```
 
 This keeps the result fragment reusable for every persona without generating a
@@ -94,7 +94,7 @@ separate winner sentence for each character.
   wired into the contest yet.
 
 ```text
-public/audio/announcer/winner-name-pip.mp3
+public/audio/announcer/character-names/pip.mp3
 ```
 
 Source text:
@@ -107,7 +107,7 @@ Source text:
 public/audio/previews/pip-takes-the-win.mp3
 ```
 
-It combines `winner-name-pip` immediately followed by
+It combines `character-names/pip` immediately followed by
 `finish-takes-the-win`, so the assembled call is “Pip takes the win.”
 
 ## Recommended first generation batch
@@ -122,9 +122,11 @@ These are interchangeable opening clips. They contain no names.
   lanterns are lit, the lanes are set, and our contenders are poised. And
   we’re off! — wired and verified
 - [ ] The kitchen is quiet, the lanterns are glowing, and the course is ready.
-  Contenders to the line — this bento dash is underway!
+  Contenders to the line — this bento dash is underway! — asset received; not
+  wired or verified
 - [ ] Welcome back to the after-hours kitchen! The route is set, the plates are
-  polished, and the night’s race is about to begin. Let’s go!
+  polished, and the night’s race is about to begin. Let’s go! — asset received;
+  not wired or verified
 
 ### 2. Contest identity
 
@@ -145,6 +147,12 @@ static first batch, generate these current titles separately:
 
 ### 3. Character introductions
 
+The reusable lead-in for the name clips is now available, but it is not yet
+wired into the live contest:
+
+- [ ] Tonight’s contestants are — asset received; live playback pending
+  (`public/audio/announcer/character-intros/contestants-are.mp3`)
+
 Generate one clip per character. Keep every name clip short and end with a
 small natural pause.
 
@@ -161,8 +169,41 @@ small natural pause.
 - [ ] Kiku, ready at the lantern.
 - [ ] Bibi, ready at the lantern.
 
+#### Tiny contestant blurbs
+
+Read one of these after each name clip. Generate the blurb as a separate,
+name-free clip so the assembly stays reusable:
+
+```text
+character-name + contestant-blurb
+```
+
+- [ ] **Pip Porridge** — Races fast enough to lose his breakfast, then doubles
+  back for it.
+- [ ] **Lady Sencha** — Never hurries; she simply arrives at the correct pace.
+- [ ] **Captain Toro** — Steady as a ship, unless a hallway demands a formal
+  bow.
+- [ ] **Nori Nib** — Waits for destiny to reveal the shortcut.
+- [ ] **Tilda Tofu** — May stop to repair the course, then label the repair.
+- [ ] **Rollo Radish** — If the shortcut looks accidental, Rollo planned it.
+- [ ] **Miso Mallow** — Calm enough to bring emergency broth to the finish line.
+- [ ] **Uma Udon** — Strong enough to move the obstacle, after checking whether
+  everyone has eaten.
+- [ ] **Panko Puff** — Investigates every crumb like it’s a major clue.
+- [ ] **Saffy Sashimi** — Every turn is precise, and every finish deserves
+  applause.
+- [ ] **Kiku Kettle** — Treats every malfunction as the machine expressing
+  itself.
+- [ ] **Bibi Bento** — Arrives prepared with spare napkins for every possible
+  feeling.
+
 Optional shorter name-only versions are useful when the UI already supplies
 the action phrase:
+
+- All 12 name-only assets are now present under
+  `public/audio/announcer/character-names/` and
+  `assets/source-audio/announcer/character-names/`. They remain unchecked
+  until the live contest wires and verifies them.
 
 - [ ] Pip!
 - [ ] Sencha!
@@ -182,18 +223,30 @@ the action phrase:
 Generate one reusable callout per obstacle. These are independent of the
 character who caused or reaches the obstacle.
 
-- [ ] Napkin gust ahead!
-- [ ] Tea puddle ahead!
-- [ ] Wobble stack ahead!
-- [ ] Moon reflection ahead!
-- [ ] Broken cart across the course!
-- [ ] Ribbon tunnel ahead!
-- [ ] Cushion pile ahead!
-- [ ] Flour sacks coming into the lane!
-- [ ] Crumb trail ahead!
-- [ ] Garnish gate ahead!
-- [ ] Steam gadget ahead!
-- [ ] Bento stack at the finish!
+- [ ] Napkin gust ahead! — asset received; live playback pending
+  (`public/audio/announcer/obstacles/napkin-gust-ahead.mp3`)
+- [ ] Tea puddle ahead! — asset received; live playback pending
+  (`public/audio/announcer/obstacles/tea-puddle-ahead.mp3`)
+- [ ] Wobble stack ahead! — asset received; live playback pending
+  (`public/audio/announcer/obstacles/wobble-stack-ahead.mp3`)
+- [ ] Moon reflection ahead! — asset received; live playback pending
+  (`public/audio/announcer/obstacles/moon-reflection-ahead.mp3`)
+- [ ] Broken cart across the course! — asset received; live playback pending
+  (`public/audio/announcer/obstacles/broken-cart-across-the-course.mp3`)
+- [ ] Ribbon tunnel ahead! — asset received; live playback pending
+  (`public/audio/announcer/obstacles/ribbon-tunnel-ahead.mp3`)
+- [ ] Cushion pile ahead! — asset received; live playback pending
+  (`public/audio/announcer/obstacles/cushion-pile-ahead.mp3`)
+- [ ] Flour sacks coming into the lane! — asset received; live playback pending
+  (`public/audio/announcer/obstacles/flour-sacks-coming-into-the-lane.mp3`)
+- [ ] Crumb trail ahead! — asset received; live playback pending
+  (`public/audio/announcer/obstacles/crumb-trail-ahead.mp3`)
+- [ ] Garnish gate ahead! — asset received; live playback pending
+  (`public/audio/announcer/obstacles/garnish-gate-ahead.mp3`)
+- [ ] Steam gadget ahead! — asset received; live playback pending
+  (`public/audio/announcer/obstacles/steam-gadget-ahead.mp3`)
+- [ ] Bento stack at the finish! — asset received; live playback pending
+  (`public/audio/announcer/obstacles/bento-stack-at-the-finish.mp3`)
 
 Longer alternate versions can be used when the race needs more drama:
 
