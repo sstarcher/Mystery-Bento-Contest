@@ -4,6 +4,11 @@ This catalog defines the short audio segments needed to narrate a complete
 Mystery Bento race. The goal is to generate a small reusable library, not one
 large recording per contest.
 
+## Progress key
+
+- [x] Generated, wired into the app, and verified working
+- [ ] Not yet generated, or generated but not yet wired and verified in the app
+
 ## Composition rules
 
 1. **One semantic beat per file.** Each file should communicate one event and
@@ -44,9 +49,10 @@ finish-takes-the-win-01.mp3
 The number is a voice/performance variant, not a race number. Keep a small
 manifest beside the files later with the exact text, voice name, and duration.
 
-## Current installed clips
+## Current installed clips and status
 
-The first reusable segment is:
+- [x] Race-start clip — generated, wired into every contest intro, and verified
+  to hold the race until the audio `ended` event.
 
 ```text
 public/audio/announcer/race-start.mp3
@@ -58,10 +64,14 @@ Source text:
 > lanterns are lit, the lanes are set, and our contenders are poised. And
 > we’re off!
 
-It is used at the intro of every contest. The race waits for this clip to
-finish before advancing beyond the intro stage.
+Source asset:
 
-The first reusable winner-result fragment is:
+```text
+assets/source-audio/announcer/race-demo-full.mp3
+```
+
+- [ ] Winner-result fragment — asset exists, but live winner narration is not
+  wired into the contest yet.
 
 ```text
 public/audio/announcer/finish-takes-the-win.mp3
@@ -80,7 +90,8 @@ Use it after the separate winner-name clip:
 This keeps the result fragment reusable for every persona without generating a
 separate winner sentence for each character.
 
-The first installed winner-name clip is:
+- [ ] Pip winner-name clip — asset exists, but live winner narration is not
+  wired into the contest yet.
 
 ```text
 public/audio/announcer/winner-name-pip.mp3
@@ -90,7 +101,7 @@ Source text:
 
 > Pip
 
-A back-to-back listening preview is also available:
+- [x] Pip + “takes the win” listening preview — generated and playable.
 
 ```text
 public/audio/previews/pip-takes-the-win.mp3
