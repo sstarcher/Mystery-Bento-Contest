@@ -35,6 +35,7 @@ The extracted and optimized image files used by the app live in
   reactions and name-following sentence fragments
 - `reactions/` — reusable physical reaction clips
 - `pace-lead-changes/` — reusable pack and lead-change announcements
+- `stage-transitions/` — reusable course-section transition announcements
 - `unlabeled/` — uploaded recordings awaiting phrase labels
 
 ## Runtime audio
@@ -48,6 +49,7 @@ The extracted and optimized image files used by the app live in
 - `public/audio/announcer/result-fragments/` — contestant result clips
 - `public/audio/announcer/reactions/` — physical reaction clips
 - `public/audio/announcer/pace-lead-changes/` — pace and lead-change clips
+- `public/audio/announcer/stage-transitions/` — course-section transitions
 - `public/audio/previews/` — assembled listening previews, including
   `pip-takes-the-win.mp3`
 

@@ -351,22 +351,36 @@ describing every frame.
 - [ ] The field is beginning to stretch! — asset received; live playback
   pending
   (`public/audio/announcer/pace-lead-changes/field-beginning-to-stretch.mp3`)
-- [ ] There’s a new leader on the lantern route!
-- [ ] The lead has changed hands!
-- [ ] That gap is closing quickly!
-- [ ] One contender is finding another gear!
-- [ ] The back marker is not giving up!
+- [ ] There’s a new leader on the lantern route! — asset received; live playback
+  pending
+  (`public/audio/announcer/pace-lead-changes/new-leader-lantern-route.mp3`)
+- [ ] The lead has changed hands! — asset received; live playback pending
+  (`public/audio/announcer/pace-lead-changes/lead-changed-hands.mp3`)
+- [ ] That gap is closing quickly! — asset received; live playback pending
+  (`public/audio/announcer/pace-lead-changes/gap-closing-quickly.mp3`)
+- [ ] One contender is finding another gear! — asset received; live playback
+  pending
+  (`public/audio/announcer/pace-lead-changes/one-contender-finding-another-gear.mp3`)
+- [ ] The back marker is not giving up! — asset received; live playback pending
+  (`public/audio/announcer/pace-lead-changes/back-marker-not-giving-up.mp3`)
 
 ### 8. Stage transitions
 
 Use one transition between each course section. They do not name an obstacle,
 so they work with any generated course.
 
-- [ ] The warm-up is underway.
-- [ ] The first hazard is coming into view.
-- [ ] They’re around the bend and into the matchup.
-- [ ] The final lane is approaching.
-- [ ] The finish is in sight!
+- [ ] The warm-up is underway. — asset received; live playback pending
+  (`public/audio/announcer/stage-transitions/warm-up-underway.mp3`)
+- [ ] The first hazard is coming into view. — asset received; live playback
+  pending
+  (`public/audio/announcer/stage-transitions/first-hazard-coming-into-view.mp3`)
+- [ ] They’re around the bend and into the matchup. — asset received; live
+  playback pending
+  (`public/audio/announcer/stage-transitions/around-bend-into-matchup.mp3`)
+- [ ] The final lane is approaching. — asset received; live playback pending
+  (`public/audio/announcer/stage-transitions/final-lane-approaching.mp3`)
+- [ ] The finish is in sight! — asset received; live playback pending
+  (`public/audio/announcer/stage-transitions/finish-in-sight.mp3`)
 
 ### 9. Finish and winner reveal
 
