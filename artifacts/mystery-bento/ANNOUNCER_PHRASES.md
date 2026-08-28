@@ -250,17 +250,37 @@ character who caused or reaches the obstacle.
 
 Longer alternate versions can be used when the race needs more drama:
 
-- [ ] The napkin gust is sweeping across the straightaway!
-- [ ] A tea puddle demands a very careful step!
-- [ ] The wobble stack is swaying across the lane!
-- [ ] That moon reflection may be hiding a shortcut!
-- [ ] There’s a broken cart blocking the course!
-- [ ] The ribbon tunnel is moving faster than expected!
-- [ ] A cushion pile is blocking the safest-looking route!
-- [ ] Flour sacks are tumbling in from the side door!
-- [ ] A tempting crumb trail winds behind the crates!
-- [ ] The garnish gate leaves only one elegant line through!
-- [ ] The steam gadget has filled the lane with fog!
+- [ ] The napkin gust is sweeping across the straightaway! — asset received;
+  live playback pending
+  (`public/audio/announcer/obstacles/napkin-gust-sweeping-straightaway.mp3`)
+- [ ] A tea puddle demands a very careful step! — asset received; live playback
+  pending (`public/audio/announcer/obstacles/tea-puddle-careful-step.mp3`)
+- [ ] The wobble stack is swaying across the lane! — asset received; live
+  playback pending
+  (`public/audio/announcer/obstacles/wobble-stack-swaying-across-lane.mp3`)
+- [ ] That moon reflection may be hiding a shortcut! — asset received; live
+  playback pending
+  (`public/audio/announcer/obstacles/moon-reflection-hiding-shortcut.mp3`)
+- [ ] There’s a broken cart blocking the course! — asset received; live playback
+  pending (`public/audio/announcer/obstacles/broken-cart-blocking-course.mp3`)
+- [ ] The ribbon tunnel is moving faster than expected! — asset received; live
+  playback pending
+  (`public/audio/announcer/obstacles/ribbon-tunnel-moving-faster.mp3`)
+- [ ] A cushion pile is blocking the safest-looking route! — asset received;
+  live playback pending
+  (`public/audio/announcer/obstacles/cushion-pile-blocking-safest-route.mp3`)
+- [ ] Flour sacks are tumbling in from the side door! — asset received; live
+  playback pending
+  (`public/audio/announcer/obstacles/flour-sacks-tumbling-side-door.mp3`)
+- [ ] A tempting crumb trail winds behind the crates! — asset received; live
+  playback pending
+  (`public/audio/announcer/obstacles/crumb-trail-behind-crates.mp3`)
+- [ ] The garnish gate leaves only one elegant line through! — asset received;
+  live playback pending
+  (`public/audio/announcer/obstacles/garnish-gate-one-elegant-line.mp3`)
+- [ ] The steam gadget has filled the lane with fog! — asset received; live
+  playback pending
+  (`public/audio/announcer/obstacles/steam-gadget-filled-lane-with-fog.mp3`)
 - [ ] The bento stack has narrowed the final lane!
 
 ### 5. Universal contestant result clips
@@ -268,18 +288,28 @@ Longer alternate versions can be used when the race needs more drama:
 These are intentionally name-free. Compose them as
 `name + result`, or use the named versions below for more character.
 
-- [ ] Clean line!
-- [ ] Slowed down!
-- [ ] Found a break!
-- [ ] Rerouted!
+- [ ] Clean line! — asset received; live playback pending
+  (`public/audio/announcer/result-fragments/clean-line.mp3`)
+- [ ] Slowed down! — asset received; live playback pending
+  (`public/audio/announcer/result-fragments/slowed-down.mp3`)
+- [ ] Found a break! — asset received; live playback pending
+  (`public/audio/announcer/result-fragments/found-a-break.mp3`)
+- [ ] Rerouted! — asset received; live playback pending
+  (`public/audio/announcer/result-fragments/rerouted.mp3`)
 
 Named sentence templates, to be rendered once per current character only if
 the separate name-plus-result delivery does not sound natural:
 
-- [ ] [NAME] finds a clean line.
-- [ ] [NAME] loses a few steps.
-- [ ] [NAME] finds an unexpected opening.
-- [ ] [NAME] takes the strange line around it.
+- [ ] [NAME] finds a clean line. — asset received; live playback pending
+  (`public/audio/announcer/result-fragments/finds-a-clean-line.mp3`)
+- [ ] [NAME] loses a few steps. — asset received; live playback pending
+  (`public/audio/announcer/result-fragments/loses-a-few-steps.mp3`)
+- [ ] [NAME] finds an unexpected opening. — asset received; live playback
+  pending
+  (`public/audio/announcer/result-fragments/finds-an-unexpected-opening.mp3`)
+- [ ] [NAME] takes the strange line around it. — asset received; live playback
+  pending
+  (`public/audio/announcer/result-fragments/takes-the-strange-line-around-it.mp3`)
 
 ### 6. Physical reactions
 
