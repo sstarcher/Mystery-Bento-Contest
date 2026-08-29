@@ -96,6 +96,7 @@ const LEDGER_KEY = 'mystery-bento-ledger';
 const CURIO_KEY = 'mystery-bento-curios';
 const VOICE_ANNOUNCER_KEY = 'mystery-bento-voice-announcer';
 const ANNOUNCER_AUDIO_BASE = `${import.meta.env.BASE_URL}audio/announcer`;
+const MIN_ANNOUNCER_GAP_MS = 520;
 
 type AnnouncerClip = { id: string; src: string; label: string };
 type AnnouncerBeat = { id: string; step: ContestStep; label: string; clips: AnnouncerClip[]; offset: number };
@@ -337,6 +338,7 @@ function buildAnnouncerSequence(contestants: Persona[], race: RaceSimulation): A
       ],
     },
   ];
+  let cleanLineAnnounced = false;
 
   const stageSteps: ContestStep[] = ['warmup', 'matchup', 'finale'];
   stageSteps.forEach((stage, stageIndex) => {
@@ -364,11 +366,14 @@ function buildAnnouncerSequence(contestants: Persona[], race: RaceSimulation): A
         obstacleAnnouncerClips[obstacle.kind]?.[stage === 'finale' && obstacleOrder === 0 ? 1 : 0],
       ].filter((clip): clip is AnnouncerClip => Boolean(clip));
       if (encounter) {
-        clips.push(encounter.result === 'clear'
-          ? resultAnnouncerClips[encounter.result]
-          : reaction === 'ready'
+        if (encounter.result === 'clear') {
+          clips.push(cleanLineAnnounced ? reactionAnnouncerClips[reaction] : resultAnnouncerClips.clear);
+          cleanLineAnnounced = true;
+        } else {
+          clips.push(reaction === 'ready'
             ? resultAnnouncerClips[encounter.result]
             : reactionAnnouncerClips[reaction]);
+        }
       }
       beats.push({
         id: `obstacle-${obstacle.id}`,
@@ -963,6 +968,7 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
   const [spokenBeatLabel, setSpokenBeatLabel] = useState('Waiting for the starting lantern');
   const announcerAudio = useRef<HTMLAudioElement | null>(null);
   const pendingAudio = useRef<{ audio: HTMLAudioElement; beat: AnnouncerBeat; clipIndex: number } | null>(null);
+  const announcerAudioReadyAt = useRef(0);
   const spokenBeatIds = useRef(new Set<string>());
   const announcerSequence = useMemo(() => buildAnnouncerSequence(contestants, race), [contestants, race]);
   const announcerBeatCallback = useRef(onAnnouncerBeat);
@@ -1007,6 +1013,7 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
     if (!nextValue && announcerAudio.current) {
       announcerAudio.current.pause();
       announcerAudio.current.currentTime = 0;
+      announcerAudioReadyAt.current = Math.max(announcerAudioReadyAt.current, Date.now() + MIN_ANNOUNCER_GAP_MS);
       pendingAudio.current = null;
       announcerAudio.current = null;
     }
@@ -1026,7 +1033,10 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
   useEffect(() => {
     const beats = announcerSequence.filter((beat) => beat.step === step);
     const timers: number[] = [];
+    const queuedBeats: AnnouncerBeat[] = [];
     let cancelled = false;
+    let activeBeat: { beat: AnnouncerBeat; clipIndex: number } | null = null;
+    let nextAudioAllowedAt = 0;
 
     const stopAudio = () => {
       if (announcerAudio.current) {
@@ -1036,10 +1046,36 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
       announcerAudio.current = null;
       pendingAudio.current = null;
     };
-    const playClip = (beat: AnnouncerBeat, clipIndex: number) => {
-      if (cancelled || !voiceEnabled) return;
+
+    const schedule = (callback: () => void, delay: number) => {
+      const timer = window.setTimeout(callback, Math.max(0, delay));
+      timers.push(timer);
+    };
+
+    function pumpAnnouncerQueue() {
+      if (cancelled || !voiceEnabled || activeBeat || pendingAudio.current) return;
+      const nextBeat = queuedBeats.shift();
+      if (!nextBeat) return;
+      activeBeat = { beat: nextBeat, clipIndex: 0 };
+      playClip(nextBeat, 0);
+    }
+
+    function finishBeat(beat: AnnouncerBeat) {
+      if (cancelled || activeBeat?.beat !== beat) return;
+      activeBeat = null;
+      pumpAnnouncerQueue();
+    }
+
+    function playClip(beat: AnnouncerBeat, clipIndex: number) {
+      if (cancelled || !voiceEnabled || activeBeat?.beat !== beat) return;
       const clip = beat.clips[clipIndex];
       if (!clip) {
+        finishBeat(beat);
+        return;
+      }
+      const pauseBeforeClip = Math.max(0, nextAudioAllowedAt - Date.now());
+      if (pauseBeforeClip > 0) {
+        schedule(() => playClip(beat, clipIndex), pauseBeforeClip);
         return;
       }
       const previousAudio = announcerAudio.current;
@@ -1058,7 +1094,15 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
         if (cancelled || announcerAudio.current !== audio) return;
         pendingAudio.current = null;
         announcerAudio.current = null;
-        playClip(beat, clipIndex + 1);
+        nextAudioAllowedAt = Date.now() + MIN_ANNOUNCER_GAP_MS;
+        schedule(() => {
+          if (beat.clips[clipIndex + 1]) {
+            activeBeat = { beat, clipIndex: clipIndex + 1 };
+            playClip(beat, clipIndex + 1);
+          } else {
+            finishBeat(beat);
+          }
+        }, MIN_ANNOUNCER_GAP_MS);
       };
       audio.addEventListener('ended', continueBeat, { once: true });
       audio.addEventListener('error', continueBeat, { once: true });
@@ -1070,20 +1114,19 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
           }
         })
         .catch(() => {
-          if (!cancelled) setAudioNeedsGesture(true);
+          if (!cancelled && !audio.error && audio.readyState > 0) setAudioNeedsGesture(true);
         });
-    };
-    const startBeat = (beat: AnnouncerBeat) => {
-      if (cancelled || spokenBeatIds.current.has(beat.id) || !beat.clips.length) {
-        return;
-      }
-      playClip(beat, 0);
+    }
+
+    const queueBeat = (beat: AnnouncerBeat) => {
+      if (cancelled || spokenBeatIds.current.has(beat.id) || !beat.clips.length) return;
+      queuedBeats.push(beat);
+      pumpAnnouncerQueue();
     };
 
     if (voiceEnabled) {
       beats.forEach((beat) => {
-        const delay = step === 'winner' ? beat.offset : beat.offset;
-        timers.push(window.setTimeout(() => startBeat(beat), Math.max(0, delay)));
+        schedule(() => queueBeat(beat), beat.offset);
       });
     }
     return () => {
