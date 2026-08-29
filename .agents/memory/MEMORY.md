@@ -1,2 +1,3 @@
 - [Mystery Bento interaction rules](mystery-bento-rules.md) — keep the personal loop local and resolve each contest once across all presentation paths.
 - [Sprite sheet boundary audit](sprite-sheet-boundary-audit.md) — inspect silhouette continuity at nominal frame edges; source poses can cross cell boundaries.
+- [Mystery Bento build environment](mystery-bento-build-environment.md) — direct Vite builds need PORT and BASE_PATH from the managed workflow.

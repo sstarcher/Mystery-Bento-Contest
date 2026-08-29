@@ -84,7 +84,6 @@ const METER_KEY = 'mystery-bento-meter';
 const LEDGER_KEY = 'mystery-bento-ledger';
 const CURIO_KEY = 'mystery-bento-curios';
 const VOICE_ANNOUNCER_KEY = 'mystery-bento-voice-announcer';
-const RACE_START_AUDIO_SRC = `${import.meta.env.BASE_URL}audio/announcer/race-starts/race-start-primary.mp3`;
 
 const personas: Persona[] = contestantDesigns.map((design) => ({
   id: design.id,
@@ -841,7 +840,11 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
     }
   });
   const [audioNeedsGesture, setAudioNeedsGesture] = useState(false);
-  const announcerAudio = useRef<HTMLAudioElement | null>(null);
+  const [announcerBeat, setAnnouncerBeat] = useState('race announcement');
+  const announcerAudioElement = useRef<HTMLAudioElement | null>(null);
+  const announcerPlayback = useRef<{ clips: AnnouncerClip[]; nextIndex: number; introGate: boolean } | null>(null);
+  const announcerGeneration = useRef(0);
+  const resumeAnnouncer = useRef<() => void>(() => undefined);
   const raceStartAudioCompleteNotified = useRef(false);
   const currentObstacleIndex = step === 'intro' ? -1 : Math.min(race.obstacles.length - 1, raceStepProgress[step] - 1);
   const currentObstacle = currentObstacleIndex >= 0 ? race.obstacles[currentObstacleIndex] : null;
@@ -868,11 +871,79 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
     onRaceStartAudioComplete();
   };
 
-  const toggleVoice = () => {
-    if (voiceEnabled && audioNeedsGesture && announcerAudio.current) {
-      void announcerAudio.current.play()
+  const cancelAnnouncer = () => {
+    announcerGeneration.current += 1;
+    announcerPlayback.current = null;
+    resumeAnnouncer.current = () => undefined;
+    const audio = announcerAudioElement.current;
+    if (!audio) return;
+    audio.onended = null;
+    audio.onerror = null;
+    audio.pause();
+    audio.currentTime = 0;
+    audio.removeAttribute('src');
+    audio.load();
+  };
+
+  const startAnnouncerSequence = (clips: AnnouncerClip[], introGate: boolean) => {
+    cancelAnnouncer();
+    if (!voiceEnabled || !announcerAudioElement.current || clips.length === 0) {
+      if (introGate) completeRaceStartAudio();
+      return;
+    }
+
+    const playback = { clips, nextIndex: 0, introGate };
+    const generation = announcerGeneration.current;
+    announcerPlayback.current = playback;
+    const playNext = () => {
+      if (announcerPlayback.current !== playback || announcerGeneration.current !== generation) return;
+      if (playback.nextIndex >= playback.clips.length) {
+        announcerPlayback.current = null;
+        resumeAnnouncer.current = () => undefined;
+        if (playback.introGate) completeRaceStartAudio();
+        return;
+      }
+
+      const nextClip = playback.clips[playback.nextIndex];
+      playback.nextIndex += 1;
+      const audio = announcerAudioElement.current;
+      if (!audio) {
+        if (playback.introGate) completeRaceStartAudio();
+        return;
+      }
+
+      let clipSettled = false;
+      setAnnouncerBeat(nextClip.label);
+      onAnnouncerStatus(`Announcer: ${nextClip.label}.`);
+      audio.onended = () => {
+        if (clipSettled) return;
+        clipSettled = true;
+        playNext();
+      };
+      audio.onerror = () => {
+        if (clipSettled) return;
+        clipSettled = true;
+        playNext();
+      };
+      audio.src = nextClip.src;
+      audio.currentTime = 0;
+      void audio.play()
         .then(() => setAudioNeedsGesture(false))
-        .catch(() => setAudioNeedsGesture(true));
+        .catch(() => {
+          if (announcerPlayback.current !== playback || announcerGeneration.current !== generation || clipSettled) return;
+          playback.nextIndex -= 1;
+          setAudioNeedsGesture(true);
+          if (playback.introGate) completeRaceStartAudio();
+        });
+    };
+
+    resumeAnnouncer.current = playNext;
+    playNext();
+  };
+
+  const toggleVoice = () => {
+    if (voiceEnabled && audioNeedsGesture) {
+      resumeAnnouncer.current();
       return;
     }
     const nextValue = !voiceEnabled;
@@ -882,9 +953,9 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
     } catch {
       // Audio remains available even when local storage is unavailable.
     }
-    if (!nextValue && announcerAudio.current) {
-      announcerAudio.current.pause();
-      announcerAudio.current.currentTime = 0;
+    if (!nextValue) {
+      cancelAnnouncer();
+      setAudioNeedsGesture(false);
       completeRaceStartAudio();
     }
   };
@@ -901,44 +972,31 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
   }, [step, winner]);
 
   useEffect(() => {
-    const audio = new Audio(RACE_START_AUDIO_SRC);
+    const audio = new Audio();
     audio.preload = 'auto';
     audio.volume = 0.94;
-    audio.addEventListener('ended', completeRaceStartAudio);
-    audio.addEventListener('error', () => setAudioNeedsGesture(true));
-    announcerAudio.current = audio;
+    announcerAudioElement.current = audio;
     return () => {
-      audio.removeEventListener('ended', completeRaceStartAudio);
-      audio.pause();
-      audio.currentTime = 0;
-      announcerAudio.current = null;
+      cancelAnnouncer();
+      announcerAudioElement.current = null;
     };
   }, []);
 
   useEffect(() => {
-    if (step !== 'intro') return;
-    if (!voiceEnabled || !announcerAudio.current) {
-      completeRaceStartAudio();
-      return;
-    }
     const timer = window.setTimeout(() => {
-      const audio = announcerAudio.current;
-      if (!audio) return;
-      audio.currentTime = 0;
-      void audio.play()
-        .then(() => setAudioNeedsGesture(false))
-        .catch(() => setAudioNeedsGesture(true));
-    }, 240);
-    return () => window.clearTimeout(timer);
-  }, [step, voiceEnabled]);
-
-  useEffect(() => {
-    if (step === 'intro') return;
-    const audio = announcerAudio.current;
-    if (!audio) return;
-    audio.pause();
-    audio.currentTime = 0;
-  }, [step]);
+      if (step === 'intro') {
+        startAnnouncerSequence(buildAnnouncerIntroSequence(contestName, contestants), true);
+      } else if (step === 'winner' && winner) {
+        startAnnouncerSequence(buildAnnouncerWinnerSequence(winner), false);
+      } else if (step !== 'winner') {
+        startAnnouncerSequence(buildAnnouncerStageSequence(step, race, contestants), false);
+      }
+    }, step === 'intro' ? 240 : 120);
+    return () => {
+      window.clearTimeout(timer);
+      cancelAnnouncer();
+    };
+  }, [contestName, contestants, race, step, voiceEnabled, winner]);
 
   return (
     <div className="contest-backdrop fixed inset-0 z-30 flex items-stretch justify-center" role="dialog" aria-modal="true" aria-labelledby="contest-title">
@@ -1039,11 +1097,11 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
                 className="race-voice-toggle"
                 onClick={toggleVoice}
                 aria-pressed={voiceEnabled}
-                aria-label={audioNeedsGesture ? 'Play the race start announcement' : `${voiceEnabled ? 'Mute' : 'Enable'} the race start announcement`}
-                title={audioNeedsGesture ? 'Play the race start announcement' : `${voiceEnabled ? 'Mute' : 'Enable'} the race start announcement`}
+                aria-label={audioNeedsGesture ? `Play the announcer; current beat: ${announcerBeat}` : `${voiceEnabled ? 'Mute' : 'Enable'} the announcer; current beat: ${announcerBeat}`}
+                title={audioNeedsGesture ? `Play the announcer; current beat: ${announcerBeat}` : `${voiceEnabled ? 'Mute' : 'Enable'} the announcer; current beat: ${announcerBeat}`}
               >
                 {voiceEnabled && !audioNeedsGesture ? <Volume2 className="h-3.5 w-3.5" aria-hidden="true" /> : <VolumeX className="h-3.5 w-3.5" aria-hidden="true" />}
-                <span>{audioNeedsGesture ? 'play race start' : (voiceEnabled ? 'race start on' : 'race start off')}</span>
+                <span>{audioNeedsGesture ? 'play announcer' : (voiceEnabled ? 'announcer on' : 'announcer off')}</span>
               </button>
             </div>
             <p>{step === 'winner' && winner ? `${winner.name} takes the finish after the last hazard.` : currentObstacleCopy}</p>
@@ -1444,7 +1502,7 @@ function Home() {
 
       </main>
       <div className="sr-only" role="status" aria-live="polite" data-testid="live-contest-status">{liveStatus}</div>
-      {contestOpen && contestOutcome.current && <ContestOverlay contestants={contestants} winner={winner} step={contestStep} contestName={contestOutcome.current.contestName} memorableEvent={contestOutcome.current.memorableEvent} race={contestOutcome.current.race} onRaceStartAudioComplete={() => setRaceStartAudioReady(true)} onSkip={skipContest} onClose={finishContest} />}
+      {contestOpen && contestOutcome.current && <ContestOverlay contestants={contestants} winner={winner} step={contestStep} contestName={contestOutcome.current.contestName} memorableEvent={contestOutcome.current.memorableEvent} race={contestOutcome.current.race} onRaceStartAudioComplete={() => setRaceStartAudioReady(true)} onAnnouncerStatus={setLiveStatus} onSkip={skipContest} onClose={finishContest} />}
       {curioView && <CurioOverlay view={curioView} ledger={ledger} collectibles={collectibles} onClose={() => setCurioView(null)} onReset={resetMemory} />}
       <span className="sr-only">{selectedCount ? `${selectedCount} memories kept nearby` : 'local memory is empty'}</span>
     </div>
