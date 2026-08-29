@@ -24,6 +24,7 @@ type Persona = {
   foodSpriteSrc: string;
   foodAnimationFrameSrcs?: string[];
   foodAnimationVideoSrc?: string;
+  foodAnimationFrameDurationMs?: number;
   foodAnimationAspectRatio?: string;
 };
 type ContestLedgerEntry = {
@@ -97,7 +98,9 @@ const LEDGER_KEY = 'mystery-bento-ledger';
 const CURIO_KEY = 'mystery-bento-curios';
 const VOICE_ANNOUNCER_KEY = 'mystery-bento-voice-announcer';
 const ANNOUNCER_AUDIO_BASE = `${import.meta.env.BASE_URL}audio/announcer`;
-const PIP_ANIMATION_VIDEO_SRC = `${import.meta.env.BASE_URL}video/pip-porridge-cooking.mp4`;
+const PIP_ANIMATION_FRAME_SRCS = Array.from({ length: 36 }, (_, index) => (
+  `${import.meta.env.BASE_URL}video/pip-frames/pip-porridge-frame-${String(index + 1).padStart(2, '0')}.png`
+));
 const MIN_ANNOUNCER_GAP_MS = 520;
 const MAX_RACE_STAGE_GAP = 20;
 
@@ -211,9 +214,9 @@ const personas: Persona[] = contestantDesigns.map((design) => ({
   memorableEvent: design.memorableEvent,
   portraitSrc: contestantPortraits[design.id],
   foodSpriteSrc: contestantFoodSprites[design.id],
-  foodAnimationFrameSrcs: contestantFoodAnimationFrames[design.id],
-  foodAnimationVideoSrc: design.id === 'pip' ? PIP_ANIMATION_VIDEO_SRC : undefined,
-  foodAnimationAspectRatio: contestantFoodAnimationAspectRatios[design.id],
+  foodAnimationFrameSrcs: design.id === 'pip' ? PIP_ANIMATION_FRAME_SRCS : contestantFoodAnimationFrames[design.id],
+  foodAnimationFrameDurationMs: design.id === 'pip' ? Math.round(1000 / 12) : undefined,
+  foodAnimationAspectRatio: design.id === 'pip' ? '480 / 720' : contestantFoodAnimationAspectRatios[design.id],
 }));
 const animatedContestants = personas.filter((persona) => (persona.foodAnimationFrameSrcs?.length ?? 0) >= 2 || persona.foodAnimationVideoSrc);
 
@@ -888,14 +891,15 @@ function AnimatedChefSprite({ persona }: { persona: Persona }) {
   const frames = persona.foodAnimationFrameSrcs ?? [];
   const [frameIndex, setFrameIndex] = useState(0);
   const aspectRatio = persona.foodAnimationAspectRatio ?? '362 / 724';
+  const frameDurationMs = persona.foodAnimationFrameDurationMs ?? 300;
 
   useEffect(() => {
     if (frames.length < 2 || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     const timer = window.setInterval(() => {
       setFrameIndex((current) => (current + 1) % frames.length);
-    }, 300);
+    }, frameDurationMs);
     return () => window.clearInterval(timer);
-  }, [frames]);
+  }, [frameDurationMs, frames]);
 
   if (persona.foodAnimationVideoSrc) {
     return (
