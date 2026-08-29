@@ -295,7 +295,8 @@ Longer alternate versions can be used when the race needs more drama:
 These are intentionally name-free. Compose them as
 `name + result`, or use the named versions below for more character.
 
-- [x] Clean line! — wired; verify in the live race
+- [x] Clean line! — wired as the first clear-result callout only; later clear
+  results use varied physical reactions
   (`public/audio/announcer/result-fragments/clean-line.mp3`)
 - [x] Slowed down! — wired; verify in the live race
   (`public/audio/announcer/result-fragments/slowed-down.mp3`)
@@ -440,6 +441,7 @@ character names can cover many randomized races.
 - [ ] Keep spoken names exactly consistent with the UI spelling across the full
   generated batch.
 - [ ] Avoid contractions or pronunciations that differ between clips.
-- [ ] Leave 150–300 ms of clean silence at the end of name and result clips.
+- [x] Keep a clear pause between clips — the runtime sequencer waits at least
+  520 ms after every clip, including across contest stages and autoplay recovery.
 - [ ] Normalize loudness across the batch before committing the files.
 - [ ] Record the exact source text in a manifest before wiring a clip into code.

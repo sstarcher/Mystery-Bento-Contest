@@ -97,6 +97,7 @@ const CURIO_KEY = 'mystery-bento-curios';
 const VOICE_ANNOUNCER_KEY = 'mystery-bento-voice-announcer';
 const ANNOUNCER_AUDIO_BASE = `${import.meta.env.BASE_URL}audio/announcer`;
 const MIN_ANNOUNCER_GAP_MS = 520;
+const MAX_RACE_STAGE_GAP = 20;
 
 type AnnouncerClip = { id: string; src: string; label: string };
 type AnnouncerBeat = { id: string; step: ContestStep; label: string; clips: AnnouncerClip[]; offset: number };
@@ -367,7 +368,7 @@ function buildAnnouncerSequence(contestants: Persona[], race: RaceSimulation): A
       ].filter((clip): clip is AnnouncerClip => Boolean(clip));
       if (encounter) {
         if (encounter.result === 'clear') {
-          clips.push(cleanLineAnnounced ? reactionAnnouncerClips[reaction] : resultAnnouncerClips.clear);
+          clips.push(cleanLineAnnounced && reaction !== 'ready' ? reactionAnnouncerClips[reaction] : resultAnnouncerClips.clear);
           cleanLineAnnounced = true;
         } else {
           clips.push(reaction === 'ready'
@@ -491,6 +492,21 @@ function clampRacePosition(value: number) {
   return Math.min(96, Math.max(4, value));
 }
 
+function limitRaceLaneDisparity(lanes: RaceLaneSimulation[]) {
+  const stages: ContestStep[] = ['intro', 'warmup', 'matchup', 'finale'];
+  stages.forEach((stage) => {
+    const positions = lanes.map((lane) => lane.positions[stage]);
+    const minimum = Math.min(...positions);
+    const maximum = Math.max(...positions);
+    const spread = maximum - minimum;
+    if (spread <= MAX_RACE_STAGE_GAP) return;
+    const compression = MAX_RACE_STAGE_GAP / spread;
+    lanes.forEach((lane) => {
+      lane.positions[stage] = clampRacePosition(maximum - (maximum - lane.positions[stage]) * compression);
+    });
+  });
+}
+
 function buildRaceSimulation(contestants: Persona[], rng: () => number): RaceSimulation {
   const obstaclePositions = [18, 40, 62, 83];
   const fallbackKinds = shuffleWithRng(Object.keys(raceObstacleCatalog) as RaceObstacleKind[], rng);
@@ -548,7 +564,9 @@ function buildRaceSimulation(contestants: Persona[], rng: () => number): RaceSim
               ? 'reroute'
               : 'clear';
       const progressDelta = result === 'surge' ? 16 : result === 'slow' ? -16 : result === 'reroute' ? -7 : 3;
-      const pace = 14 + persona.traits.speed * 0.09 + persona.traits.focus * 0.03;
+      const pace = 18
+        + (persona.traits.speed - 50) * 0.05
+        + (persona.traits.focus - 50) * 0.015;
       progress = clampRacePosition(progress + pace + progressDelta);
       const encounterCopy: Record<RaceEncounterResult, { headline: string; detail: string }> = {
         clear: { headline: 'clean line', detail: `${persona.name} reads the ${catalog.shortLabel} and keeps pace. Their routine holds.` },
@@ -590,6 +608,7 @@ function buildRaceSimulation(contestants: Persona[], rng: () => number): RaceSim
     return { personaId: persona.id, positions, finishPosition, finishScore, encounters };
   });
 
+  limitRaceLaneDisparity(lanes);
   const winnerLane = [...lanes].sort((a, b) => b.finishScore - a.finishScore)[0] ?? lanes[0];
   return { obstacles, lanes, winnerId: winnerLane?.personaId ?? contestants[0]?.id ?? personas[0].id };
 }
@@ -1036,12 +1055,12 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
     const queuedBeats: AnnouncerBeat[] = [];
     let cancelled = false;
     let activeBeat: { beat: AnnouncerBeat; clipIndex: number } | null = null;
-    let nextAudioAllowedAt = 0;
 
     const stopAudio = () => {
       if (announcerAudio.current) {
         announcerAudio.current.pause();
         announcerAudio.current.currentTime = 0;
+        announcerAudioReadyAt.current = Math.max(announcerAudioReadyAt.current, Date.now() + MIN_ANNOUNCER_GAP_MS);
       }
       announcerAudio.current = null;
       pendingAudio.current = null;
@@ -1073,7 +1092,7 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
         finishBeat(beat);
         return;
       }
-      const pauseBeforeClip = Math.max(0, nextAudioAllowedAt - Date.now());
+      const pauseBeforeClip = Math.max(0, announcerAudioReadyAt.current - Date.now());
       if (pauseBeforeClip > 0) {
         schedule(() => playClip(beat, clipIndex), pauseBeforeClip);
         return;
@@ -1094,7 +1113,7 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
         if (cancelled || announcerAudio.current !== audio) return;
         pendingAudio.current = null;
         announcerAudio.current = null;
-        nextAudioAllowedAt = Date.now() + MIN_ANNOUNCER_GAP_MS;
+        announcerAudioReadyAt.current = Date.now() + MIN_ANNOUNCER_GAP_MS;
         schedule(() => {
           if (beat.clips[clipIndex + 1]) {
             activeBeat = { beat, clipIndex: clipIndex + 1 };
@@ -1140,6 +1159,7 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
     if (announcerAudio.current) {
       announcerAudio.current.pause();
       announcerAudio.current.currentTime = 0;
+      announcerAudioReadyAt.current = Math.max(announcerAudioReadyAt.current, Date.now() + MIN_ANNOUNCER_GAP_MS);
     }
     announcerAudio.current = null;
     pendingAudio.current = null;

@@ -474,9 +474,9 @@
 @keyframes race-world-warmup { from { transform: translateX(0); } to { transform: translateX(-13.67%); } }
 @keyframes race-world-matchup { from { transform: translateX(-13.67%); } to { transform: translateX(-30.22%); } }
 @keyframes race-world-finale { from { transform: translateX(-30.22%); } to { transform: translateX(-50%); } }
-.contest-race-warmup .race-runner { left: var(--race-intro-anchor); animation: race-runner-warmup 7.6s cubic-bezier(.32,.72,.25,1) both; }
-.contest-race-matchup .race-runner { left: var(--race-warmup-anchor); animation: race-runner-matchup 9.2s cubic-bezier(.32,.72,.25,1) both; }
-.contest-race-finale .race-runner { left: var(--race-matchup-anchor); animation: race-runner-finale 11s cubic-bezier(.28,.7,.25,1) both; }
+.contest-race-warmup .race-runner { left: var(--race-intro-anchor); animation: race-runner-warmup 7.6s linear both; }
+.contest-race-matchup .race-runner { left: var(--race-warmup-anchor); animation: race-runner-matchup 9.2s linear both; }
+.contest-race-finale .race-runner { left: var(--race-matchup-anchor); animation: race-runner-finale 11s linear both; }
 .contest-race-winner .race-runner { left: var(--race-winner-anchor); }
 .race-runner-reaction-ready .race-runner-sprite { animation: race-runner-ready .72s steps(2, end) infinite; }
 .race-runner-reaction-jump .race-runner-sprite { animation: race-runner-jump var(--race-runner-tempo, 1.05s) cubic-bezier(.28,.82,.34,1) infinite; }
