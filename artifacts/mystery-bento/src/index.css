@@ -252,8 +252,8 @@
 .counter-chef-sprite { position: absolute; top: -105px; left: 50%; display: block; width: 100%; aspect-ratio: 362 / 724; overflow: hidden; transform: translateX(-50%); }
 .counter-chef-frame-image { position: absolute; inset: 0; display: block; width: 100%; height: 100%; object-fit: fill; image-rendering: pixelated; }
 .counter-chef-frame-video { position: absolute; inset: 0; display: block; width: 100%; height: 100%; object-fit: fill; image-rendering: pixelated; }
-.counter-chef-pip { top: -154px; bottom: auto; height: 300px; overflow: visible; z-index: 2; }
-.counter-chef-pip .counter-chef-sprite { top: 0; width: min(174px, 38vw); aspect-ratio: 480 / 720; }
+.counter-chef-pip { top: auto; bottom: 100%; width: min(360px, 82vw); height: 260px; overflow: hidden; z-index: 1; }
+.counter-chef-pip .counter-chef-sprite { top: -44px; width: min(348px, 80vw); aspect-ratio: 480 / 720; }
 .counter-chef-sencha .counter-chef-sprite { top: -65px; width: min(202px, 38vw); }
 .counter-chef-nori .counter-chef-sprite { top: -125px; width: min(190px, 38vw); }
 .counter-chef-tilda .counter-chef-sprite { top: -147px; width: min(174px, 38vw); }
@@ -693,7 +693,8 @@
   .restaurant-menu-board span { font-size: 6px; }
   .restaurant-counter { padding: 25px 7px 9px; }
   .restaurant-counter-label { left: 10px; font-size: 7px; }
-  .counter-chef-pip { top: -135px; height: 240px; }
+  .counter-chef-pip { width: min(330px, 88vw); height: 205px; }
+  .counter-chef-pip .counter-chef-sprite { top: -38px; width: min(306px, 82vw); }
   .restaurant-top-zone { grid-template-columns: 1fr; gap: 12px; }
   .restaurant-controls { display: flex; flex-direction: row; align-items: flex-start; justify-content: space-between; gap: 8px; }
   .restaurant-brand-lockup { gap: 7px; }
