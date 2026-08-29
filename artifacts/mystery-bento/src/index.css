@@ -251,6 +251,8 @@
 .counter-chef-image { position: absolute; top: 0; left: 50%; display: block; width: 100%; height: auto; max-width: none; transform: translateX(-50%); image-rendering: pixelated; }
 .counter-chef-sprite { position: absolute; top: -105px; left: 50%; display: block; width: 100%; aspect-ratio: 362 / 724; overflow: hidden; transform: translateX(-50%); }
 .counter-chef-frame-image { position: absolute; inset: 0; display: block; width: 100%; height: 100%; object-fit: fill; image-rendering: pixelated; }
+.counter-chef-frame-video { position: absolute; inset: 0; display: block; width: 100%; height: 100%; object-fit: fill; image-rendering: pixelated; }
+.counter-chef-pip .counter-chef-sprite { top: -4px; width: min(174px, 38vw); aspect-ratio: 480 / 720; }
 .counter-chef-sencha .counter-chef-sprite { top: -65px; width: min(202px, 38vw); }
 .counter-chef-nori .counter-chef-sprite { top: -125px; width: min(190px, 38vw); }
 .counter-chef-tilda .counter-chef-sprite { top: -147px; width: min(174px, 38vw); }

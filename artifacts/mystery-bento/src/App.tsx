@@ -23,6 +23,7 @@ type Persona = {
   portraitSrc: string;
   foodSpriteSrc: string;
   foodAnimationFrameSrcs?: string[];
+  foodAnimationVideoSrc?: string;
   foodAnimationAspectRatio?: string;
 };
 type ContestLedgerEntry = {
@@ -96,6 +97,7 @@ const LEDGER_KEY = 'mystery-bento-ledger';
 const CURIO_KEY = 'mystery-bento-curios';
 const VOICE_ANNOUNCER_KEY = 'mystery-bento-voice-announcer';
 const ANNOUNCER_AUDIO_BASE = `${import.meta.env.BASE_URL}audio/announcer`;
+const PIP_ANIMATION_VIDEO_SRC = `${import.meta.env.BASE_URL}video/pip-porridge-cooking.mp4`;
 const MIN_ANNOUNCER_GAP_MS = 520;
 const MAX_RACE_STAGE_GAP = 20;
 
@@ -210,9 +212,10 @@ const personas: Persona[] = contestantDesigns.map((design) => ({
   portraitSrc: contestantPortraits[design.id],
   foodSpriteSrc: contestantFoodSprites[design.id],
   foodAnimationFrameSrcs: contestantFoodAnimationFrames[design.id],
+  foodAnimationVideoSrc: design.id === 'pip' ? PIP_ANIMATION_VIDEO_SRC : undefined,
   foodAnimationAspectRatio: contestantFoodAnimationAspectRatios[design.id],
 }));
-const animatedContestants = personas.filter((persona) => (persona.foodAnimationFrameSrcs?.length ?? 0) >= 2);
+const animatedContestants = personas.filter((persona) => (persona.foodAnimationFrameSrcs?.length ?? 0) >= 2 || persona.foodAnimationVideoSrc);
 
 const foodItems: FoodItem[] = [
   { id: 'tamago', name: 'Sunset tamago', note: 'soft, sweet, perfectly tucked', glyph: 'circle', color: '#ed9560' },
@@ -319,6 +322,21 @@ function getRaceRunnerReaction(obstacleKind: RaceObstacleKind, result: RaceEncou
   return raceJumpObstacleKinds.has(obstacleKind) ? 'jump' : 'dodge';
 }
 
+function getFirstRunnerObstacleHitOffset(stage: ContestStep, obstacle: RaceObstacle, race: RaceSimulation) {
+  const previousStage = contestPreviousStep[stage];
+  const stageStart = previousStage
+    ? (lane: RaceLaneSimulation) => lane.positions[previousStage]
+    : (lane: RaceLaneSimulation) => lane.positions.intro;
+  const stageDuration = contestDurations[stage];
+  const hitFractions = race.lanes.map((lane) => {
+    const start = stageStart(lane);
+    const end = lane.positions[stage];
+    if (end <= start) return obstacle.position <= start ? 0 : 1;
+    return Math.max(0, Math.min(1, (obstacle.position - start) / (end - start)));
+  });
+  return Math.round(Math.min(...hitFractions, 1) * stageDuration);
+}
+
 function buildAnnouncerSequence(contestants: Persona[], race: RaceSimulation): AnnouncerBeat[] {
   const beats: AnnouncerBeat[] = [
     {
@@ -380,7 +398,7 @@ function buildAnnouncerSequence(contestants: Persona[], race: RaceSimulation): A
         id: `obstacle-${obstacle.id}`,
         step: stage,
         label: `${obstacle.label} callout`,
-        offset: stage === 'warmup' ? 1_700 : stage === 'matchup' ? 1_450 : obstacleOrder === 0 ? 1_350 : 6_050,
+        offset: getFirstRunnerObstacleHitOffset(stage, obstacle, race),
         clips,
       });
     });
@@ -879,6 +897,28 @@ function AnimatedChefSprite({ persona }: { persona: Persona }) {
     return () => window.clearInterval(timer);
   }, [frames]);
 
+  if (persona.foodAnimationVideoSrc) {
+    return (
+      <span
+        className="counter-chef-sprite counter-chef-video"
+        role="img"
+        aria-label={`${persona.name} cooking animation`}
+        style={{ aspectRatio: '480 / 720' }}
+      >
+        <video
+          className="counter-chef-frame-video"
+          src={persona.foodAnimationVideoSrc}
+          autoPlay
+          loop
+          muted
+          playsInline
+          preload="auto"
+          aria-hidden="true"
+        />
+      </span>
+    );
+  }
+
   return (
     <span
       className="counter-chef-sprite"
@@ -974,7 +1014,7 @@ function ForegroundSeating() {
   );
 }
 
-function ContestOverlay({ contestants, winner, step, contestName, memorableEvent, race, onAnnouncerBeat, onSkip, onClose }: { contestants: Persona[]; winner: Persona | null; step: ContestStep; contestName: string; memorableEvent: string; race: RaceSimulation; onAnnouncerBeat: (label: string) => void; onSkip: () => void; onClose: () => void }) {
+function ContestOverlay({ contestants, winner, step, contestName, memorableEvent, race, onAnnouncerBeat, onAudioSequenceComplete, onSkip, onClose }: { contestants: Persona[]; winner: Persona | null; step: ContestStep; contestName: string; memorableEvent: string; race: RaceSimulation; onAnnouncerBeat: (label: string) => void; onAudioSequenceComplete: () => void; onSkip: () => void; onClose: () => void }) {
   const [showWinnerReveal, setShowWinnerReveal] = useState(false);
   const [voiceEnabled, setVoiceEnabled] = useState(() => {
     try {
@@ -991,7 +1031,9 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
   const spokenBeatIds = useRef(new Set<string>());
   const announcerSequence = useMemo(() => buildAnnouncerSequence(contestants, race), [contestants, race]);
   const announcerBeatCallback = useRef(onAnnouncerBeat);
+  const announcerSequenceCompleteCallback = useRef(onAudioSequenceComplete);
   announcerBeatCallback.current = onAnnouncerBeat;
+  announcerSequenceCompleteCallback.current = onAudioSequenceComplete;
   const currentObstacleIndex = step === 'intro' ? -1 : Math.min(race.obstacles.length - 1, raceStepProgress[step] - 1);
   const currentObstacle = currentObstacleIndex >= 0 ? race.obstacles[currentObstacleIndex] : null;
   const currentObstacleCopy = currentObstacle
@@ -1053,8 +1095,10 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
     const beats = announcerSequence.filter((beat) => beat.step === step);
     const timers: number[] = [];
     const queuedBeats: AnnouncerBeat[] = [];
+    const pendingBeatIds = new Set(beats.map((beat) => beat.id));
     let cancelled = false;
     let activeBeat: { beat: AnnouncerBeat; clipIndex: number } | null = null;
+    let sequenceCompleteNotified = false;
 
     const stopAudio = () => {
       if (announcerAudio.current) {
@@ -1079,10 +1123,18 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
       playClip(nextBeat, 0);
     }
 
+    function notifySequenceComplete() {
+      if (cancelled || sequenceCompleteNotified || pendingBeatIds.size > 0 || activeBeat || queuedBeats.length > 0) return;
+      sequenceCompleteNotified = true;
+      announcerSequenceCompleteCallback.current();
+    }
+
     function finishBeat(beat: AnnouncerBeat) {
       if (cancelled || activeBeat?.beat !== beat) return;
+      pendingBeatIds.delete(beat.id);
       activeBeat = null;
       pumpAnnouncerQueue();
+      notifySequenceComplete();
     }
 
     function playClip(beat: AnnouncerBeat, clipIndex: number) {
@@ -1138,12 +1190,19 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
     }
 
     const queueBeat = (beat: AnnouncerBeat) => {
-      if (cancelled || spokenBeatIds.current.has(beat.id) || !beat.clips.length) return;
+      if (cancelled) return;
+      if (spokenBeatIds.current.has(beat.id) || !beat.clips.length) {
+        pendingBeatIds.delete(beat.id);
+        notifySequenceComplete();
+        return;
+      }
       queuedBeats.push(beat);
       pumpAnnouncerQueue();
     };
 
-    if (voiceEnabled) {
+    if (!voiceEnabled || beats.length === 0) {
+      announcerSequenceCompleteCallback.current();
+    } else {
       beats.forEach((beat) => {
         schedule(() => queueBeat(beat), beat.offset);
       });
@@ -1367,6 +1426,7 @@ function Home() {
   const [curioView, setCurioView] = useState<'shelf' | 'ledger' | null>(null);
   const [contestOpen, setContestOpen] = useState(false);
   const [contestStep, setContestStep] = useState<ContestStep>('intro');
+  const [announcerStepAudioReady, setAnnouncerStepAudioReady] = useState(false);
   const [foodSplash, setFoodSplash] = useState<{ item: FoodItem; key: number } | null>(null);
   const [contestants, setContestants] = useState<Persona[]>([]);
   const [winner, setWinner] = useState<Persona | null>(null);
@@ -1388,9 +1448,10 @@ function Home() {
       ?? personas.find((persona) => persona.name === latestEntry.winner)
       ?? null;
   }, [ledger]);
-  const activeChef = lastWinner?.foodAnimationFrameSrcs?.length
-    ? lastWinner
-    : animatedContestants.find((persona) => persona.id === 'toro') ?? animatedContestants[0] ?? null;
+  const activeChef = personas.find((persona) => persona.id === 'pip')
+    ?? lastWinner
+    ?? animatedContestants[0]
+    ?? null;
 
   useEffect(() => {
     setCollectibles((current) => {
@@ -1449,6 +1510,7 @@ function Home() {
     setLiveStatus(collectible ? `Contest complete. ${winningPersona.name} wins and earns ${collectible.title}.` : `Contest complete. ${winningPersona.name} wins. No new matching curio remains in the collection.`);
     setContestOpen(false);
     setContestStep('intro');
+    setAnnouncerStepAudioReady(false);
     setWinner(null);
     setContestants([]);
     contestIntroStartedAt.current = null;
@@ -1467,6 +1529,7 @@ function Home() {
     setContestants(selected);
     setWinner(null);
     setContestStep('intro');
+    setAnnouncerStepAudioReady(false);
     setContestOpen(true);
     setLiveStatus(`${outcome.contestName} is ready. Contestants: ${selected.map((persona) => persona.name).join(', ')}.`);
   };
@@ -1534,6 +1597,7 @@ function Home() {
     const winningPersona = winner ?? contestOutcome.current?.winner ?? contestants[0] ?? personas[0];
     setWinner(winningPersona);
     setContestStep('winner');
+    setAnnouncerStepAudioReady(false);
     setLiveStatus(`${winningPersona.name} reaches the finish. The stall is revealing the result.`);
   };
   useEffect(() => () => {
@@ -1548,6 +1612,7 @@ function Home() {
   }, []);
   useEffect(() => {
     if (!contestOpen) return;
+    if (!announcerStepAudioReady) return;
     const nextStep = contestNextStep[contestStep];
     if (!nextStep) return;
     const introElapsed = contestIntroStartedAt.current === null ? 0 : Date.now() - contestIntroStartedAt.current;
@@ -1570,10 +1635,11 @@ function Home() {
         finale: 'The finish is near. The stall is preparing the winner’s story.',
       };
       setContestStep(nextStep);
+      setAnnouncerStepAudioReady(false);
       setLiveStatus(stageMessages[nextStep]);
     }, stepDuration);
     return () => { if (contestTimer.current) window.clearTimeout(contestTimer.current); };
-  }, [contestOpen, contestStep, contestants]);
+  }, [announcerStepAudioReady, contestOpen, contestStep, contestants]);
   useEffect(() => {
     if (!contestOpen || contestStep !== 'winner') return;
     contestTimer.current = window.setTimeout(() => finishContestRef.current(), contestDurations.winner);
@@ -1611,9 +1677,9 @@ function Home() {
               <div className="relative mt-6">
                 <span className="pixel-star left-[8%] top-2" aria-hidden="true">+</span><span className="pixel-star right-[13%] top-10 text-sm" aria-hidden="true">+</span><span className="pixel-star right-[28%] top-0 text-xs" aria-hidden="true">+</span>
                 <div className="restaurant-counter">
-                  {collectibles.length > 0 && activeChef && (
+                  {activeChef && (
                     <div className={`counter-chef counter-chef-${activeChef.id}`} aria-label={`${activeChef.name}, the active chef, is preparing food at the conveyor bar`}>
-                      {activeChef.foodAnimationFrameSrcs ? (
+                      {activeChef.foodAnimationVideoSrc || activeChef.foodAnimationFrameSrcs ? (
                         <AnimatedChefSprite persona={activeChef} />
                       ) : (
                         <img className="counter-chef-image" src={activeChef.foodSpriteSrc} alt="" />
@@ -1665,7 +1731,7 @@ function Home() {
 
       </main>
       <div className="sr-only" role="status" aria-live="polite" data-testid="live-contest-status">{liveStatus}</div>
-      {contestOpen && contestOutcome.current && <ContestOverlay contestants={contestants} winner={winner} step={contestStep} contestName={contestOutcome.current.contestName} memorableEvent={contestOutcome.current.memorableEvent} race={contestOutcome.current.race} onAnnouncerBeat={(label) => setLiveStatus(`Announcer: ${label}.`)} onSkip={skipContest} onClose={finishContest} />}
+      {contestOpen && contestOutcome.current && <ContestOverlay contestants={contestants} winner={winner} step={contestStep} contestName={contestOutcome.current.contestName} memorableEvent={contestOutcome.current.memorableEvent} race={contestOutcome.current.race} onAnnouncerBeat={(label) => setLiveStatus(`Announcer: ${label}.`)} onAudioSequenceComplete={() => setAnnouncerStepAudioReady(true)} onSkip={skipContest} onClose={finishContest} />}
       {curioView && <CurioOverlay view={curioView} ledger={ledger} collectibles={collectibles} onClose={() => setCurioView(null)} onReset={resetMemory} />}
       <span className="sr-only">{selectedCount ? `${selectedCount} memories kept nearby` : 'local memory is empty'}</span>
     </div>
