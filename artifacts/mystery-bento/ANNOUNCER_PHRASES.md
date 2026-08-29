@@ -6,8 +6,13 @@ large recording per contest.
 
 ## Progress key
 
-- [x] Generated, wired into the app, and verified working
-- [ ] Not yet generated, or generated but not yet wired and verified in the app
+- [x] Generated and wired into the runtime announcer sequence
+- [ ] Asset is available but not wired, or still needs live playback verification
+
+The checklist intentionally separates catalog availability from runtime wiring.
+The `wired; verify in the live race` notes identify assets selected by the
+resolved contest timeline; they are not a claim that every randomized variant
+has been listened to in a browser yet.
 
 ## Composition rules
 
@@ -70,8 +75,8 @@ Source asset:
 assets/source-audio/announcer/race-starts/race-start-primary.mp3
 ```
 
-- [x] Winner-result fragment — generated, wired, and verified in the live winner
-  sequence.
+- [x] Winner-result fragment — wired as the reusable second half of the winner
+  call; verify end-to-end in the live race.
 
 ```text
 public/audio/announcer/finish-results/takes-the-win.mp3
@@ -90,8 +95,8 @@ character-names/[winner-name] + finish-takes-the-win
 This keeps the result fragment reusable for every persona without generating a
 separate winner sentence for each character.
 
-- [x] Pip winner-name clip — generated, wired, and verified in the live winner
-  sequence.
+- [x] Pip winner-name clip — available to the shared winner-name mapping; verify
+  end-to-end in the live race.
 
 ```text
 public/audio/announcer/character-names/pip.mp3
@@ -121,10 +126,12 @@ These are interchangeable opening clips. They contain no names.
 - [x] Good evening, night owls, and welcome to the Mystery Bento Match! The
   lanterns are lit, the lanes are set, and our contenders are poised. And
   we’re off! — wired and verified
-- [x] The kitchen is quiet, the lanterns are glowing, and the course is ready.
-  Contenders to the line — this bento dash is underway! — wired and verified
-- [x] Welcome back to the after-hours kitchen! The route is set, the plates are
-  polished, and the night’s race is about to begin. Let’s go! — wired and verified
+- [ ] The kitchen is quiet, the lanterns are glowing, and the course is ready.
+  Contenders to the line — this bento dash is underway! — asset received; not
+  wired or verified
+- [ ] Welcome back to the after-hours kitchen! The route is set, the plates are
+  polished, and the night’s race is about to begin. Let’s go! — asset received;
+  not wired or verified
 
 ### 2. Contest identity
 
@@ -137,19 +144,18 @@ clip from the opening call.
 `[CONTEST NAME]` is a generation slot, not literal spoken text. For a fully
 static first batch, generate these current titles separately:
 
-- [x] Bento Dash.
-- [x] Lantern Ladle League.
-- [x] The Midnight Maki Match.
-- [x] Wobble Plate Relay.
-- [x] Tea Tray Twilight Trial.
+- [ ] Bento Dash.
+- [ ] Lantern Ladle League.
+- [ ] The Midnight Maki Match.
+- [ ] Wobble Plate Relay.
+- [ ] Tea Tray Twilight Trial.
 
 ### 3. Character introductions
 
-The reusable lead-in for the name clips is available and wired into the live
-contest:
+The reusable lead-in for the name clips is wired into the shared intro
+sequence:
 
-- [x] Tonight’s contestants are — generated, wired, and verified in the live
-  sequence
+- [x] Tonight’s contestants are — wired; verify in the live race
   (`public/audio/announcer/character-intros/contestants-are.mp3`)
 
 Generate one clip per character. Keep every name clip short and end with a
@@ -177,110 +183,110 @@ name-free clip so the assembly stays reusable:
 character-name + contestant-blurb
 ```
 
-- [x] **Pip Porridge** — Races fast enough to lose his breakfast, then doubles
+- [ ] **Pip Porridge** — Races fast enough to lose his breakfast, then doubles
   back for it.
-- [x] **Lady Sencha** — Never hurries; she simply arrives at the correct pace.
-- [x] **Captain Toro** — Steady as a ship, unless a hallway demands a formal
+- [ ] **Lady Sencha** — Never hurries; she simply arrives at the correct pace.
+- [ ] **Captain Toro** — Steady as a ship, unless a hallway demands a formal
   bow.
-- [x] **Nori Nib** — Waits for destiny to reveal the shortcut.
-- [x] **Tilda Tofu** — May stop to repair the course, then label the repair.
-- [x] **Rollo Radish** — If the shortcut looks accidental, Rollo planned it.
-- [x] **Miso Mallow** — Calm enough to bring emergency broth to the finish line.
-- [x] **Uma Udon** — Strong enough to move the obstacle, after checking whether
+- [ ] **Nori Nib** — Waits for destiny to reveal the shortcut.
+- [ ] **Tilda Tofu** — May stop to repair the course, then label the repair.
+- [ ] **Rollo Radish** — If the shortcut looks accidental, Rollo planned it.
+- [ ] **Miso Mallow** — Calm enough to bring emergency broth to the finish line.
+- [ ] **Uma Udon** — Strong enough to move the obstacle, after checking whether
   everyone has eaten.
-- [x] **Panko Puff** — Investigates every crumb like it’s a major clue.
-- [x] **Saffy Sashimi** — Every turn is precise, and every finish deserves
+- [ ] **Panko Puff** — Investigates every crumb like it’s a major clue.
+- [ ] **Saffy Sashimi** — Every turn is precise, and every finish deserves
   applause.
-- [x] **Kiku Kettle** — Treats every malfunction as the machine expressing
+- [ ] **Kiku Kettle** — Treats every malfunction as the machine expressing
   itself.
-- [x] **Bibi Bento** — Arrives prepared with spare napkins for every possible
+- [ ] **Bibi Bento** — Arrives prepared with spare napkins for every possible
   feeling.
 
 Optional shorter name-only versions are useful when the UI already supplies
 the action phrase:
 
-- All 12 name-only assets are now present and wired under
+- All 12 name-only assets are now present under
   `public/audio/announcer/character-names/` and
-  `assets/source-audio/announcer/character-names/`, and are live in the
-  contest’s intro and race beats.
+  `assets/source-audio/announcer/character-names/`. They remain unchecked
+  until the live contest wires and verifies them.
 
-- [x] Pip!
-- [x] Sencha!
-- [x] Toro!
-- [x] Nori!
-- [x] Tilda!
-- [x] Rollo!
-- [x] Miso!
-- [x] Uma!
-- [x] Panko!
-- [x] Saffy!
-- [x] Kiku!
-- [x] Bibi!
+- [x] Pip! — wired; verify in the live race
+- [x] Sencha! — wired; verify in the live race
+- [x] Toro! — wired; verify in the live race
+- [x] Nori! — wired; verify in the live race
+- [x] Tilda! — wired; verify in the live race
+- [x] Rollo! — wired; verify in the live race
+- [x] Miso! — wired; verify in the live race
+- [x] Uma! — wired; verify in the live race
+- [x] Panko! — wired; verify in the live race
+- [x] Saffy! — wired; verify in the live race
+- [x] Kiku! — wired; verify in the live race
+- [x] Bibi! — wired; verify in the live race
 
 ### 4. Obstacle callouts
 
 Generate one reusable callout per obstacle. These are independent of the
 character who caused or reaches the obstacle.
 
-- [x] Napkin gust ahead! — generated, wired, and verified
+- [x] Napkin gust ahead! — wired; verify in the live race
   (`public/audio/announcer/obstacles/napkin-gust-ahead.mp3`)
-- [x] Tea puddle ahead! — generated, wired, and verified
+- [x] Tea puddle ahead! — wired; verify in the live race
   (`public/audio/announcer/obstacles/tea-puddle-ahead.mp3`)
-- [x] Wobble stack ahead! — generated, wired, and verified
+- [x] Wobble stack ahead! — wired; verify in the live race
   (`public/audio/announcer/obstacles/wobble-stack-ahead.mp3`)
-- [x] Moon reflection ahead! — generated, wired, and verified
+- [x] Moon reflection ahead! — wired; verify in the live race
   (`public/audio/announcer/obstacles/moon-reflection-ahead.mp3`)
-- [x] Broken cart across the course! — generated, wired, and verified
+- [x] Broken cart across the course! — wired; verify in the live race
   (`public/audio/announcer/obstacles/broken-cart-across-the-course.mp3`)
-- [x] Ribbon tunnel ahead! — generated, wired, and verified
+- [x] Ribbon tunnel ahead! — wired; verify in the live race
   (`public/audio/announcer/obstacles/ribbon-tunnel-ahead.mp3`)
-- [x] Cushion pile ahead! — generated, wired, and verified
+- [x] Cushion pile ahead! — wired; verify in the live race
   (`public/audio/announcer/obstacles/cushion-pile-ahead.mp3`)
-- [x] Flour sacks coming into the lane! — generated, wired, and verified
+- [x] Flour sacks coming into the lane! — wired; verify in the live race
   (`public/audio/announcer/obstacles/flour-sacks-coming-into-the-lane.mp3`)
-- [x] Crumb trail ahead! — generated, wired, and verified
+- [x] Crumb trail ahead! — wired; verify in the live race
   (`public/audio/announcer/obstacles/crumb-trail-ahead.mp3`)
-- [x] Garnish gate ahead! — generated, wired, and verified
+- [x] Garnish gate ahead! — wired; verify in the live race
   (`public/audio/announcer/obstacles/garnish-gate-ahead.mp3`)
-- [x] Steam gadget ahead! — generated, wired, and verified
+- [x] Steam gadget ahead! — wired; verify in the live race
   (`public/audio/announcer/obstacles/steam-gadget-ahead.mp3`)
-- [x] Bento stack at the finish! — generated, wired, and verified
+- [x] Bento stack at the finish! — wired; verify in the live race
   (`public/audio/announcer/obstacles/bento-stack-at-the-finish.mp3`)
 
 Longer alternate versions can be used when the race needs more drama:
 
-- [x] The napkin gust is sweeping across the straightaway! — generated, wired, and verified;
+- [ ] The napkin gust is sweeping across the straightaway! — asset received;
   live playback pending
   (`public/audio/announcer/obstacles/napkin-gust-sweeping-straightaway.mp3`)
-- [x] A tea puddle demands a very careful step! — generated, wired, and verified
+- [ ] A tea puddle demands a very careful step! — asset received; live playback
   pending (`public/audio/announcer/obstacles/tea-puddle-careful-step.mp3`)
-- [x] The wobble stack is swaying across the lane! — generated, wired, and verified
+- [ ] The wobble stack is swaying across the lane! — asset received; live
   playback pending
   (`public/audio/announcer/obstacles/wobble-stack-swaying-across-lane.mp3`)
-- [x] That moon reflection may be hiding a shortcut! — generated, wired, and verified
+- [ ] That moon reflection may be hiding a shortcut! — asset received; live
   playback pending
   (`public/audio/announcer/obstacles/moon-reflection-hiding-shortcut.mp3`)
-- [x] There’s a broken cart blocking the course! — generated, wired, and verified
+- [ ] There’s a broken cart blocking the course! — asset received; live playback
   pending (`public/audio/announcer/obstacles/broken-cart-blocking-course.mp3`)
-- [x] The ribbon tunnel is moving faster than expected! — generated, wired, and verified
+- [ ] The ribbon tunnel is moving faster than expected! — asset received; live
   playback pending
   (`public/audio/announcer/obstacles/ribbon-tunnel-moving-faster.mp3`)
-- [x] A cushion pile is blocking the safest-looking route! — generated, wired, and verified;
+- [ ] A cushion pile is blocking the safest-looking route! — asset received;
   live playback pending
   (`public/audio/announcer/obstacles/cushion-pile-blocking-safest-route.mp3`)
-- [x] Flour sacks are tumbling in from the side door! — generated, wired, and verified
+- [ ] Flour sacks are tumbling in from the side door! — asset received; live
   playback pending
   (`public/audio/announcer/obstacles/flour-sacks-tumbling-side-door.mp3`)
-- [x] A tempting crumb trail winds behind the crates! — generated, wired, and verified
+- [ ] A tempting crumb trail winds behind the crates! — asset received; live
   playback pending
   (`public/audio/announcer/obstacles/crumb-trail-behind-crates.mp3`)
-- [x] The garnish gate leaves only one elegant line through! — generated, wired, and verified;
+- [ ] The garnish gate leaves only one elegant line through! — asset received;
   live playback pending
   (`public/audio/announcer/obstacles/garnish-gate-one-elegant-line.mp3`)
-- [x] The steam gadget has filled the lane with fog! — generated, wired, and verified
+- [ ] The steam gadget has filled the lane with fog! — asset received; live
   playback pending
   (`public/audio/announcer/obstacles/steam-gadget-filled-lane-with-fog.mp3`)
-- [x] The bento stack has narrowed the final lane! — generated, wired, and verified
+- [ ] The bento stack has narrowed the final lane! — asset received; live
   playback pending
   (`public/audio/announcer/obstacles/bento-stack-narrowed-final-lane.mp3`)
 
@@ -289,44 +295,45 @@ Longer alternate versions can be used when the race needs more drama:
 These are intentionally name-free. Compose them as
 `name + result`, or use the named versions below for more character.
 
-- [x] Clean line! — generated, wired, and verified
+- [x] Clean line! — wired; verify in the live race
   (`public/audio/announcer/result-fragments/clean-line.mp3`)
-- [x] Slowed down! — generated, wired, and verified
+- [x] Slowed down! — wired; verify in the live race
   (`public/audio/announcer/result-fragments/slowed-down.mp3`)
-- [x] Found a break! — generated, wired, and verified
+- [ ] Found a break! — asset received; live playback pending
   (`public/audio/announcer/result-fragments/found-a-break.mp3`)
-- [x] Rerouted! — generated, wired, and verified
+- [x] Rerouted! — wired; verify in the live race
   (`public/audio/announcer/result-fragments/rerouted.mp3`)
 
 Named sentence templates, to be rendered once per current character only if
 the separate name-plus-result delivery does not sound natural:
 
-- [x] [NAME] finds a clean line. — generated, wired, and verified
+- [ ] [NAME] finds a clean line. — asset received; live playback pending
   (`public/audio/announcer/result-fragments/finds-a-clean-line.mp3`)
-- [x] [NAME] loses a few steps. — generated, wired, and verified
+- [ ] [NAME] loses a few steps. — asset received; live playback pending
   (`public/audio/announcer/result-fragments/loses-a-few-steps.mp3`)
-- [x] [NAME] finds an unexpected opening. — generated, wired, and verified
+- [x] [NAME] finds an unexpected opening. — wired; verify in the live race
   (`public/audio/announcer/result-fragments/finds-an-unexpected-opening.mp3`)
-- [x] [NAME] takes the strange line around it. — generated, wired, and verified
+- [ ] [NAME] takes the strange line around it. — asset available; not selected
+  by the current result-fragment mapping
   (`public/audio/announcer/result-fragments/takes-the-strange-line-around-it.mp3`)
 
 ### 6. Physical reactions
 
 These should stay short and reusable across obstacles.
 
-- [x] Jumps over it and keeps moving! — generated, wired, and verified
+- [x] Jumps over it and keeps moving! — wired; verify in the live race
   (`public/audio/announcer/reactions/jumps-over-it-and-keeps-moving.mp3`)
-- [x] Sidesteps it and holds the line! — generated, wired, and verified
+- [x] Sidesteps it and holds the line! — wired; verify in the live race
   (`public/audio/announcer/reactions/sidesteps-it-and-holds-the-line.mp3`)
-- [x] Slides around it and recovers! — generated, wired, and verified
+- [x] Slides around it and recovers! — wired; verify in the live race
   (`public/audio/announcer/reactions/slides-around-it-and-recovers.mp3`)
-- [x] Ducks beneath it and keeps moving! — generated, wired, and verified
+- [x] Ducks beneath it and keeps moving! — wired; verify in the live race
   (`public/audio/announcer/reactions/ducks-beneath-it-and-keeps-moving.mp3`)
-- [x] Stumbles, steadies, and carries on! — generated, wired, and verified
+- [x] Stumbles, steadies, and carries on! — wired; verify in the live race
   (`public/audio/announcer/reactions/stumbles-steadies-and-carries-on.mp3`)
-- [x] Weaves through and finds a stranger line! — generated, wired, and verified
+- [x] Weaves through and finds a stranger line! — wired; verify in the live race
   (`public/audio/announcer/reactions/weaves-through-and-finds-a-stranger-line.mp3`)
-- [x] Surges through the opening! — generated, wired, and verified
+- [x] Surges through the opening! — wired; verify in the live race
   (`public/audio/announcer/reactions/surges-through-the-opening.mp3`)
 
 Recommended composition:
@@ -340,19 +347,19 @@ Recommended composition:
 These clips give the announcer a way to bridge the visual race without
 describing every frame.
 
-- [x] The pack is still together! — generated, wired, and verified
+- [x] The pack is still together! — wired; verify in the live race
   (`public/audio/announcer/pace-lead-changes/pack-still-together.mp3`)
-- [x] The field is beginning to stretch! — generated, wired, and verified
+- [x] The field is beginning to stretch! — wired; verify in the live race
   (`public/audio/announcer/pace-lead-changes/field-beginning-to-stretch.mp3`)
-- [x] There’s a new leader on the lantern route! — generated, wired, and verified
+- [x] There’s a new leader on the lantern route! — wired; verify in the live race
   (`public/audio/announcer/pace-lead-changes/new-leader-lantern-route.mp3`)
-- [x] The lead has changed hands! — generated, wired, and verified
+- [x] The lead has changed hands! — wired; verify in the live race
   (`public/audio/announcer/pace-lead-changes/lead-changed-hands.mp3`)
-- [x] That gap is closing quickly! — generated, wired, and verified
+- [ ] That gap is closing quickly! — asset received; live playback pending
   (`public/audio/announcer/pace-lead-changes/gap-closing-quickly.mp3`)
-- [x] One contender is finding another gear! — generated, wired, and verified
+- [x] One contender is finding another gear! — wired; verify in the live race
   (`public/audio/announcer/pace-lead-changes/one-contender-finding-another-gear.mp3`)
-- [x] The back marker is not giving up! — generated, wired, and verified
+- [ ] The back marker is not giving up! — asset received; live playback pending
   (`public/audio/announcer/pace-lead-changes/back-marker-not-giving-up.mp3`)
 
 ### 8. Stage transitions
@@ -360,15 +367,16 @@ describing every frame.
 Use one transition between each course section. They do not name an obstacle,
 so they work with any generated course.
 
-- [x] The warm-up is underway. — generated, wired, and verified
+- [x] The warm-up is underway. — wired; verify in the live race
   (`public/audio/announcer/stage-transitions/warm-up-underway.mp3`)
-- [x] The first hazard is coming into view. — generated, wired, and verified
+- [ ] The first hazard is coming into view. — asset received; live playback
+  pending
   (`public/audio/announcer/stage-transitions/first-hazard-coming-into-view.mp3`)
-- [x] They’re around the bend and into the matchup. — generated, wired, and verified
+- [x] They’re around the bend and into the matchup. — wired; verify in the live race
   (`public/audio/announcer/stage-transitions/around-bend-into-matchup.mp3`)
-- [x] The final lane is approaching. — generated, wired, and verified
+- [ ] The final lane is approaching. — asset received; live playback pending
   (`public/audio/announcer/stage-transitions/final-lane-approaching.mp3`)
-- [x] The finish is in sight! — generated, wired, and verified
+- [x] The finish is in sight! — wired; verify in the live race
   (`public/audio/announcer/stage-transitions/finish-in-sight.mp3`)
 
 ### 9. Finish and winner reveal
@@ -380,7 +388,8 @@ work for every character.
 - [ ] It’s a clean run to the lantern line!
 - [ ] Across the finish!
 - [ ] That is the race!
-- [ ] [NAME] takes the win! — use winner-name + finish-takes-the-win
+- [x] [NAME] takes the win! — wired as winner-name + finish-takes-the-win;
+  verify in the live race
 - [ ] [NAME] is tonight’s Mystery Bento champion!
 - [ ] [NAME] has earned the story of the night!
 
@@ -402,21 +411,20 @@ These are useful after the winner card, not during the moving race.
 
 The first full composable version should use this order:
 
-- [x] race-start — generated, wired, and verified
-- [x] contest-name
-- [x] character-name × 3 or 4
-- [x] character-blurb × 3 or 4
-- [x] stage-transition: warm-up
-- [x] obstacle-callout
-- [x] name + result/reaction
-- [x] lead-change or stage-transition
-- [x] obstacle-callout
-- [x] name + result/reaction
-- [x] stage-transition: final lane
-- [x] obstacle-callout
-- [x] name + result/reaction
-- [x] finish
-- [x] winner-name + winner phrase — assembled from the winner name and reusable finish clip
+- [x] race-start — generated and wired; previously verified
+- [ ] contest-name
+- [x] character-name × 3 or 4 — wired; verify in the live race
+- [x] stage-transition: warm-up — wired; verify in the live race
+- [x] obstacle-callout — wired; verify in the live race
+- [x] result or physical reaction — wired; verify in the live race
+- [x] lead-change or stage-transition — wired; verify in the live race
+- [x] obstacle-callout — wired; verify in the live race
+- [x] result or physical reaction — wired; verify in the live race
+- [x] stage-transition: final lane — wired; verify in the live race
+- [x] obstacle-callout — wired; verify in the live race
+- [x] result or physical reaction — wired; verify in the live race
+- [ ] finish
+- [x] winner-name + winner phrase — assets wired; verify in the live race
 - [ ] closing
 
 Do not generate every possible combination. With the families above, a small

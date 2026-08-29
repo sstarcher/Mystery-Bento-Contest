@@ -7,7 +7,6 @@ import { TooltipProvider } from '@/components/ui/tooltip';
 import NotFound from '@/pages/not-found';
 import { Route, Router as WouterRouter, Switch, useLocation } from 'wouter';
 import { contestantDesigns, contestantFoodAnimationAspectRatios, contestantFoodAnimationFrames, contestantFoodSprites, contestantPortraits } from './contestant-design-config';
-import { announcerAudio, type AnnouncerClip, type AnnouncerObstacleKind } from './announcer-audio';
 
 type MeterState = { progress: number; lastAcknowledgement: string };
 type Persona = {
@@ -46,7 +45,19 @@ type Collectible = {
 };
 type FoodItem = { id: string; name: string; note: string; glyph: string; color: string };
 type RaceTrait = keyof Persona['traits'];
-type RaceObstacleKind = AnnouncerObstacleKind;
+type RaceObstacleKind =
+  | 'napkin-gust'
+  | 'tea-puddle'
+  | 'wobble-stack'
+  | 'shortcut-reflection'
+  | 'broken-cart'
+  | 'ribbon-tunnel'
+  | 'cushion-pile'
+  | 'flour-sacks'
+  | 'crumb-trail'
+  | 'garnish-gate'
+  | 'steam-gadget'
+  | 'bento-stack';
 type RaceEncounterResult = 'clear' | 'slow' | 'surge' | 'reroute';
 type RaceRunnerReaction = 'ready' | 'jump' | 'dodge' | 'slide' | 'duck' | 'stumble' | 'weave' | 'surge';
 type RaceObstacle = {
@@ -84,6 +95,98 @@ const METER_KEY = 'mystery-bento-meter';
 const LEDGER_KEY = 'mystery-bento-ledger';
 const CURIO_KEY = 'mystery-bento-curios';
 const VOICE_ANNOUNCER_KEY = 'mystery-bento-voice-announcer';
+const ANNOUNCER_AUDIO_BASE = `${import.meta.env.BASE_URL}audio/announcer`;
+
+type AnnouncerClip = { id: string; src: string; label: string };
+type AnnouncerBeat = { id: string; step: ContestStep; label: string; clips: AnnouncerClip[]; offset: number };
+
+const announcerClip = (family: string, file: string, label: string): AnnouncerClip => ({
+  id: `${family}/${file}`,
+  src: `${ANNOUNCER_AUDIO_BASE}/${family}/${file}.mp3`,
+  label,
+});
+
+const obstacleAnnouncerClips: Record<RaceObstacleKind, [AnnouncerClip, AnnouncerClip]> = {
+  'napkin-gust': [
+    announcerClip('obstacles', 'napkin-gust-ahead', 'Napkin gust ahead'),
+    announcerClip('obstacles', 'napkin-gust-sweeping-straightaway', 'Napkin gust sweeping across the straightaway'),
+  ],
+  'tea-puddle': [
+    announcerClip('obstacles', 'tea-puddle-ahead', 'Tea puddle ahead'),
+    announcerClip('obstacles', 'tea-puddle-careful-step', 'Tea puddle, careful step'),
+  ],
+  'wobble-stack': [
+    announcerClip('obstacles', 'wobble-stack-ahead', 'Wobble stack ahead'),
+    announcerClip('obstacles', 'wobble-stack-swaying-across-lane', 'Wobble stack swaying across the lane'),
+  ],
+  'shortcut-reflection': [
+    announcerClip('obstacles', 'moon-reflection-ahead', 'Moon reflection ahead'),
+    announcerClip('obstacles', 'moon-reflection-hiding-shortcut', 'Moon reflection hiding a shortcut'),
+  ],
+  'broken-cart': [
+    announcerClip('obstacles', 'broken-cart-across-the-course', 'Broken cart across the course'),
+    announcerClip('obstacles', 'broken-cart-blocking-course', 'Broken cart blocking the course'),
+  ],
+  'ribbon-tunnel': [
+    announcerClip('obstacles', 'ribbon-tunnel-ahead', 'Ribbon tunnel ahead'),
+    announcerClip('obstacles', 'ribbon-tunnel-moving-faster', 'Ribbon tunnel moving faster'),
+  ],
+  'cushion-pile': [
+    announcerClip('obstacles', 'cushion-pile-ahead', 'Cushion pile ahead'),
+    announcerClip('obstacles', 'cushion-pile-blocking-safest-route', 'Cushion pile blocking the safest route'),
+  ],
+  'flour-sacks': [
+    announcerClip('obstacles', 'flour-sacks-coming-into-the-lane', 'Flour sacks coming into the lane'),
+    announcerClip('obstacles', 'flour-sacks-tumbling-side-door', 'Flour sacks tumbling from the side door'),
+  ],
+  'crumb-trail': [
+    announcerClip('obstacles', 'crumb-trail-ahead', 'Crumb trail ahead'),
+    announcerClip('obstacles', 'crumb-trail-behind-crates', 'Crumb trail behind the crates'),
+  ],
+  'garnish-gate': [
+    announcerClip('obstacles', 'garnish-gate-ahead', 'Garnish gate ahead'),
+    announcerClip('obstacles', 'garnish-gate-one-elegant-line', 'Garnish gate, one elegant line'),
+  ],
+  'steam-gadget': [
+    announcerClip('obstacles', 'steam-gadget-ahead', 'Steam gadget ahead'),
+    announcerClip('obstacles', 'steam-gadget-filled-lane-with-fog', 'Steam gadget filled the lane with fog'),
+  ],
+  'bento-stack': [
+    announcerClip('obstacles', 'bento-stack-at-the-finish', 'Bento stack at the finish'),
+    announcerClip('obstacles', 'bento-stack-narrowed-final-lane', 'Bento stack narrowed the final lane'),
+  ],
+};
+
+const resultAnnouncerClips: Record<RaceEncounterResult, AnnouncerClip> = {
+  clear: announcerClip('result-fragments', 'clean-line', 'clean line'),
+  slow: announcerClip('result-fragments', 'slowed-down', 'slowed down'),
+  surge: announcerClip('result-fragments', 'finds-an-unexpected-opening', 'finds an unexpected opening'),
+  reroute: announcerClip('result-fragments', 'rerouted', 'rerouted'),
+};
+
+const reactionAnnouncerClips: Record<Exclude<RaceRunnerReaction, 'ready'>, AnnouncerClip> = {
+  jump: announcerClip('reactions', 'jumps-over-it-and-keeps-moving', 'jumps over it and keeps moving'),
+  dodge: announcerClip('reactions', 'sidesteps-it-and-holds-the-line', 'sidesteps it and holds the line'),
+  slide: announcerClip('reactions', 'slides-around-it-and-recovers', 'slides around it and recovers'),
+  duck: announcerClip('reactions', 'ducks-beneath-it-and-keeps-moving', 'ducks beneath it and keeps moving'),
+  stumble: announcerClip('reactions', 'stumbles-steadies-and-carries-on', 'stumbles, steadies, and carries on'),
+  weave: announcerClip('reactions', 'weaves-through-and-finds-a-stranger-line', 'weaves through and finds a stranger line'),
+  surge: announcerClip('reactions', 'surges-through-the-opening', 'surges through the opening'),
+};
+
+const stageAnnouncerClips: Partial<Record<ContestStep, AnnouncerClip>> = {
+  warmup: announcerClip('stage-transitions', 'warm-up-underway', 'Warm-up underway'),
+  matchup: announcerClip('stage-transitions', 'around-bend-into-matchup', 'Around the bend into the matchup'),
+  finale: announcerClip('stage-transitions', 'finish-in-sight', 'Finish in sight'),
+};
+
+const paceAnnouncerClips = [
+  announcerClip('pace-lead-changes', 'pack-still-together', 'The pack is still together'),
+  announcerClip('pace-lead-changes', 'field-beginning-to-stretch', 'The field is beginning to stretch'),
+  announcerClip('pace-lead-changes', 'lead-changed-hands', 'The lead changed hands'),
+  announcerClip('pace-lead-changes', 'new-leader-lantern-route', 'A new leader takes the lantern route'),
+  announcerClip('pace-lead-changes', 'one-contender-finding-another-gear', 'One contender finds another gear'),
+];
 
 const personas: Persona[] = contestantDesigns.map((design) => ({
   id: design.id,
@@ -133,7 +236,7 @@ const contestNames = [
 ];
 
 const contestDurations: Record<ContestStep, number> = {
-  intro: 3600,
+  intro: 13600,
   warmup: 7600,
   matchup: 9200,
   finale: 11000,
@@ -212,6 +315,111 @@ function getRaceRunnerReaction(obstacleKind: RaceObstacleKind, result: RaceEncou
   if (result === 'surge') return raceJumpObstacleKinds.has(obstacleKind) ? 'jump' : 'surge';
   if (obstacleKind === 'wobble-stack' || obstacleKind === 'bento-stack') return 'duck';
   return raceJumpObstacleKinds.has(obstacleKind) ? 'jump' : 'dodge';
+}
+
+function buildAnnouncerSequence(contestants: Persona[], race: RaceSimulation): AnnouncerBeat[] {
+  const beats: AnnouncerBeat[] = [
+    {
+      id: 'intro-opening',
+      step: 'intro',
+      label: 'Race opening',
+      offset: 240,
+      clips: [announcerClip('race-starts', 'race-start-primary', 'Race start')],
+    },
+    {
+      id: 'intro-contestants',
+      step: 'intro',
+      label: 'Contestant roll call',
+      offset: 8_800,
+      clips: [
+        announcerClip('character-intros', 'contestants-are', 'Contestants are'),
+        ...contestants.map((persona) => announcerClip('character-names', persona.id, persona.name)),
+      ],
+    },
+  ];
+
+  const stageSteps: ContestStep[] = ['warmup', 'matchup', 'finale'];
+  stageSteps.forEach((stage, stageIndex) => {
+    const transition = stageAnnouncerClips[stage];
+    if (transition) {
+      beats.push({
+        id: `stage-${stage}`,
+        step: stage,
+        label: transition.label,
+        offset: 180,
+        clips: [transition],
+      });
+    }
+    const obstacleIndices = stage === 'finale' ? [2, 3] : [stageIndex];
+    obstacleIndices.forEach((obstacleIndex, obstacleOrder) => {
+      const obstacle = race.obstacles[obstacleIndex];
+      if (!obstacle) return;
+      const lanesAtBeat = race.lanes
+        .map((lane) => ({ lane, position: lane.positions[stage] }))
+        .sort((a, b) => b.position - a.position);
+      const leadLane = lanesAtBeat[0]?.lane ?? race.lanes[0];
+      const encounter = leadLane?.encounters[obstacle.id];
+      const reaction = encounter ? getRaceRunnerReaction(obstacle.kind, encounter.result) : 'ready';
+      const clips: AnnouncerClip[] = [
+        obstacleAnnouncerClips[obstacle.kind]?.[stage === 'finale' && obstacleOrder === 0 ? 1 : 0],
+      ].filter((clip): clip is AnnouncerClip => Boolean(clip));
+      if (encounter) {
+        clips.push(encounter.result === 'clear'
+          ? resultAnnouncerClips[encounter.result]
+          : reaction === 'ready'
+            ? resultAnnouncerClips[encounter.result]
+            : reactionAnnouncerClips[reaction]);
+      }
+      beats.push({
+        id: `obstacle-${obstacle.id}`,
+        step: stage,
+        label: `${obstacle.label} callout`,
+        offset: stage === 'warmup' ? 1_700 : stage === 'matchup' ? 1_450 : obstacleOrder === 0 ? 1_350 : 6_050,
+        clips,
+      });
+    });
+
+    const previousStage = contestPreviousStep[stage];
+    const currentLeader = [...race.lanes].sort((a, b) => b.positions[stage] - a.positions[stage])[0];
+    const previousLeader = previousStage
+      ? [...race.lanes].sort((a, b) => b.positions[previousStage] - a.positions[previousStage])[0]
+      : undefined;
+    const leaderChanged = Boolean(currentLeader && previousLeader && currentLeader.personaId !== previousLeader.personaId);
+    const gap = race.lanes.length > 1
+      ? (Math.max(...race.lanes.map((lane) => lane.positions[stage])) - Math.min(...race.lanes.map((lane) => lane.positions[stage])))
+      : 0;
+    const paceClip = stage === 'warmup'
+      ? paceAnnouncerClips[0]
+      : leaderChanged
+        ? paceAnnouncerClips[2 + stageIndex - 1]
+        : gap > 28
+          ? paceAnnouncerClips[1]
+          : paceAnnouncerClips[4];
+    if (stage !== 'finale') {
+      beats.push({
+        id: `pace-${stage}`,
+        step: stage,
+        label: paceClip.label,
+        offset: stage === 'warmup' ? 6_000 : 7_200,
+        clips: [paceClip],
+      });
+    }
+  });
+
+  const winner = contestants.find((persona) => persona.id === race.winnerId);
+  if (winner) {
+    beats.push({
+      id: 'winner-call',
+      step: 'winner',
+      label: `${winner.name} takes the win`,
+      offset: 260,
+      clips: [
+        announcerClip('character-names', winner.id, winner.name),
+        announcerClip('finish-results', 'takes-the-win', 'takes the win'),
+      ],
+    });
+  }
+  return beats;
 }
 
 const collectiblePool = [
@@ -742,95 +950,7 @@ function ForegroundSeating() {
   );
 }
 
-const contestNameAudioIds: Record<string, string> = {
-  'Bento Dash': 'bento-dash',
-  'Lantern Ladle League': 'lantern-ladle-league',
-  'The Midnight Maki Match': 'midnight-maki-match',
-  'Wobble Plate Relay': 'wobble-plate-relay',
-  'Tea Tray Twilight Trial': 'tea-tray-twilight-trial',
-};
-
-function getAnnouncerPaceClip(step: Exclude<ContestStep, 'intro' | 'winner'>, race: RaceSimulation) {
-  const sortedLanes = [...race.lanes].sort((left, right) => right.finishScore - left.finishScore);
-  const leaderGap = (sortedLanes[0]?.finishScore ?? 0) - (sortedLanes[1]?.finishScore ?? 0);
-  const backMarkerGap = (sortedLanes[sortedLanes.length - 2]?.finishScore ?? 0) - (sortedLanes[sortedLanes.length - 1]?.finishScore ?? 0);
-
-  if (step === 'warmup') return announcerAudio.paceLeadChanges.pack;
-  if (step === 'matchup') return leaderGap <= 7
-    ? announcerAudio.paceLeadChanges.gapClosing
-    : announcerAudio.paceLeadChanges.stretch;
-  if (backMarkerGap <= 8) return announcerAudio.paceLeadChanges.backMarker;
-  if (leaderGap <= 8) return announcerAudio.paceLeadChanges.changedHands;
-  return announcerAudio.paceLeadChanges.anotherGear;
-}
-
-function getAnnouncerObstacleIndex(step: Exclude<ContestStep, 'intro' | 'winner'>, race: RaceSimulation) {
-  if (!race.obstacles.length) return -1;
-  if (step === 'warmup') return 0;
-  if (step === 'matchup') return Math.min(1, race.obstacles.length - 1);
-  return race.obstacles.length - 1;
-}
-
-function buildAnnouncerIntroSequence(contestName: string, contestants: Persona[]) {
-  const startIndex = (contestName.length + contestants.length) % announcerAudio.raceStarts.length;
-  const titleClip = contestNameAudioIds[contestName]
-    ? announcerAudio.contestName(contestNameAudioIds[contestName], contestName)
-    : null;
-  return [
-    announcerAudio.raceStarts[startIndex] ?? announcerAudio.raceStarts[0],
-    titleClip,
-    announcerAudio.contestantsAre,
-    ...contestants.flatMap((persona) => [
-      announcerAudio.characterName(persona.id, persona.name),
-      announcerAudio.characterBlurb(persona.id, persona.name),
-    ]),
-  ].filter((clip): clip is AnnouncerClip => Boolean(clip));
-}
-
-function buildAnnouncerStageSequence(step: Exclude<ContestStep, 'intro' | 'winner'>, race: RaceSimulation, contestants: Persona[]) {
-  const obstacleIndex = getAnnouncerObstacleIndex(step, race);
-  const obstacle = obstacleIndex >= 0 ? race.obstacles[obstacleIndex] : null;
-  const spotlightLane = obstacle
-    ? race.lanes.find((lane) => lane.personaId === obstacle.sourcePersonaId) ?? race.lanes[0]
-    : race.lanes[0];
-  const encounter = obstacle && spotlightLane ? spotlightLane.encounters[obstacle.id] : null;
-  const spotlightPersona = spotlightLane
-    ? contestants.find((persona) => persona.id === spotlightLane.personaId)
-    : contestants[0];
-  const reaction = obstacle && encounter
-    ? getRaceRunnerReaction(obstacle.kind, encounter.result)
-    : null;
-  const stageClips = step === 'warmup'
-    ? [announcerAudio.stageTransitions.warmup, announcerAudio.stageTransitions.firstHazard]
-    : step === 'matchup'
-      ? [announcerAudio.stageTransitions.matchup]
-      : [announcerAudio.stageTransitions.finale];
-  const resultClip = encounter
-    ? step === 'finale'
-      ? announcerAudio.resultFragments.named[encounter.result]
-      : announcerAudio.resultFragments.short[encounter.result]
-    : null;
-  const reactionClip = reaction && reaction !== 'ready' ? announcerAudio.reactions[reaction] : null;
-
-  return [
-    ...stageClips,
-    obstacle ? announcerAudio.obstacles[obstacle.kind][step === 'warmup' ? 'short' : 'long'] : null,
-    getAnnouncerPaceClip(step, race),
-    spotlightPersona && resultClip ? announcerAudio.characterName(spotlightPersona.id, spotlightPersona.name) : null,
-    resultClip,
-    reactionClip,
-  ].filter((clip): clip is AnnouncerClip => Boolean(clip));
-}
-
-function buildAnnouncerWinnerSequence(winner: Persona) {
-  return [
-    announcerAudio.stageTransitions.finish,
-    announcerAudio.characterName(winner.id, winner.name),
-    announcerAudio.finishResult,
-  ];
-}
-
-function ContestOverlay({ contestants, winner, step, contestName, memorableEvent, race, onRaceStartAudioComplete, onAnnouncerStatus, onSkip, onClose }: { contestants: Persona[]; winner: Persona | null; step: ContestStep; contestName: string; memorableEvent: string; race: RaceSimulation; onRaceStartAudioComplete: () => void; onAnnouncerStatus: (message: string) => void; onSkip: () => void; onClose: () => void }) {
+function ContestOverlay({ contestants, winner, step, contestName, memorableEvent, race, onAnnouncerBeat, onSkip, onClose }: { contestants: Persona[]; winner: Persona | null; step: ContestStep; contestName: string; memorableEvent: string; race: RaceSimulation; onAnnouncerBeat: (label: string) => void; onSkip: () => void; onClose: () => void }) {
   const [showWinnerReveal, setShowWinnerReveal] = useState(false);
   const [voiceEnabled, setVoiceEnabled] = useState(() => {
     try {
@@ -840,12 +960,13 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
     }
   });
   const [audioNeedsGesture, setAudioNeedsGesture] = useState(false);
-  const [announcerBeat, setAnnouncerBeat] = useState('race announcement');
-  const announcerAudioElement = useRef<HTMLAudioElement | null>(null);
-  const announcerPlayback = useRef<{ clips: AnnouncerClip[]; nextIndex: number; introGate: boolean } | null>(null);
-  const announcerGeneration = useRef(0);
-  const resumeAnnouncer = useRef<() => void>(() => undefined);
-  const raceStartAudioCompleteNotified = useRef(false);
+  const [spokenBeatLabel, setSpokenBeatLabel] = useState('Waiting for the starting lantern');
+  const announcerAudio = useRef<HTMLAudioElement | null>(null);
+  const pendingAudio = useRef<{ audio: HTMLAudioElement; beat: AnnouncerBeat; clipIndex: number } | null>(null);
+  const spokenBeatIds = useRef(new Set<string>());
+  const announcerSequence = useMemo(() => buildAnnouncerSequence(contestants, race), [contestants, race]);
+  const announcerBeatCallback = useRef(onAnnouncerBeat);
+  announcerBeatCallback.current = onAnnouncerBeat;
   const currentObstacleIndex = step === 'intro' ? -1 : Math.min(race.obstacles.length - 1, raceStepProgress[step] - 1);
   const currentObstacle = currentObstacleIndex >= 0 ? race.obstacles[currentObstacleIndex] : null;
   const currentObstacleCopy = currentObstacle
@@ -865,85 +986,15 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
     return reachedIndex;
   };
   const displayedContestants = winner ? [winner] : contestants;
-  const completeRaceStartAudio = () => {
-    if (raceStartAudioCompleteNotified.current) return;
-    raceStartAudioCompleteNotified.current = true;
-    onRaceStartAudioComplete();
-  };
-
-  const cancelAnnouncer = () => {
-    announcerGeneration.current += 1;
-    announcerPlayback.current = null;
-    resumeAnnouncer.current = () => undefined;
-    const audio = announcerAudioElement.current;
-    if (!audio) return;
-    audio.onended = null;
-    audio.onerror = null;
-    audio.pause();
-    audio.currentTime = 0;
-    audio.removeAttribute('src');
-    audio.load();
-  };
-
-  const startAnnouncerSequence = (clips: AnnouncerClip[], introGate: boolean) => {
-    cancelAnnouncer();
-    if (!voiceEnabled || !announcerAudioElement.current || clips.length === 0) {
-      if (introGate) completeRaceStartAudio();
-      return;
-    }
-
-    const playback = { clips, nextIndex: 0, introGate };
-    const generation = announcerGeneration.current;
-    announcerPlayback.current = playback;
-    const playNext = () => {
-      if (announcerPlayback.current !== playback || announcerGeneration.current !== generation) return;
-      if (playback.nextIndex >= playback.clips.length) {
-        announcerPlayback.current = null;
-        resumeAnnouncer.current = () => undefined;
-        if (playback.introGate) completeRaceStartAudio();
-        return;
-      }
-
-      const nextClip = playback.clips[playback.nextIndex];
-      playback.nextIndex += 1;
-      const audio = announcerAudioElement.current;
-      if (!audio) {
-        if (playback.introGate) completeRaceStartAudio();
-        return;
-      }
-
-      let clipSettled = false;
-      setAnnouncerBeat(nextClip.label);
-      onAnnouncerStatus(`Announcer: ${nextClip.label}.`);
-      audio.onended = () => {
-        if (clipSettled) return;
-        clipSettled = true;
-        playNext();
-      };
-      audio.onerror = () => {
-        if (clipSettled) return;
-        clipSettled = true;
-        playNext();
-      };
-      audio.src = nextClip.src;
-      audio.currentTime = 0;
-      void audio.play()
-        .then(() => setAudioNeedsGesture(false))
-        .catch(() => {
-          if (announcerPlayback.current !== playback || announcerGeneration.current !== generation || clipSettled) return;
-          playback.nextIndex -= 1;
-          setAudioNeedsGesture(true);
-          if (playback.introGate) completeRaceStartAudio();
-        });
-    };
-
-    resumeAnnouncer.current = playNext;
-    playNext();
-  };
-
   const toggleVoice = () => {
-    if (voiceEnabled && audioNeedsGesture) {
-      resumeAnnouncer.current();
+    if (voiceEnabled && audioNeedsGesture && pendingAudio.current) {
+      const pending = pendingAudio.current;
+      void pending.audio.play()
+        .then(() => {
+          spokenBeatIds.current.add(pending.beat.id);
+          setAudioNeedsGesture(false);
+        })
+        .catch(() => setAudioNeedsGesture(true));
       return;
     }
     const nextValue = !voiceEnabled;
@@ -953,10 +1004,11 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
     } catch {
       // Audio remains available even when local storage is unavailable.
     }
-    if (!nextValue) {
-      cancelAnnouncer();
-      setAudioNeedsGesture(false);
-      completeRaceStartAudio();
+    if (!nextValue && announcerAudio.current) {
+      announcerAudio.current.pause();
+      announcerAudio.current.currentTime = 0;
+      pendingAudio.current = null;
+      announcerAudio.current = null;
     }
   };
 
@@ -972,31 +1024,83 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
   }, [step, winner]);
 
   useEffect(() => {
-    const audio = new Audio();
-    audio.preload = 'auto';
-    audio.volume = 0.94;
-    announcerAudioElement.current = audio;
-    return () => {
-      cancelAnnouncer();
-      announcerAudioElement.current = null;
-    };
-  }, []);
+    const beats = announcerSequence.filter((beat) => beat.step === step);
+    const timers: number[] = [];
+    let cancelled = false;
 
-  useEffect(() => {
-    const timer = window.setTimeout(() => {
-      if (step === 'intro') {
-        startAnnouncerSequence(buildAnnouncerIntroSequence(contestName, contestants), true);
-      } else if (step === 'winner' && winner) {
-        startAnnouncerSequence(buildAnnouncerWinnerSequence(winner), false);
-      } else if (step !== 'winner') {
-        startAnnouncerSequence(buildAnnouncerStageSequence(step, race, contestants), false);
+    const stopAudio = () => {
+      if (announcerAudio.current) {
+        announcerAudio.current.pause();
+        announcerAudio.current.currentTime = 0;
       }
-    }, step === 'intro' ? 240 : 120);
-    return () => {
-      window.clearTimeout(timer);
-      cancelAnnouncer();
+      announcerAudio.current = null;
+      pendingAudio.current = null;
     };
-  }, [contestName, contestants, race, step, voiceEnabled, winner]);
+    const playClip = (beat: AnnouncerBeat, clipIndex: number) => {
+      if (cancelled || !voiceEnabled) return;
+      const clip = beat.clips[clipIndex];
+      if (!clip) {
+        return;
+      }
+      const previousAudio = announcerAudio.current;
+      if (previousAudio) {
+        previousAudio.pause();
+        previousAudio.currentTime = 0;
+      }
+      const audio = new Audio(clip.src);
+      audio.preload = 'auto';
+      audio.volume = 0.94;
+      announcerAudio.current = audio;
+      pendingAudio.current = { audio, beat, clipIndex };
+      setSpokenBeatLabel(clip.label);
+      announcerBeatCallback.current(clip.label);
+      const continueBeat = () => {
+        if (cancelled || announcerAudio.current !== audio) return;
+        pendingAudio.current = null;
+        announcerAudio.current = null;
+        playClip(beat, clipIndex + 1);
+      };
+      audio.addEventListener('ended', continueBeat, { once: true });
+      audio.addEventListener('error', continueBeat, { once: true });
+      void audio.play()
+        .then(() => {
+          if (!cancelled) {
+            setAudioNeedsGesture(false);
+            spokenBeatIds.current.add(beat.id);
+          }
+        })
+        .catch(() => {
+          if (!cancelled) setAudioNeedsGesture(true);
+        });
+    };
+    const startBeat = (beat: AnnouncerBeat) => {
+      if (cancelled || spokenBeatIds.current.has(beat.id) || !beat.clips.length) {
+        return;
+      }
+      playClip(beat, 0);
+    };
+
+    if (voiceEnabled) {
+      beats.forEach((beat) => {
+        const delay = step === 'winner' ? beat.offset : beat.offset;
+        timers.push(window.setTimeout(() => startBeat(beat), Math.max(0, delay)));
+      });
+    }
+    return () => {
+      cancelled = true;
+      timers.forEach((timer) => window.clearTimeout(timer));
+      stopAudio();
+    };
+  }, [announcerSequence, step, voiceEnabled]);
+
+  useEffect(() => () => {
+    if (announcerAudio.current) {
+      announcerAudio.current.pause();
+      announcerAudio.current.currentTime = 0;
+    }
+    announcerAudio.current = null;
+    pendingAudio.current = null;
+  }, []);
 
   return (
     <div className="contest-backdrop fixed inset-0 z-30 flex items-stretch justify-center" role="dialog" aria-modal="true" aria-labelledby="contest-title">
@@ -1097,14 +1201,14 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
                 className="race-voice-toggle"
                 onClick={toggleVoice}
                 aria-pressed={voiceEnabled}
-                aria-label={audioNeedsGesture ? `Play the announcer; current beat: ${announcerBeat}` : `${voiceEnabled ? 'Mute' : 'Enable'} the announcer; current beat: ${announcerBeat}`}
-                title={audioNeedsGesture ? `Play the announcer; current beat: ${announcerBeat}` : `${voiceEnabled ? 'Mute' : 'Enable'} the announcer; current beat: ${announcerBeat}`}
+                aria-label={audioNeedsGesture ? 'Play the current race announcement' : `${voiceEnabled ? 'Mute' : 'Enable'} race announcements`}
+                title={audioNeedsGesture ? 'Play the current race announcement' : `${voiceEnabled ? 'Mute' : 'Enable'} race announcements`}
               >
                 {voiceEnabled && !audioNeedsGesture ? <Volume2 className="h-3.5 w-3.5" aria-hidden="true" /> : <VolumeX className="h-3.5 w-3.5" aria-hidden="true" />}
-                <span>{audioNeedsGesture ? 'play announcer' : (voiceEnabled ? 'announcer on' : 'announcer off')}</span>
+                <span>{audioNeedsGesture ? 'play announcement' : (voiceEnabled ? 'announcements on' : 'announcements off')}</span>
               </button>
             </div>
-            <p>{step === 'winner' && winner ? `${winner.name} takes the finish after the last hazard.` : currentObstacleCopy}</p>
+            <p>{spokenBeatLabel} · {step === 'winner' && winner ? `${winner.name} takes the finish after the last hazard.` : currentObstacleCopy}</p>
             <div className="race-encounter-row" aria-label="Contestant obstacle results">
               {contestants.map((persona) => {
                 const lane = race.lanes.find((candidate) => candidate.personaId === persona.id);
@@ -1203,7 +1307,6 @@ function Home() {
   const [foodSplash, setFoodSplash] = useState<{ item: FoodItem; key: number } | null>(null);
   const [contestants, setContestants] = useState<Persona[]>([]);
   const [winner, setWinner] = useState<Persona | null>(null);
-  const [raceStartAudioReady, setRaceStartAudioReady] = useState(false);
   const [liveStatus, setLiveStatus] = useState(acknowledgement);
   const holdTimer = useRef<number | null>(null);
   const contestTimer = useRef<number | null>(null);
@@ -1285,7 +1388,6 @@ function Home() {
     setContestStep('intro');
     setWinner(null);
     setContestants([]);
-    setRaceStartAudioReady(false);
     contestIntroStartedAt.current = null;
     contestOutcome.current = null;
     contestQueued.current = false;
@@ -1298,7 +1400,6 @@ function Home() {
     const outcome = resolveContest(selected, rng);
     contestOutcome.current = outcome;
     completionGuard.current = false;
-    setRaceStartAudioReady(false);
     contestIntroStartedAt.current = Date.now();
     setContestants(selected);
     setWinner(null);
@@ -1384,7 +1485,6 @@ function Home() {
   }, []);
   useEffect(() => {
     if (!contestOpen) return;
-    if (contestStep === 'intro' && !raceStartAudioReady) return;
     const nextStep = contestNextStep[contestStep];
     if (!nextStep) return;
     const introElapsed = contestIntroStartedAt.current === null ? 0 : Date.now() - contestIntroStartedAt.current;
@@ -1410,7 +1510,7 @@ function Home() {
       setLiveStatus(stageMessages[nextStep]);
     }, stepDuration);
     return () => { if (contestTimer.current) window.clearTimeout(contestTimer.current); };
-  }, [contestOpen, contestStep, contestants, raceStartAudioReady]);
+  }, [contestOpen, contestStep, contestants]);
   useEffect(() => {
     if (!contestOpen || contestStep !== 'winner') return;
     contestTimer.current = window.setTimeout(() => finishContestRef.current(), contestDurations.winner);
@@ -1502,7 +1602,7 @@ function Home() {
 
       </main>
       <div className="sr-only" role="status" aria-live="polite" data-testid="live-contest-status">{liveStatus}</div>
-      {contestOpen && contestOutcome.current && <ContestOverlay contestants={contestants} winner={winner} step={contestStep} contestName={contestOutcome.current.contestName} memorableEvent={contestOutcome.current.memorableEvent} race={contestOutcome.current.race} onRaceStartAudioComplete={() => setRaceStartAudioReady(true)} onAnnouncerStatus={setLiveStatus} onSkip={skipContest} onClose={finishContest} />}
+      {contestOpen && contestOutcome.current && <ContestOverlay contestants={contestants} winner={winner} step={contestStep} contestName={contestOutcome.current.contestName} memorableEvent={contestOutcome.current.memorableEvent} race={contestOutcome.current.race} onAnnouncerBeat={(label) => setLiveStatus(`Announcer: ${label}.`)} onSkip={skipContest} onClose={finishContest} />}
       {curioView && <CurioOverlay view={curioView} ledger={ledger} collectibles={collectibles} onClose={() => setCurioView(null)} onReset={resetMemory} />}
       <span className="sr-only">{selectedCount ? `${selectedCount} memories kept nearby` : 'local memory is empty'}</span>
     </div>
