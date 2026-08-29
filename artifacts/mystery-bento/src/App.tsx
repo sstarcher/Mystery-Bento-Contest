@@ -23,6 +23,10 @@ type Persona = {
   portraitSrc: string;
   foodSpriteSrc: string;
   foodAnimationFrameSrcs?: string[];
+  foodAnimationSpriteSheetSrc?: string;
+  foodAnimationSpriteSheetColumns?: number;
+  foodAnimationSpriteSheetRows?: number;
+  foodAnimationSpriteSheetFrameCount?: number;
   foodAnimationVideoSrc?: string;
   foodAnimationFrameDurationMs?: number;
   foodAnimationAspectRatio?: string;
@@ -98,9 +102,7 @@ const LEDGER_KEY = 'mystery-bento-ledger';
 const CURIO_KEY = 'mystery-bento-curios';
 const VOICE_ANNOUNCER_KEY = 'mystery-bento-voice-announcer';
 const ANNOUNCER_AUDIO_BASE = `${import.meta.env.BASE_URL}audio/announcer`;
-const PIP_ANIMATION_FRAME_SRCS = Array.from({ length: 36 }, (_, index) => (
-  `${import.meta.env.BASE_URL}video/pip-frames/pip-porridge-frame-${String(index + 1).padStart(2, '0')}.png`
-));
+const PIP_ANIMATION_SPRITE_SHEET_SRC = `${import.meta.env.BASE_URL}video/pip-making-food-sprite-sheet.png`;
 const MIN_ANNOUNCER_GAP_MS = 520;
 const MAX_RACE_STAGE_GAP = 20;
 
@@ -214,11 +216,19 @@ const personas: Persona[] = contestantDesigns.map((design) => ({
   memorableEvent: design.memorableEvent,
   portraitSrc: contestantPortraits[design.id],
   foodSpriteSrc: contestantFoodSprites[design.id],
-  foodAnimationFrameSrcs: design.id === 'pip' ? PIP_ANIMATION_FRAME_SRCS : contestantFoodAnimationFrames[design.id],
+  foodAnimationFrameSrcs: design.id === 'pip' ? undefined : contestantFoodAnimationFrames[design.id],
+  foodAnimationSpriteSheetSrc: design.id === 'pip' ? PIP_ANIMATION_SPRITE_SHEET_SRC : undefined,
+  foodAnimationSpriteSheetColumns: design.id === 'pip' ? 5 : undefined,
+  foodAnimationSpriteSheetRows: design.id === 'pip' ? 5 : undefined,
+  foodAnimationSpriteSheetFrameCount: design.id === 'pip' ? 25 : undefined,
   foodAnimationFrameDurationMs: design.id === 'pip' ? Math.round(1000 / 12) : undefined,
-  foodAnimationAspectRatio: design.id === 'pip' ? '480 / 720' : contestantFoodAnimationAspectRatios[design.id],
+  foodAnimationAspectRatio: contestantFoodAnimationAspectRatios[design.id],
 }));
-const animatedContestants = personas.filter((persona) => (persona.foodAnimationFrameSrcs?.length ?? 0) >= 2 || persona.foodAnimationVideoSrc);
+const animatedContestants = personas.filter((persona) => (
+  (persona.foodAnimationFrameSrcs?.length ?? 0) >= 2
+  || persona.foodAnimationSpriteSheetSrc
+  || persona.foodAnimationVideoSrc
+));
 
 const foodItems: FoodItem[] = [
   { id: 'tamago', name: 'Sunset tamago', note: 'soft, sweet, perfectly tucked', glyph: 'circle', color: '#ed9560' },
@@ -889,17 +899,25 @@ function CurioBacksplash({ collectibles }: { collectibles: Collectible[] }) {
 
 function AnimatedChefSprite({ persona }: { persona: Persona }) {
   const frames = persona.foodAnimationFrameSrcs ?? [];
+  const spriteSheetSrc = persona.foodAnimationSpriteSheetSrc;
+  const spriteSheetColumns = persona.foodAnimationSpriteSheetColumns ?? 1;
+  const spriteSheetRows = persona.foodAnimationSpriteSheetRows ?? 1;
+  const spriteSheetFrameCount = Math.min(
+    persona.foodAnimationSpriteSheetFrameCount ?? spriteSheetColumns * spriteSheetRows,
+    spriteSheetColumns * spriteSheetRows,
+  );
+  const frameCount = spriteSheetSrc ? spriteSheetFrameCount : frames.length;
   const [frameIndex, setFrameIndex] = useState(0);
   const aspectRatio = persona.foodAnimationAspectRatio ?? '362 / 724';
   const frameDurationMs = persona.foodAnimationFrameDurationMs ?? 300;
 
   useEffect(() => {
-    if (frames.length < 2 || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    if (frameCount < 2 || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     const timer = window.setInterval(() => {
-      setFrameIndex((current) => (current + 1) % frames.length);
+      setFrameIndex((current) => (current + 1) % frameCount);
     }, frameDurationMs);
     return () => window.clearInterval(timer);
-  }, [frameDurationMs, frames]);
+  }, [frameCount, frameDurationMs]);
 
   if (persona.foodAnimationVideoSrc) {
     return (
@@ -918,6 +936,30 @@ function AnimatedChefSprite({ persona }: { persona: Persona }) {
           playsInline
           preload="auto"
           aria-hidden="true"
+        />
+      </span>
+    );
+  }
+
+  if (spriteSheetSrc) {
+    const column = frameIndex % spriteSheetColumns;
+    const row = Math.floor(frameIndex / spriteSheetColumns);
+    const backgroundPosition = `${spriteSheetColumns > 1 ? (column / (spriteSheetColumns - 1)) * 100 : 0}% ${spriteSheetRows > 1 ? (row / (spriteSheetRows - 1)) * 100 : 0}%`;
+    return (
+      <span
+        className="counter-chef-sprite counter-chef-sprite-sheet"
+        role="img"
+        aria-label={`${persona.name} cooking animation`}
+        style={{ aspectRatio: `${spriteSheetColumns} / ${spriteSheetRows}` }}
+      >
+        <span
+          className="counter-chef-sprite-sheet-frame"
+          aria-hidden="true"
+          style={{
+            backgroundImage: `url(${spriteSheetSrc})`,
+            backgroundSize: `${spriteSheetColumns * 100}% ${spriteSheetRows * 100}%`,
+            backgroundPosition,
+          }}
         />
       </span>
     );
@@ -1683,7 +1725,7 @@ function Home() {
                 <div className="restaurant-counter">
                   {activeChef && (
                     <div className={`counter-chef counter-chef-${activeChef.id}`} aria-label={`${activeChef.name}, the active chef, is preparing food at the conveyor bar`}>
-                      {activeChef.foodAnimationVideoSrc || activeChef.foodAnimationFrameSrcs ? (
+                      {activeChef.foodAnimationVideoSrc || activeChef.foodAnimationFrameSrcs || activeChef.foodAnimationSpriteSheetSrc ? (
                         <AnimatedChefSprite persona={activeChef} />
                       ) : (
                         <img className="counter-chef-image" src={activeChef.foodSpriteSrc} alt="" />
