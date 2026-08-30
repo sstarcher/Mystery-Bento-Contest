@@ -1745,9 +1745,6 @@ function Home() {
               </div>
             </div>
           )}
-          <div className="restaurant-reference-belt" aria-hidden="true">
-            <img className="restaurant-reference-belt-image" src={RESTAURANT_BACKDROP_SRC} alt="" />
-          </div>
           <RestaurantCurioDisplays collectibles={collectibles} />
           <div className="scene-content">
             <div className="restaurant-top-zone">
