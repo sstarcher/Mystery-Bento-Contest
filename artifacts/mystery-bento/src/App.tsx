@@ -950,6 +950,7 @@ function AnimatedChefSprite({ persona }: { persona: Persona }) {
           muted
           playsInline
           preload="auto"
+          poster={persona.foodSpriteSrc}
           aria-hidden="true"
         />
       </span>
@@ -1516,6 +1517,7 @@ function Home() {
   const activeChef = personas.find((persona) => persona.id === 'pip')
     ?? lastWinner
     ?? animatedContestants[0]
+    ?? personas[0]
     ?? null;
 
   useEffect(() => {

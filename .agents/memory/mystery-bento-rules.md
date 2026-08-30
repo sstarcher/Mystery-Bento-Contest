@@ -44,3 +44,9 @@ Contest audio should follow one absolute contest clock, while visual stage trans
 **Why:** A long, missing, or autoplay-blocked clip must never create a visible pause in the race; serialization belongs to the announcer queue, not the motion timeline.
 
 **How to apply:** Schedule beats from the contest start timestamp, keep the queue serialized with the minimum gap, and reset only the audio session when Skip Scene jumps directly to the finish.
+
+Chef videos should preserve their native aspect ratio and use a proportion-matched fallback poster; uploaded MP4s may contain an opaque transparency-checkerboard background.
+
+**Why:** Stretching a tall still into a landscape video box makes the chef look distorted, while a checkerboard baked into the source will become a visible scene rectangle during playback.
+
+**How to apply:** Use contain-style video rendering and a correctly framed poster for loading/autoplay fallback, and key or replace the source background before treating the video as a final transparent composite.
