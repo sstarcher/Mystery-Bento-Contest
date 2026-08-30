@@ -38,3 +38,9 @@ Sprite-sheet motion must change frames discretely; never interpolate the transfo
 **Why:** Interpolating between frame offsets visibly slides the character and can expose neighboring poses.
 
 **How to apply:** Use exact one-frame offsets with discrete timing, and verify the first, middle, and last poses at the final display size.
+
+Contest audio should follow one absolute contest clock, while visual stage transitions run independently of clip readiness.
+
+**Why:** A long, missing, or autoplay-blocked clip must never create a visible pause in the race; serialization belongs to the announcer queue, not the motion timeline.
+
+**How to apply:** Schedule beats from the contest start timestamp, keep the queue serialized with the minimum gap, and reset only the audio session when Skip Scene jumps directly to the finish.
