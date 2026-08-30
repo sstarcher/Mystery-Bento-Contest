@@ -149,7 +149,7 @@
 .restaurant-reference-backdrop .restaurant-menu-board,
 .restaurant-reference-backdrop .open-kitchen,
 .restaurant-reference-backdrop .curio-wall-lamp { display: none; }
-.restaurant-chef-layer { position: absolute; inset: 0; z-index: 1; overflow: hidden; --restaurant-counter-top: 62%; clip-path: inset(0 0 calc(100% - var(--restaurant-counter-top)) 0); pointer-events: none; }
+.restaurant-chef-layer { position: absolute; inset: 0; z-index: 1; --restaurant-counter-top: calc(62% - 55px); pointer-events: none; }
 .restaurant-chef-layer .counter-chef { top: var(--restaurant-counter-top); bottom: auto; left: 45%; transform: translate(-50%, -100%); }
 .restaurant-reference-belt { position: absolute; inset: 0 0 205px; z-index: 2; overflow: hidden; clip-path: inset(74% 0 14% 0); pointer-events: none; }
 .restaurant-reference-belt-image { position: absolute; inset: 0; display: block; width: 100%; height: 100%; object-fit: cover; object-position: center center; filter: saturate(.88) brightness(.82); image-rendering: pixelated; transform: scaleX(1.18); }
@@ -341,7 +341,7 @@
 .counter-curio-item .curio-info-card { right: 0; left: auto; bottom: calc(100% + 9px); transform: translateY(8px); }
 .counter-curio-item:hover .curio-info-card, .counter-curio-item:focus-visible .curio-info-card { transform: translateY(0); }
 .conveyor { position: relative; z-index: 0; background: transparent; border: 0; border-radius: 0; box-shadow: none; padding: 0 !important; transform: translateY(-108px); }
-.conveyor-window { --conveyor-gap: clamp(70px, 6vw, 100px); width: 100%; height: 156px; overflow: hidden; position: relative; margin-inline: auto; padding: 2px 0 5px; mask-image: linear-gradient(90deg, transparent, #000 4%, #000 96%, transparent); }
+.conveyor-window { --conveyor-gap: clamp(70px, 6vw, 100px); width: 100%; height: 156px; overflow: visible; position: relative; margin-inline: auto; padding: 2px 0 5px; }
 .conveyor-track { display: flex; width: max-content; animation: conveyor-slide 22s linear infinite; }
 .conveyor-group { display: flex; gap: var(--conveyor-gap); padding-right: var(--conveyor-gap); }
 @keyframes conveyor-slide { to { transform: translateX(-50%); } }
@@ -361,7 +361,7 @@
 .food-button:hover { transform: translateY(-5px) rotate(-1deg); filter: drop-shadow(0 8px 0 rgba(245, 201, 104, .12)); }
 .food-button:active { transform: translateY(2px) scale(.98); filter: none; }
 .food-button:disabled { opacity: .5; cursor: not-allowed; transform: none; }
-.food-illustration { height: 96px; display: grid; place-items: center; position: relative; transform: translateY(-48px); }
+.food-illustration { height: 96px; display: grid; place-items: center; position: relative; transform: translateY(-72px); }
 .plate-display { position: relative; width: 164px; height: 106px; display: grid; place-items: center; }
 .food-plate-image { display: block; width: 164px; height: 112px; max-width: none; object-fit: contain; image-rendering: pixelated; filter: drop-shadow(5px 6px 0 rgba(14, 8, 20, .3)); }
 .plate { width: 108px; height: 68px; display: grid; place-items: center; background: #fff1cf; border: 3px solid #32243d; border-radius: 50%; box-shadow: inset 0 -7px 0 #d8bd87, 5px 6px 0 rgba(14, 8, 20, .34); transform: rotate(-5deg); }
@@ -703,7 +703,7 @@
   .restaurant-counter-label { left: 10px; font-size: 7px; }
   .counter-chef-pip { width: min(420px, 100vw); height: 205px; }
   .counter-chef-pip .counter-chef-sprite { top: -30px; width: min(420px, 110vw); }
-  .restaurant-chef-layer { --restaurant-counter-top: 62%; }
+  .restaurant-chef-layer { --restaurant-counter-top: calc(62% - 55px); }
   .restaurant-reference-belt { inset: 0 0 205px; clip-path: inset(70% 0 18% 0); }
   .restaurant-top-zone { grid-template-columns: 1fr; gap: 12px; }
   .restaurant-controls { display: flex; flex-direction: row; align-items: flex-start; justify-content: space-between; gap: 8px; }
@@ -772,7 +772,7 @@
   .bar-meter-rail > span { display: block; font-size: 6px; letter-spacing: .08em; }
   .bar-meter-rail .compact-meter { gap: 6px; }
   .bar-meter-rail .compact-meter > div:last-child span:first-child { max-width: 94px; }
-  .food-illustration { transform: translateY(-26px); }
+  .food-illustration { transform: translateY(-42px); }
   .restaurant-curio-shelf { margin: 18px 0 0; }
   .foreground-seating { height: 118px; margin-top: 6px; }
   .restaurant-chair { bottom: 17px; transform: scale(.78); transform-origin: bottom center; }
