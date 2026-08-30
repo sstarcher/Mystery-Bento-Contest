@@ -103,7 +103,7 @@ const CURIO_KEY = 'mystery-bento-curios';
 const VOICE_ANNOUNCER_KEY = 'mystery-bento-voice-announcer';
 const ANNOUNCER_AUDIO_BASE = `${import.meta.env.BASE_URL}audio/announcer`;
 const PIP_ANIMATION_SPRITE_SHEET_SRC = `${import.meta.env.BASE_URL}video/pip-making-food-sprite-sheet.png`;
-const PIP_ANIMATION_VIDEO_SRC = `${import.meta.env.BASE_URL}video/pip-making-food-upload.mp4`;
+const PIP_ANIMATION_VIDEO_SRC = `${import.meta.env.BASE_URL}video/pip-making-food-transparent.webm`;
 const SENCHA_ANIMATION_SPRITE_SHEET_SRC = `${import.meta.env.BASE_URL}video/sencha-making-tea-sprite-sheet.png`;
 const MIN_ANNOUNCER_GAP_MS = 520;
 
