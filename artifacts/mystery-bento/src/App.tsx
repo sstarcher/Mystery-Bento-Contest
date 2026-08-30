@@ -106,6 +106,10 @@ const PIP_ANIMATION_SPRITE_SHEET_SRC = `${import.meta.env.BASE_URL}video/pip-mak
 const RESTAURANT_BACKDROP_SRC = `${import.meta.env.BASE_URL}restaurant-background-attached.png`;
 const SUSHI_PLATE_WARM_SRC = `${import.meta.env.BASE_URL}sushi-plate-warm.png`;
 const SUSHI_PLATE_COOL_SRC = `${import.meta.env.BASE_URL}sushi-plate-cool.png`;
+const SUSHI_PLATE_SHRIMP_SRC = `${import.meta.env.BASE_URL}sushi-plate-shrimp.png`;
+const SUSHI_PLATE_ROLLS_SRC = `${import.meta.env.BASE_URL}sushi-plate-rolls.png`;
+const SUSHI_PLATE_SALMON_SRC = `${import.meta.env.BASE_URL}sushi-plate-salmon.png`;
+const SUSHI_PLATE_NIGIRI_SRC = `${import.meta.env.BASE_URL}sushi-plate-nigiri.png`;
 const SENCHA_ANIMATION_SPRITE_SHEET_SRC = `${import.meta.env.BASE_URL}video/sencha-making-tea-sprite-sheet.png`;
 
 const TORO_ANIMATION_SPRITE_SHEET_SRC = `${import.meta.env.BASE_URL}video/captain-toro-cooking-sprite-sheet.png`;
@@ -311,6 +315,10 @@ const foodItems: FoodItem[] = [
   { id: 'plum', name: 'Plum onigiri', note: 'a bright little secret', imageSrc: SUSHI_PLATE_COOL_SRC },
   { id: 'tofu', name: 'Sesame tofu', note: 'quietly nutty, cool as moonlight', imageSrc: SUSHI_PLATE_WARM_SRC },
   { id: 'eel', name: 'Lantern eel', note: 'smoky ribbons from the night stall', imageSrc: SUSHI_PLATE_COOL_SRC },
+  { id: 'shrimp-temaki', name: 'Firecracker temaki', note: 'sweet shrimp with a bright cucumber snap', imageSrc: SUSHI_PLATE_SHRIMP_SRC },
+  { id: 'garden-maki', name: 'Moon garden maki', note: 'cool green rolls scattered with sesame', imageSrc: SUSHI_PLATE_ROLLS_SRC },
+  { id: 'salmon-duo', name: 'Salmon sunset duo', note: 'two rich cuts tucked over warm rice', imageSrc: SUSHI_PLATE_SALMON_SRC },
+  { id: 'night-salmon', name: 'Night-market salmon', note: 'glossy salmon served on the midnight plate', imageSrc: SUSHI_PLATE_NIGIRI_SRC },
 ];
 
 const acknowledgements = [
