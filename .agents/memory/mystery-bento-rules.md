@@ -15,6 +15,12 @@ Contest results must be resolved once per contest session and reused by animatio
 
 **How to apply:** Resolve contestants, winner, event, and collectible choice before the visual sequence begins, then guard completion side effects against duplicate calls.
 
+The race visual timeline is authoritative; announcer playback is best-effort narration and must never gate stage transitions or the finish milestone.
+
+**Why:** Audio can be delayed, missing, muted, or blocked by autoplay while the visual race still needs to communicate continuous progress.
+
+**How to apply:** Run stage timers independently of the serialized announcer queue, and schedule winner narration only after the visual finish has crossed.
+
 Visual spectacle should always have a readable staged fallback when reduced motion is enabled.
 
 **Why:** The belt, item splash, and contest race are part of the story but must not be required for understanding what happened.
