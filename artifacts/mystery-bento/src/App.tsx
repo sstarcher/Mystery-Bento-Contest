@@ -1912,9 +1912,9 @@ function Home() {
                                 <div className="food-illustration">
                                   <div className="plate-display">
                                     <FoodPlateArt item={item} />
+                                    <div className="food-name font-display text-base font-bold leading-4">{item.name}</div>
                                   </div>
                                 </div>
-                                <div className="food-name font-display mt-3 text-base font-bold leading-4">{item.name}</div>
                               </button>
                             ))}
                           </div>

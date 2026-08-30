@@ -361,8 +361,9 @@
 .food-button:hover { transform: translateY(-5px) rotate(-1deg); filter: drop-shadow(0 8px 0 rgba(245, 201, 104, .12)); }
 .food-button:active { transform: translateY(2px) scale(.98); filter: none; }
 .food-button:disabled { opacity: .5; cursor: not-allowed; transform: none; }
-.food-illustration { height: 96px; display: grid; place-items: center; position: relative; transform: translateY(-72px); }
+.food-illustration { height: 96px; display: grid; place-items: center; position: relative; transform: translateY(-172px); }
 .plate-display { position: relative; width: 164px; height: 106px; display: grid; place-items: center; }
+.plate-display .food-name { position: absolute; top: -6px; left: 50%; z-index: 2; transform: translateX(-50%); }
 .food-plate-image { display: block; width: 164px; height: 112px; max-width: none; object-fit: contain; image-rendering: pixelated; filter: drop-shadow(5px 6px 0 rgba(14, 8, 20, .3)); }
 .plate { width: 108px; height: 68px; display: grid; place-items: center; background: #fff1cf; border: 3px solid #32243d; border-radius: 50%; box-shadow: inset 0 -7px 0 #d8bd87, 5px 6px 0 rgba(14, 8, 20, .34); transform: rotate(-5deg); }
 .plate::before { content: ''; position: absolute; width: 85px; height: 47px; border: 2px solid rgba(163, 77, 67, .38); border-radius: 50%; }
@@ -370,7 +371,7 @@
 .plate .food-glyph.leaf { transform: translateY(-3px) rotate(-8deg) scale(.86); }
 .plate .food-glyph.triangle { transform: translateY(-3px) scale(.86); }
 .plate-glint { position: absolute; top: 6px; right: 7px; width: 10px; height: 4px; background: #fff8df; transform: rotate(-24deg); opacity: .8; }
-.food-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #f8e7c6; transform: translateY(-104px); }
+.food-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #f8e7c6; }
 .food-glyph { width: 54px; height: 40px; background: var(--food-color); border: 3px solid #32243d; border-radius: 13px 13px 18px 18px; box-shadow: inset 0 -7px rgba(0,0,0,.1); position: relative; }
 .food-glyph::before { content: ''; position: absolute; width: 12px; height: 5px; background: #32243d; border-radius: 4px; top: 11px; left: 9px; box-shadow: 19px 0 #32243d; }
 .food-glyph::after { content: ''; position: absolute; width: 45px; height: 7px; top: -8px; left: 1px; border: 3px solid #32243d; border-bottom: 0; border-radius: 50%; }
@@ -771,8 +772,7 @@
   .bar-meter-rail > span { display: block; font-size: 6px; letter-spacing: .08em; }
   .bar-meter-rail .compact-meter { gap: 6px; }
   .bar-meter-rail .compact-meter > div:last-child span:first-child { max-width: 94px; }
-  .food-illustration { transform: translateY(-92px); }
-  .food-name { transform: translateY(-70px); }
+  .food-illustration { transform: translateY(-192px); }
   .restaurant-curio-shelf { margin: 18px 0 0; }
   .foreground-seating { height: 118px; margin-top: 6px; }
   .restaurant-chair { bottom: 17px; transform: scale(.78); transform-origin: bottom center; }
