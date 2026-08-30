@@ -114,14 +114,76 @@ const MIN_ANNOUNCER_GAP_MS = 520;
 const FINISH_CROSSING_SETTLE_MS = 240;
 const MAX_RACE_STAGE_GAP = 20;
 
-type AnnouncerClip = { id: string; src: string; label: string };
-type AnnouncerBeat = { id: string; step: ContestStep; label: string; clips: AnnouncerClip[]; offset: number };
+type AnnouncerClip = { id: string; src: string; label: string; durationMs: number };
+type AnnouncerBeat = {
+  id: string;
+  step: ContestStep;
+  label: string;
+  clips: AnnouncerClip[];
+  offset: number;
+  deadlineOffset: number;
+};
 
-const announcerClip = (family: string, file: string, label: string): AnnouncerClip => ({
-  id: `${family}/${file}`,
-  src: `${ANNOUNCER_AUDIO_BASE}/${family}/${file}.mp3`,
-  label,
-});
+// These are conservative metadata hints for the bundled clips. Runtime metadata
+// can replace them after preload, but the schedule never has to wait for it.
+const announcerClipDurations: Record<string, number> = {
+  'character-intros/contestants-are': 1330,
+  'race-starts/race-start-quiet-kitchen': 6350,
+  'character-names/bibi': 850,
+  'character-names/kiku': 850,
+  'character-names/miso': 800,
+  'character-names/nori': 900,
+  'character-names/panko': 800,
+  'character-names/pip': 500,
+  'character-names/rollo': 800,
+  'character-names/saffy': 800,
+  'character-names/sencha': 750,
+  'character-names/tilda': 900,
+  'character-names/toro': 800,
+  'character-names/uma': 750,
+  'obstacles/bento-stack-at-the-finish': 1550,
+  'obstacles/broken-cart-across-the-course': 1650,
+  'obstacles/crumb-trail-ahead': 1150,
+  'obstacles/cushion-pile-ahead': 1360,
+  'obstacles/flour-sacks-coming-into-the-lane': 1780,
+  'obstacles/garnish-gate-ahead': 1330,
+  'obstacles/moon-reflection-ahead': 1360,
+  'obstacles/napkin-gust-ahead': 1230,
+  'obstacles/ribbon-tunnel-ahead': 1280,
+  'obstacles/steam-gadget-ahead': 1460,
+  'obstacles/tea-puddle-ahead': 1230,
+  'obstacles/wobble-stack-ahead': 1230,
+  'result-fragments/clean-line': 1000,
+  'result-fragments/finds-an-unexpected-opening': 1460,
+  'result-fragments/rerouted': 1000,
+  'result-fragments/slowed-down': 1230,
+  'reactions/ducks-beneath-it-and-keeps-moving': 2010,
+  'reactions/jumps-over-it-and-keeps-moving': 2060,
+  'reactions/sidesteps-it-and-holds-the-line': 1780,
+  'reactions/slides-around-it-and-recovers': 1830,
+  'reactions/stumbles-steadies-and-carries-on': 2490,
+  'reactions/surges-through-the-opening': 1570,
+  'reactions/weaves-through-and-finds-a-stranger-line': 2310,
+  'pace-lead-changes/field-beginning-to-stretch': 1840,
+  'pace-lead-changes/lead-changed-hands': 1580,
+  'pace-lead-changes/new-leader-lantern-route': 1760,
+  'pace-lead-changes/one-contender-finding-another-gear': 2180,
+  'pace-lead-changes/pack-still-together': 1420,
+  'stage-transitions/around-bend-into-matchup': 2210,
+  'stage-transitions/finish-in-sight': 1430,
+  'stage-transitions/warm-up-underway': 1480,
+  'finish-results/takes-the-win': 1180,
+};
+
+const announcerClip = (family: string, file: string, label: string): AnnouncerClip => {
+  const id = `${family}/${file}`;
+  return {
+    id,
+    src: `${ANNOUNCER_AUDIO_BASE}/${family}/${file}.mp3`,
+    label,
+    durationMs: announcerClipDurations[id] ?? 2000,
+  };
+};
 
 const obstacleAnnouncerClips: Record<RaceObstacleKind, [AnnouncerClip, AnnouncerClip]> = {
   'napkin-gust': [
@@ -375,20 +437,15 @@ function getFirstRunnerObstacleHitOffset(stage: ContestStep, obstacle: RaceObsta
 function buildAnnouncerSequence(contestants: Persona[], race: RaceSimulation): AnnouncerBeat[] {
   const beats: AnnouncerBeat[] = [
     {
-      id: 'intro-contestants',
+      id: 'intro-opening',
       step: 'intro',
-      label: 'Contestant names',
-      offset: 180,
-      clips: contestants.map((persona) => announcerClip('character-names', persona.id, persona.name)),
-    },
-    {
-      id: 'intro-follow-up',
-      step: 'intro',
-      label: 'Race introduction',
-      offset: 2_600,
+      label: 'Tonight’s contestants are',
+      offset: 0,
+      deadlineOffset: contestDurations.intro,
       clips: [
-        announcerClip('character-intros', 'contestants-are', 'Contestants are'),
-        announcerClip('race-starts', 'race-start-primary', 'Race start'),
+        announcerClip('character-intros', 'contestants-are', 'Tonight’s contestants are'),
+        ...contestants.map((persona) => announcerClip('character-names', persona.id, persona.name)),
+        announcerClip('race-starts', 'race-start-quiet-kitchen', 'The race is underway'),
       ],
     },
   ];
@@ -396,20 +453,31 @@ function buildAnnouncerSequence(contestants: Persona[], race: RaceSimulation): A
 
   const stageSteps: ContestStep[] = ['warmup', 'matchup', 'finale'];
   stageSteps.forEach((stage, stageIndex) => {
+    const stageDuration = contestDurations[stage];
+    const obstacleIndices = stage === 'finale' ? [2, 3] : [stageIndex];
+    const obstacleMilestones = obstacleIndices
+      .map((obstacleIndex) => race.obstacles[obstacleIndex])
+      .filter((obstacle): obstacle is RaceObstacle => Boolean(obstacle))
+      .map((obstacle) => ({
+        obstacle,
+        hitOffset: getFirstRunnerObstacleHitOffset(stage, obstacle, race),
+        // Start the callout just before the visual encounter, while keeping
+        // every later beat anchored to the same race clock.
+        offset: Math.max(700, getFirstRunnerObstacleHitOffset(stage, obstacle, race) - 950),
+      }));
+    const firstObstacleOffset = obstacleMilestones[0]?.offset ?? stageDuration;
     const transition = stageAnnouncerClips[stage];
     if (transition) {
       beats.push({
         id: `stage-${stage}`,
         step: stage,
         label: transition.label,
-        offset: 180,
+        offset: 220,
+        deadlineOffset: firstObstacleOffset,
         clips: [transition],
       });
     }
-    const obstacleIndices = stage === 'finale' ? [2, 3] : [stageIndex];
-    obstacleIndices.forEach((obstacleIndex, obstacleOrder) => {
-      const obstacle = race.obstacles[obstacleIndex];
-      if (!obstacle) return;
+    obstacleMilestones.forEach(({ obstacle, offset }, obstacleOrder) => {
       const lanesAtBeat = race.lanes
         .map((lane) => ({ lane, position: lane.positions[stage] }))
         .sort((a, b) => b.position - a.position);
@@ -417,7 +485,7 @@ function buildAnnouncerSequence(contestants: Persona[], race: RaceSimulation): A
       const encounter = leadLane?.encounters[obstacle.id];
       const reaction = encounter ? getRaceRunnerReaction(obstacle.kind, encounter.result) : 'ready';
       const clips: AnnouncerClip[] = [
-        obstacleAnnouncerClips[obstacle.kind]?.[stage === 'finale' && obstacleOrder === 0 ? 1 : 0],
+        obstacleAnnouncerClips[obstacle.kind]?.[0],
       ].filter((clip): clip is AnnouncerClip => Boolean(clip));
       if (encounter) {
         if (encounter.result === 'clear') {
@@ -433,7 +501,8 @@ function buildAnnouncerSequence(contestants: Persona[], race: RaceSimulation): A
         id: `obstacle-${obstacle.id}`,
         step: stage,
         label: `${obstacle.label} callout`,
-        offset: getFirstRunnerObstacleHitOffset(stage, obstacle, race),
+        offset,
+        deadlineOffset: obstacleMilestones[obstacleOrder + 1]?.offset ?? stageDuration,
         clips,
       });
     });
@@ -455,11 +524,14 @@ function buildAnnouncerSequence(contestants: Persona[], race: RaceSimulation): A
           ? paceAnnouncerClips[1]
           : paceAnnouncerClips[4];
     if (stage !== 'finale') {
+      const paceOffset = stage === 'warmup' ? 4_600 : 5_700;
+      const nextMilestone = obstacleMilestones.find((milestone) => milestone.offset > paceOffset)?.offset ?? stageDuration;
       beats.push({
         id: `pace-${stage}`,
         step: stage,
         label: paceClip.label,
-        offset: stage === 'warmup' ? 6_000 : 7_200,
+        offset: paceOffset,
+        deadlineOffset: nextMilestone,
         clips: [paceClip],
       });
     }
@@ -472,6 +544,7 @@ function buildAnnouncerSequence(contestants: Persona[], race: RaceSimulation): A
       step: 'winner',
       label: `${winner.name} takes the win`,
       offset: 900,
+      deadlineOffset: contestDurations.winner - 500,
       clips: [
         announcerClip('character-names', winner.id, winner.name),
         announcerClip('finish-results', 'takes-the-win', 'takes the win'),
@@ -1082,7 +1155,13 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
   const [audioNeedsGesture, setAudioNeedsGesture] = useState(false);
   const [spokenBeatLabel, setSpokenBeatLabel] = useState('Waiting for the starting lantern');
   const announcerAudio = useRef<HTMLAudioElement | null>(null);
-  const pendingAudio = useRef<{ audio: HTMLAudioElement; beat: AnnouncerBeat; clipIndex: number } | null>(null);
+  const pendingAudio = useRef<{
+    audio: HTMLAudioElement;
+    beat: AnnouncerBeat;
+    clipIndex: number;
+    resume: () => Promise<void>;
+    cancel: () => void;
+  } | null>(null);
   const announcerAudioReadyAt = useRef(0);
   const spokenBeatIds = useRef(new Set<string>());
   const announcerSequence = useMemo(() => buildAnnouncerSequence(contestants, race), [contestants, race]);
@@ -1110,7 +1189,20 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
   const toggleVoice = () => {
     if (voiceEnabled && audioNeedsGesture && pendingAudio.current) {
       const pending = pendingAudio.current;
-      void pending.audio.play()
+      const startedAt = contestStartedAt ?? Date.now();
+      const deadlineAt = startedAt + contestStepOffsets[pending.beat.step] + pending.beat.deadlineOffset;
+      const durationMs = Number.isFinite(pending.audio.duration)
+        ? pending.audio.duration * 1000
+        : pending.beat.clips[pending.clipIndex]?.durationMs ?? 2000;
+      if (Date.now() + durationMs > deadlineAt) {
+        pending.audio.pause();
+        pending.audio.currentTime = 0;
+        pendingAudio.current = null;
+        pending.cancel();
+        setAudioNeedsGesture(false);
+        return;
+      }
+      void pending.resume()
         .then(() => {
           spokenBeatIds.current.add(pending.beat.id);
           setAudioNeedsGesture(false);
@@ -1146,6 +1238,7 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
   }, [step, winner]);
 
   useEffect(() => {
+    const startedAt = contestStartedAt ?? Date.now();
     const beats = announcerSequence
       .filter((beat) => announcerResetKey === 0 || beat.step === 'winner')
       .map((beat) => ({
@@ -1154,11 +1247,12 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
       }))
       .sort((a, b) => a.offset - b.offset);
     const timers: number[] = [];
-    const queuedBeats: AnnouncerBeat[] = [];
     const pendingBeatIds = new Set(beats.map(({ beat }) => beat.id));
     let cancelled = false;
     let activeBeat: { beat: AnnouncerBeat; clipIndex: number } | null = null;
-    let sequenceCompleteNotified = false;
+    const metadataAudio = new Map<string, HTMLAudioElement>();
+    const metadataDurations = new Map<string, number>();
+    const failedSources = new Set<string>();
 
     const stopAudio = () => {
       if (announcerAudio.current) {
@@ -1170,30 +1264,55 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
       pendingAudio.current = null;
     };
 
+    const uniqueClips = Array.from(new Map(
+      beats.flatMap(({ beat }) => beat.clips).map((clip) => [clip.src, clip]),
+    ).values());
+    uniqueClips.forEach((clip) => {
+      const audio = new Audio();
+      audio.preload = 'metadata';
+      audio.addEventListener('loadedmetadata', () => {
+        if (Number.isFinite(audio.duration) && audio.duration > 0) {
+          metadataDurations.set(clip.src, audio.duration * 1000);
+        }
+      }, { once: true });
+      audio.addEventListener('error', () => failedSources.add(clip.src), { once: true });
+      audio.src = clip.src;
+      audio.load();
+      metadataAudio.set(clip.src, audio);
+    });
+
     const schedule = (callback: () => void, delay: number) => {
       const timer = window.setTimeout(callback, Math.max(0, delay));
       timers.push(timer);
     };
 
-    function pumpAnnouncerQueue() {
-      if (cancelled || !voiceEnabled || activeBeat || pendingAudio.current) return;
-      const nextBeat = queuedBeats.shift();
-      if (!nextBeat) return;
-      activeBeat = { beat: nextBeat, clipIndex: 0 };
-      playClip(nextBeat, 0);
-    }
-
-    function notifySequenceComplete() {
-      if (cancelled || sequenceCompleteNotified || pendingBeatIds.size > 0 || activeBeat || queuedBeats.length > 0) return;
-      sequenceCompleteNotified = true;
+    function deadlineFor(beat: AnnouncerBeat) {
+      return startedAt + contestStepOffsets[beat.step] + beat.deadlineOffset;
     }
 
     function finishBeat(beat: AnnouncerBeat) {
       if (cancelled || activeBeat?.beat !== beat) return;
       pendingBeatIds.delete(beat.id);
       activeBeat = null;
-      pumpAnnouncerQueue();
-      notifySequenceComplete();
+    }
+
+    function skipClip(beat: AnnouncerBeat, clipIndex: number) {
+      if (cancelled || activeBeat?.beat !== beat || activeBeat.clipIndex !== clipIndex) return;
+      if (beat.clips[clipIndex + 1]) {
+        activeBeat = { beat, clipIndex: clipIndex + 1 };
+        playClip(beat, clipIndex + 1);
+      } else {
+        finishBeat(beat);
+      }
+    }
+
+    function clipDurationMs(clip: AnnouncerClip) {
+      return metadataDurations.get(clip.src) ?? clip.durationMs;
+    }
+
+    function fitsBeforeDeadline(beat: AnnouncerBeat, clip: AnnouncerClip, now: number) {
+      const startAt = Math.max(now, announcerAudioReadyAt.current);
+      return startAt + clipDurationMs(clip) <= deadlineFor(beat);
     }
 
     function playClip(beat: AnnouncerBeat, clipIndex: number) {
@@ -1201,6 +1320,10 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
       const clip = beat.clips[clipIndex];
       if (!clip) {
         finishBeat(beat);
+        return;
+      }
+      if (failedSources.has(clip.src) || !fitsBeforeDeadline(beat, clip, Date.now())) {
+        skipClip(beat, clipIndex);
         return;
       }
       const pauseBeforeClip = Math.max(0, announcerAudioReadyAt.current - Date.now());
@@ -1217,7 +1340,6 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
       audio.preload = 'auto';
       audio.volume = 0.94;
       announcerAudio.current = audio;
-      pendingAudio.current = { audio, beat, clipIndex };
       setSpokenBeatLabel(clip.label);
       announcerBeatCallback.current(clip.label);
       const continueBeat = () => {
@@ -1225,17 +1347,17 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
         pendingAudio.current = null;
         announcerAudio.current = null;
         announcerAudioReadyAt.current = Date.now() + MIN_ANNOUNCER_GAP_MS;
-        schedule(() => {
-          if (beat.clips[clipIndex + 1]) {
-            activeBeat = { beat, clipIndex: clipIndex + 1 };
-            playClip(beat, clipIndex + 1);
-          } else {
-            finishBeat(beat);
-          }
-        }, MIN_ANNOUNCER_GAP_MS);
+        schedule(() => skipClip(beat, clipIndex), MIN_ANNOUNCER_GAP_MS);
       };
       audio.addEventListener('ended', continueBeat, { once: true });
       audio.addEventListener('error', continueBeat, { once: true });
+      pendingAudio.current = {
+        audio,
+        beat,
+        clipIndex,
+        resume: () => audio.play(),
+        cancel: () => skipClip(beat, clipIndex),
+      };
       void audio.play()
         .then(() => {
           if (!cancelled) {
@@ -1248,29 +1370,36 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
         });
     }
 
-    const queueBeat = (beat: AnnouncerBeat) => {
-      if (cancelled) return;
-      if (spokenBeatIds.current.has(beat.id) || !beat.clips.length) {
+    const startBeat = (beat: AnnouncerBeat) => {
+      if (cancelled || !voiceEnabled || spokenBeatIds.current.has(beat.id) || !beat.clips.length) {
         pendingBeatIds.delete(beat.id);
-        notifySequenceComplete();
         return;
       }
-      queuedBeats.push(beat);
-      pumpAnnouncerQueue();
+      // Beats never wait in a queue: a busy announcer or a missed deadline
+      // means this optional line is skipped so the visual race stays primary.
+      if (activeBeat || pendingAudio.current || Date.now() > deadlineFor(beat)) {
+        pendingBeatIds.delete(beat.id);
+        return;
+      }
+      activeBeat = { beat, clipIndex: 0 };
+      playClip(beat, 0);
     };
 
-    if (!voiceEnabled || beats.length === 0) {
-      notifySequenceComplete();
-    } else {
-      const startedAt = contestStartedAt ?? Date.now();
+    if (voiceEnabled) {
       beats.forEach(({ beat, offset }) => {
-        schedule(() => queueBeat(beat), Math.max(0, startedAt + offset - Date.now()));
+        schedule(() => startBeat(beat), Math.max(0, startedAt + offset - Date.now()));
       });
+    } else {
+      pendingBeatIds.clear();
     }
     return () => {
       cancelled = true;
       timers.forEach((timer) => window.clearTimeout(timer));
       stopAudio();
+      metadataAudio.forEach((audio) => {
+        audio.pause();
+        audio.src = '';
+      });
     };
   }, [announcerResetKey, announcerSequence, contestStartedAt, voiceEnabled]);
 
