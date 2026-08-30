@@ -141,9 +141,9 @@
 .curio-backsplash { position: absolute; inset: 0; z-index: 0; overflow: hidden; background: linear-gradient(180deg, #4c3242 0%, #3f2b40 49%, #2f2138 100%); pointer-events: none; }
 .curio-backsplash::before { content: ''; position: absolute; inset: 0; background: repeating-linear-gradient(90deg, rgba(218,148,89,.28) 0 3px, transparent 3px 74px), linear-gradient(180deg, rgba(159,91,72,.58), rgba(74,46,67,.4) 72%, rgba(40,29,50,.42)); border-top: 4px solid rgba(245,201,104,.5); box-shadow: inset 0 0 0 2px rgba(255,255,255,.075); pointer-events: none; }
 .curio-backsplash::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 235px; background: linear-gradient(180deg, rgba(156,94,67,.54), rgba(63,42,52,.88)); border-top: 7px solid #c58d6a; box-shadow: inset 0 8px rgba(255,241,207,.12), inset 0 -12px rgba(26,18,33,.5); pointer-events: none; }
-.restaurant-reference-image { position: absolute; inset: 0 0 205px; z-index: 0; display: block; width: 100%; height: calc(100% - 205px); object-fit: cover; object-position: center center; filter: saturate(.88) brightness(.82); image-rendering: pixelated; transform: scaleX(1.08); }
+.restaurant-reference-image { position: absolute; inset: 0 0 205px; z-index: 0; display: block; width: 100%; height: calc(100% - 205px); object-fit: cover; object-position: center center; filter: saturate(.88) brightness(.82); image-rendering: pixelated; transform: scaleX(1.14); }
 .restaurant-reference-backdrop::before { z-index: 1; background: linear-gradient(180deg, rgba(20,22,37,.12), rgba(32,24,35,.14) 52%, rgba(28,20,29,.4)); border-top-color: rgba(245,201,104,.38); }
-.restaurant-reference-backdrop::after { z-index: 1; height: 205px; background: linear-gradient(180deg, rgba(44,29,34,.08), rgba(38,25,31,.62)); border-top-color: rgba(197,141,106,.66); }
+.restaurant-reference-backdrop::after { display: none; }
 .restaurant-reference-backdrop .restaurant-background-dressing,
 .restaurant-reference-backdrop .restaurant-window,
 .restaurant-reference-backdrop .restaurant-menu-board,
@@ -152,7 +152,7 @@
 .restaurant-chef-layer { position: absolute; inset: 0; z-index: 1; pointer-events: none; }
 .restaurant-chef-layer .counter-chef { bottom: 43vh; }
 .restaurant-reference-belt { position: absolute; inset: 0 0 205px; z-index: 2; overflow: hidden; clip-path: inset(74% 0 14% 0); pointer-events: none; }
-.restaurant-reference-belt-image { position: absolute; inset: 0; display: block; width: 100%; height: 100%; object-fit: cover; object-position: center center; filter: saturate(.88) brightness(.82); image-rendering: pixelated; transform: scaleX(1.08); }
+.restaurant-reference-belt-image { position: absolute; inset: 0; display: block; width: 100%; height: 100%; object-fit: cover; object-position: center center; filter: saturate(.88) brightness(.82); image-rendering: pixelated; transform: scaleX(1.14); }
 .restaurant-background-dressing { position: absolute; inset: 0; pointer-events: none; }
 .background-shelf { position: absolute; z-index: 1; display: flex; align-items: flex-end; justify-content: space-around; gap: 8px; width: 236px; height: 104px; padding: 25px 13px 13px; border: 3px solid #17121e; background: linear-gradient(180deg, rgba(50,35,48,.68), rgba(91,57,55,.55)); box-shadow: inset 0 0 0 2px rgba(245,201,104,.2), 5px 5px 0 rgba(16,10,23,.2); }
 .background-shelf::before { content: ''; position: absolute; top: 8px; left: 12px; right: 12px; height: 2px; background: rgba(245,201,104,.38); box-shadow: 0 5px rgba(245,201,104,.14); }
@@ -289,8 +289,8 @@
 .displayed-curio .curio-glyph { transform: scale(1.08); margin: -2px 0; }
 .displayed-curio .curio-glyph-shine { display: none; }
 .displayed-curio .curio-place-label { display: none; }
-.restaurant-curio-shelf-grid { position: absolute; top: 214px; left: 58.5%; right: 4.2%; display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); grid-template-rows: repeat(2, minmax(0, 1fr)); height: 214px; align-items: center; justify-items: center; pointer-events: none; }
-.restaurant-curio-shelf-grid .displayed-curio { position: relative; inset: auto; width: 86px; height: 92px; }
+.restaurant-curio-shelf-grid { position: absolute; top: 230px; left: 59%; right: 5.8%; display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); grid-template-rows: repeat(2, minmax(0, 1fr)); height: 190px; align-items: center; justify-items: center; pointer-events: none; }
+.restaurant-curio-shelf-grid .displayed-curio { position: relative; inset: auto; width: 78px; height: 82px; }
 .displayed-curio-hanging-tools .curio-glyph { transform: scale(1.2) rotate(5deg); }
 .displayed-curio-hanging-tools .curio-info-card { top: calc(100% + 13px); bottom: auto; transform: translate(-50%, -8px); }
 .displayed-curio-hanging-tools .curio-info-card::after { top: -9px; bottom: auto; transform: translateX(-50%) rotate(225deg); }
@@ -717,8 +717,8 @@
   .displayed-curio { width: 54px; height: 58px; }
   .displayed-curio .curio-glyph { transform: scale(.76); margin: -3px 0; }
   .displayed-curio .curio-award-marker { top: 3px; right: 1px; }
-  .restaurant-curio-shelf-grid { top: 160px; left: 72.5%; right: auto; width: 153%; height: 190px; }
-  .restaurant-curio-shelf-grid .displayed-curio { width: 54px; height: 58px; }
+  .restaurant-curio-shelf-grid { top: 168px; left: 72.5%; right: auto; width: 150%; height: 176px; }
+  .restaurant-curio-shelf-grid .displayed-curio { width: 50px; height: 54px; }
   .restaurant-curio-shelf-grid .curio-glyph { transform: scale(.76); margin: -3px 0; }
   .background-shelf { width: 118px; height: 70px; gap: 3px; padding: 19px 6px 8px; border-width: 2px; }
   .background-shelf::before { top: 5px; left: 7px; right: 7px; }
