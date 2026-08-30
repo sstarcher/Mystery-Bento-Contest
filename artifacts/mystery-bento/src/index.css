@@ -342,12 +342,12 @@
 .counter-curio-item:hover .curio-info-card, .counter-curio-item:focus-visible .curio-info-card { transform: translateY(0); }
 .conveyor { position: relative; z-index: 0; background: transparent; border: 0; border-radius: 0; box-shadow: none; padding: 0 !important; transform: translateY(-108px); }
 .conveyor-window { --conveyor-gap: clamp(70px, 6vw, 100px); width: 100%; height: 156px; overflow: visible; position: relative; margin-inline: auto; padding: 2px 0 5px; }
-.conveyor-track { display: flex; width: max-content; animation: conveyor-slide 22s linear infinite; }
+.conveyor-track { display: flex; width: max-content; animation: conveyor-slide 24s linear infinite; }
 .conveyor-group { display: flex; gap: var(--conveyor-gap); padding-right: var(--conveyor-gap); }
 @keyframes conveyor-slide { to { transform: translateX(-50%); } }
 .conveyor-line { height: 8px; background: #756077; border-top: 2px solid #c18b7a; border-bottom: 3px solid #1a1523; }
 .conveyor-line::after { content: ''; display: block; width: 100%; height: 100%; background: repeating-linear-gradient(90deg, transparent 0 22px, rgba(30, 22, 36, .7) 22px 28px); }
-.bar-meter-rail { position: relative; z-index: 5; display: flex; align-items: center; gap: 9px; margin-top: -19px; padding: 2px 8px 1px; color: #f5c968; border-top: 0; background: transparent; transform: translateY(-50px); }
+.bar-meter-rail { position: relative; z-index: 5; display: flex; align-items: center; gap: 9px; margin-top: -19px; padding: 2px 8px 1px; color: #f5c968; border-top: 0; background: transparent; transform: translateY(-100px); }
 .bar-meter-rail > span { flex: 0 0 auto; }
 .bar-meter-rail .compact-meter { flex: 1; width: auto; display: grid; grid-template-columns: auto minmax(90px, 1fr) auto; align-items: center; gap: 10px; padding: 0 !important; border: 0; background: transparent; box-shadow: none; }
 .bar-meter-rail .compact-meter > div:first-child { margin: 0; }
@@ -362,9 +362,9 @@
 .food-button:active { transform: translateY(2px) scale(.98); filter: none; }
 .food-button:disabled { opacity: .5; cursor: not-allowed; transform: none; }
 .food-illustration { height: 96px; display: grid; place-items: center; position: relative; transform: translateY(-172px); }
-.plate-display { position: relative; width: 164px; height: 106px; display: grid; place-items: center; }
-.plate-display .food-name { position: absolute; top: 4px; left: 50%; z-index: 2; transform: translateX(-50%); }
-.food-plate-image { display: block; width: 164px; height: 112px; max-width: none; object-fit: contain; image-rendering: pixelated; filter: drop-shadow(5px 6px 0 rgba(14, 8, 20, .3)); }
+.plate-display { position: relative; width: 148px; height: 96px; display: grid; place-items: center; }
+.plate-display .food-name { position: absolute; top: 9px; left: 50%; z-index: 2; transform: translateX(-50%); }
+.food-plate-image { display: block; width: 148px; height: 101px; max-width: none; object-fit: contain; image-rendering: pixelated; filter: drop-shadow(5px 6px 0 rgba(14, 8, 20, .3)); }
 .plate { width: 108px; height: 68px; display: grid; place-items: center; background: #fff1cf; border: 3px solid #32243d; border-radius: 50%; box-shadow: inset 0 -7px 0 #d8bd87, 5px 6px 0 rgba(14, 8, 20, .34); transform: rotate(-5deg); }
 .plate::before { content: ''; position: absolute; width: 85px; height: 47px; border: 2px solid rgba(163, 77, 67, .38); border-radius: 50%; }
 .plate .food-glyph { transform: translateY(-3px) scale(.86); }
@@ -548,7 +548,7 @@
 .selection-card { width: min(100%, 520px); padding: 19px 22px 17px; background: #30223c; border: 3px solid #17121e; color: #f8e7c6; box-shadow: 8px 8px 0 rgba(15,9,20,.42); animation: selection-card-pop .8s cubic-bezier(.18,.9,.24,1) both; }
 .selection-card-main { display: flex; align-items: center; gap: 18px; margin-top: 13px; }
 .selection-plate { flex: 0 0 104px; display: grid; place-items: center; }
-.food-plate-image-selection { width: 150px; height: 124px; }
+.food-plate-image-selection { width: 135px; height: 112px; }
 .selection-plate .plate { width: 104px; height: 68px; transform: rotate(-7deg); }
 .selection-plate .plate::before { width: 82px; height: 47px; }
 .selection-plate .plate .food-glyph { transform: translateY(-3px) scale(1); }
@@ -768,7 +768,7 @@
   .kitchen-steam { top: 165px; transform: scale(.7) rotate(7deg); }
   .kitchen-steam-two { transform: scale(.7) rotate(-7deg); }
   .conveyor { transform: translateY(-100px); }
-  .bar-meter-rail { gap: 5px; margin-top: -15px; padding: 1px 5px 0; transform: translateY(-46px); }
+  .bar-meter-rail { gap: 5px; margin-top: -15px; padding: 1px 5px 0; transform: translateY(-96px); }
   .bar-meter-rail > span { display: block; font-size: 6px; letter-spacing: .08em; }
   .bar-meter-rail .compact-meter { gap: 6px; }
   .bar-meter-rail .compact-meter > div:last-child span:first-child { max-width: 94px; }
