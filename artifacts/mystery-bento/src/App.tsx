@@ -1062,22 +1062,6 @@ function Meter({ meter, onPointerStart, onPointerEnd, onMeterClick, onMeterKeyDo
   );
 }
 
-function ForegroundSeating() {
-  return (
-    <div className="foreground-seating" aria-hidden="true">
-      <div className="seating-floor-line" />
-      {[0, 1, 2, 3, 4, 5].map((chair) => (
-        <div className="restaurant-chair" key={chair}>
-          <div className="chair-back"><span /></div>
-          <div className="chair-seat" />
-          <div className="chair-leg chair-leg-left" />
-          <div className="chair-leg chair-leg-right" />
-        </div>
-      ))}
-    </div>
-  );
-}
-
 function ContestOverlay({ contestants, winner, step, contestName, memorableEvent, race, finishCrossed, contestStartedAt, announcerResetKey, onAnnouncerBeat, onSkip, onClose }: { contestants: Persona[]; winner: Persona | null; step: ContestStep; contestName: string; memorableEvent: string; race: RaceSimulation; finishCrossed: boolean; contestStartedAt: number | null; announcerResetKey: number; onAnnouncerBeat: (label: string) => void; onSkip: () => void; onClose: () => void }) {
   const [showWinnerReveal, setShowWinnerReveal] = useState(false);
   const [voiceEnabled, setVoiceEnabled] = useState(() => {
@@ -1761,7 +1745,7 @@ function Home() {
             <div className="restaurant-bar-stack">
               <div className="relative mt-6">
                 <span className="pixel-star left-[8%] top-2" aria-hidden="true">+</span><span className="pixel-star right-[13%] top-10 text-sm" aria-hidden="true">+</span><span className="pixel-star right-[28%] top-0 text-xs" aria-hidden="true">+</span>
-                <div className="restaurant-counter">
+              <div className="restaurant-counter">
                   {activeChef && (
                     <div className={`counter-chef counter-chef-${activeChef.id}`} aria-label={`${activeChef.name}, the active chef, is preparing food at the conveyor bar`}>
                       {activeChef.foodAnimationVideoSrc || activeChef.foodAnimationFrameSrcs || activeChef.foodAnimationSpriteSheetSrc ? (
@@ -1801,14 +1785,12 @@ function Home() {
                       </div>
                     </div>
                   </div>
-                  <div className="conveyor-line mt-1 rounded-full" />
                   <div className="bar-meter-rail">
                     <span className="font-mono-ui text-[8px] uppercase tracking-[.14em]">mystery bento meter</span>
                   <Meter compact meter={meter} onPointerStart={(event) => { event.currentTarget.setPointerCapture?.(event.pointerId); startHold(); }} onPointerEnd={cancelHold} onMeterClick={handleMeterClick} onMeterKeyDown={handleMeterKeyDown} onMeterKeyUp={handleMeterKeyUp} onContextMenu={handleMeterContextMenu} meterPulse={meterPulse} isHolding={isHolding} />
                   </div>
                 </div>
               </div>
-              <ForegroundSeating />
             </div>
           </div>
           {foodSplash && <FoodSelectionSplash key={foodSplash.key} item={foodSplash.item} />}
