@@ -1913,7 +1913,6 @@ function Home() {
                                   <div className="plate-display">
                                     <FoodPlateArt item={item} />
                                   </div>
-                                  <span className="plate-number font-mono-ui text-[10px] text-[#a34d43]">0{index + 1}</span>
                                 </div>
                                 <div className="food-name font-display mt-3 text-base font-bold leading-4">{item.name}</div>
                               </button>
