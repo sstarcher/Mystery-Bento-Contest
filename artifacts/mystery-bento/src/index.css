@@ -141,6 +141,14 @@
 .curio-backsplash { position: absolute; inset: 0; z-index: 0; overflow: hidden; background: linear-gradient(180deg, #4c3242 0%, #3f2b40 49%, #2f2138 100%); pointer-events: none; }
 .curio-backsplash::before { content: ''; position: absolute; inset: 0; background: repeating-linear-gradient(90deg, rgba(218,148,89,.28) 0 3px, transparent 3px 74px), linear-gradient(180deg, rgba(159,91,72,.58), rgba(74,46,67,.4) 72%, rgba(40,29,50,.42)); border-top: 4px solid rgba(245,201,104,.5); box-shadow: inset 0 0 0 2px rgba(255,255,255,.075); pointer-events: none; }
 .curio-backsplash::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 235px; background: linear-gradient(180deg, rgba(156,94,67,.54), rgba(63,42,52,.88)); border-top: 7px solid #c58d6a; box-shadow: inset 0 8px rgba(255,241,207,.12), inset 0 -12px rgba(26,18,33,.5); pointer-events: none; }
+.restaurant-reference-image { position: absolute; inset: 0; z-index: 0; display: block; width: 100%; height: 100%; object-fit: cover; object-position: center center; filter: saturate(.88) brightness(.82); image-rendering: pixelated; }
+.restaurant-reference-backdrop::before { z-index: 1; background: linear-gradient(180deg, rgba(20,22,37,.12), rgba(32,24,35,.14) 52%, rgba(28,20,29,.4)); border-top-color: rgba(245,201,104,.38); }
+.restaurant-reference-backdrop::after { z-index: 1; height: 205px; background: linear-gradient(180deg, rgba(44,29,34,.08), rgba(38,25,31,.62)); border-top-color: rgba(197,141,106,.66); }
+.restaurant-reference-backdrop .restaurant-background-dressing,
+.restaurant-reference-backdrop .restaurant-window,
+.restaurant-reference-backdrop .restaurant-menu-board,
+.restaurant-reference-backdrop .open-kitchen,
+.restaurant-reference-backdrop .curio-wall-lamp { display: none; }
 .restaurant-background-dressing { position: absolute; inset: 0; pointer-events: none; }
 .background-shelf { position: absolute; z-index: 1; display: flex; align-items: flex-end; justify-content: space-around; gap: 8px; width: 236px; height: 104px; padding: 25px 13px 13px; border: 3px solid #17121e; background: linear-gradient(180deg, rgba(50,35,48,.68), rgba(91,57,55,.55)); box-shadow: inset 0 0 0 2px rgba(245,201,104,.2), 5px 5px 0 rgba(16,10,23,.2); }
 .background-shelf::before { content: ''; position: absolute; top: 8px; left: 12px; right: 12px; height: 2px; background: rgba(245,201,104,.38); box-shadow: 0 5px rgba(245,201,104,.14); }
@@ -251,9 +259,9 @@
 .counter-chef-image { position: absolute; top: 0; left: 50%; display: block; width: 100%; height: auto; max-width: none; transform: translateX(-50%); image-rendering: pixelated; }
 .counter-chef-sprite { position: absolute; top: -105px; left: 50%; display: block; width: 100%; aspect-ratio: 362 / 724; overflow: hidden; transform: translateX(-50%); }
 .counter-chef-frame-image { position: absolute; inset: 0; display: block; width: 100%; height: 100%; object-fit: fill; image-rendering: pixelated; }
-.counter-chef-frame-video { position: absolute; inset: 0; display: block; width: 100%; height: 100%; object-fit: contain; background: transparent; image-rendering: pixelated; }
+.counter-chef-frame-video { position: absolute; inset: 0; display: block; width: 100%; height: 100%; object-fit: fill; image-rendering: pixelated; }
 .counter-chef-pip { top: auto; bottom: 100%; width: min(500px, 100vw); height: 260px; overflow: hidden; z-index: 1; }
-.counter-chef-pip .counter-chef-sprite { top: -2px; width: min(460px, 110vw); aspect-ratio: 848 / 480; }
+.counter-chef-pip .counter-chef-sprite { top: -34px; width: min(460px, 110vw); aspect-ratio: 1; }
 .counter-chef-sprite-sheet-frame { position: absolute; inset: 0; display: block; background-repeat: no-repeat; image-rendering: pixelated; }
 .counter-chef-sencha .counter-chef-sprite { top: -65px; width: min(202px, 38vw); }
 .counter-chef-nori .counter-chef-sprite { top: -125px; width: min(190px, 38vw); }
@@ -695,7 +703,7 @@
   .restaurant-counter { padding: 25px 7px 9px; }
   .restaurant-counter-label { left: 10px; font-size: 7px; }
   .counter-chef-pip { width: min(420px, 100vw); height: 205px; }
-  .counter-chef-pip .counter-chef-sprite { top: -2px; width: min(420px, 110vw); }
+  .counter-chef-pip .counter-chef-sprite { top: -30px; width: min(420px, 110vw); }
   .restaurant-top-zone { grid-template-columns: 1fr; gap: 12px; }
   .restaurant-controls { display: flex; flex-direction: row; align-items: flex-start; justify-content: space-between; gap: 8px; }
   .restaurant-brand-lockup { gap: 7px; }
