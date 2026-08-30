@@ -107,6 +107,8 @@ const RESTAURANT_BACKDROP_SRC = `${import.meta.env.BASE_URL}restaurant-interior.
 const SUSHI_PLATE_WARM_SRC = `${import.meta.env.BASE_URL}sushi-plate-warm.png`;
 const SUSHI_PLATE_COOL_SRC = `${import.meta.env.BASE_URL}sushi-plate-cool.png`;
 const SENCHA_ANIMATION_SPRITE_SHEET_SRC = `${import.meta.env.BASE_URL}video/sencha-making-tea-sprite-sheet.png`;
+
+const TORO_ANIMATION_SPRITE_SHEET_SRC = `${import.meta.env.BASE_URL}video/captain-toro-cooking-sprite-sheet.png`;
 const MIN_ANNOUNCER_GAP_MS = 520;
 
 const FINISH_CROSSING_SETTLE_MS = 240;
@@ -222,16 +224,18 @@ const personas: Persona[] = contestantDesigns.map((design) => ({
   memorableEvent: design.memorableEvent,
   portraitSrc: contestantPortraits[design.id],
   foodSpriteSrc: contestantFoodSprites[design.id],
-  foodAnimationFrameSrcs: design.id === 'pip' || design.id === 'sencha' ? undefined : contestantFoodAnimationFrames[design.id],
+  foodAnimationFrameSrcs: design.id === 'pip' || design.id === 'sencha' || design.id === 'toro' ? undefined : contestantFoodAnimationFrames[design.id],
   foodAnimationSpriteSheetSrc: design.id === 'pip'
     ? PIP_ANIMATION_SPRITE_SHEET_SRC
     : design.id === 'sencha'
       ? SENCHA_ANIMATION_SPRITE_SHEET_SRC
-      : undefined,
-  foodAnimationSpriteSheetColumns: design.id === 'pip' || design.id === 'sencha' ? 5 : undefined,
-  foodAnimationSpriteSheetRows: design.id === 'pip' || design.id === 'sencha' ? 5 : undefined,
-  foodAnimationSpriteSheetFrameCount: design.id === 'pip' || design.id === 'sencha' ? 25 : undefined,
-  foodAnimationFrameDurationMs: design.id === 'pip' || design.id === 'sencha' ? Math.round(1000 / 12) : undefined,
+      : design.id === 'toro'
+        ? TORO_ANIMATION_SPRITE_SHEET_SRC
+        : undefined,
+  foodAnimationSpriteSheetColumns: design.id === 'pip' || design.id === 'sencha' || design.id === 'toro' ? 5 : undefined,
+  foodAnimationSpriteSheetRows: design.id === 'pip' || design.id === 'sencha' || design.id === 'toro' ? 5 : undefined,
+  foodAnimationSpriteSheetFrameCount: design.id === 'pip' || design.id === 'sencha' || design.id === 'toro' ? 25 : undefined,
+  foodAnimationFrameDurationMs: design.id === 'pip' || design.id === 'sencha' || design.id === 'toro' ? Math.round(1000 / 12) : undefined,
   foodAnimationAspectRatio: contestantFoodAnimationAspectRatios[design.id],
 }));
 const animatedContestants = personas.filter((persona) => (

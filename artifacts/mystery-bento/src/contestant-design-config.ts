@@ -50,12 +50,6 @@ import tildaTofuFrame5 from './assets/contestants/tilda-tofu-frame-5.png';
 import tildaTofuFrame6 from './assets/contestants/tilda-tofu-frame-6.png';
 import toroPortrait from './assets/contestants/toro.png';
 import toroFood from './assets/contestants/toro-food.png';
-import toroGrillFrame1 from './assets/contestants/toro-grill-frame-1.png';
-import toroGrillFrame2 from './assets/contestants/toro-grill-frame-2.png';
-import toroGrillFrame3 from './assets/contestants/toro-grill-frame-3.png';
-import toroGrillFrame4 from './assets/contestants/toro-grill-frame-4.png';
-import toroGrillFrame5 from './assets/contestants/toro-grill-frame-5.png';
-import toroGrillFrame6 from './assets/contestants/toro-grill-frame-6.png';
 import umaPortrait from './assets/contestants/uma.png';
 import umaFood from './assets/contestants/uma-food.png';
 
@@ -111,7 +105,6 @@ export const contestantFoodSprites: Record<string, string> = {
 export const contestantFoodAnimationFrames: Partial<Record<string, string[]>> = {
   pip: [pipPorridgeFrame1, pipPorridgeFrame2, pipPorridgeFrame3, pipPorridgeFrame4, pipPorridgeFrame5, pipPorridgeFrame6],
   sencha: [senchaTeaFrame1, senchaTeaFrame2, senchaTeaFrame3, senchaTeaFrame4, senchaTeaFrame5, senchaTeaFrame6],
-  toro: [toroGrillFrame1, toroGrillFrame2, toroGrillFrame3, toroGrillFrame4, toroGrillFrame5, toroGrillFrame6],
   nori: [noriNibFrame1, noriNibFrame2, noriNibFrame3, noriNibFrame4, noriNibFrame5, noriNibFrame6],
   tilda: [tildaTofuFrame1, tildaTofuFrame2, tildaTofuFrame3, tildaTofuFrame4, tildaTofuFrame5, tildaTofuFrame6],
   rollo: [rolloRadishFrame1, rolloRadishFrame2, rolloRadishFrame3, rolloRadishFrame4, rolloRadishFrame5, rolloRadishFrame6],
@@ -120,7 +113,7 @@ export const contestantFoodAnimationFrames: Partial<Record<string, string[]>> = 
 export const contestantFoodAnimationAspectRatios: Partial<Record<string, string>> = {
   pip: '362 / 724',
   sencha: '362 / 724',
-  toro: '362 / 724',
+  toro: '1 / 1',
   nori: '314 / 836',
   tilda: '284 / 922',
   // Rollo's transparent derivatives share a visible y-range of 231–692.
