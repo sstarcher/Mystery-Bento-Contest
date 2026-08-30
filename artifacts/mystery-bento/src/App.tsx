@@ -1900,7 +1900,6 @@ function Home() {
             </div>
             <div className="restaurant-bar-stack">
               <div className="relative mt-6">
-                <span className="pixel-star left-[8%] top-2" aria-hidden="true">+</span><span className="pixel-star right-[13%] top-10 text-sm" aria-hidden="true">+</span><span className="pixel-star right-[28%] top-0 text-xs" aria-hidden="true">+</span>
               <div className="restaurant-counter">
                   <div className="conveyor rounded-xl p-3 sm:p-4">
                     <div className="conveyor-window" aria-label="Moving plated bento selections">
