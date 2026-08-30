@@ -49,7 +49,7 @@ type Collectible = {
   earnedBy: string;
   earnedAt: string;
 };
-type FoodItem = { id: string; name: string; note: string; glyph: string; color: string };
+type FoodItem = { id: string; name: string; note: string; imageSrc: string };
 type RaceTrait = keyof Persona['traits'];
 type RaceObstacleKind =
   | 'napkin-gust'
@@ -104,6 +104,8 @@ const VOICE_ANNOUNCER_KEY = 'mystery-bento-voice-announcer';
 const ANNOUNCER_AUDIO_BASE = `${import.meta.env.BASE_URL}audio/announcer`;
 const PIP_ANIMATION_SPRITE_SHEET_SRC = `${import.meta.env.BASE_URL}video/pip-making-food-sprite-sheet.png`;
 const RESTAURANT_BACKDROP_SRC = `${import.meta.env.BASE_URL}restaurant-interior.webp`;
+const SUSHI_PLATE_WARM_SRC = `${import.meta.env.BASE_URL}sushi-plate-warm.png`;
+const SUSHI_PLATE_COOL_SRC = `${import.meta.env.BASE_URL}sushi-plate-cool.png`;
 const SENCHA_ANIMATION_SPRITE_SHEET_SRC = `${import.meta.env.BASE_URL}video/sencha-making-tea-sprite-sheet.png`;
 const MIN_ANNOUNCER_GAP_MS = 520;
 
@@ -239,10 +241,10 @@ const animatedContestants = personas.filter((persona) => (
 ));
 
 const foodItems: FoodItem[] = [
-  { id: 'tamago', name: 'Sunset tamago', note: 'soft, sweet, perfectly tucked', glyph: 'circle', color: '#ed9560' },
-  { id: 'plum', name: 'Plum onigiri', note: 'a bright little secret', glyph: 'triangle', color: '#c96575' },
-  { id: 'tofu', name: 'Sesame tofu', note: 'quietly nutty, cool as moonlight', glyph: 'square', color: '#d8bd78' },
-  { id: 'eel', name: 'Lantern eel', note: 'smoky ribbons from the night stall', glyph: 'leaf', color: '#7d9c74' },
+  { id: 'tamago', name: 'Sunset tamago', note: 'soft, sweet, perfectly tucked', imageSrc: SUSHI_PLATE_WARM_SRC },
+  { id: 'plum', name: 'Plum onigiri', note: 'a bright little secret', imageSrc: SUSHI_PLATE_COOL_SRC },
+  { id: 'tofu', name: 'Sesame tofu', note: 'quietly nutty, cool as moonlight', imageSrc: SUSHI_PLATE_WARM_SRC },
+  { id: 'eel', name: 'Lantern eel', note: 'smoky ribbons from the night stall', imageSrc: SUSHI_PLATE_COOL_SRC },
 ];
 
 const acknowledgements = [
@@ -686,8 +688,8 @@ function useStoredState<T>(key: string, fallback: T) {
   return [value, setValue] as const;
 }
 
-function FoodGlyph({ item }: { item: FoodItem }) {
-  return <div className={`food-glyph ${item.glyph}`} style={{ '--food-color': item.color } as CSSProperties} aria-hidden="true" />;
+function FoodPlateArt({ item, selection = false }: { item: FoodItem; selection?: boolean }) {
+  return <img className={`food-plate-image${selection ? ' food-plate-image-selection' : ''}`} src={item.imageSrc} alt="" aria-hidden="true" />;
 }
 
 function FoodSelectionSplash({ item }: { item: FoodItem }) {
@@ -700,7 +702,7 @@ function FoodSelectionSplash({ item }: { item: FoodItem }) {
         <div className="font-mono-ui text-[10px] uppercase tracking-[.2em] text-[#f5c968]">fresh off the belt</div>
         <div className="selection-card-main">
           <div className="selection-plate" aria-hidden="true">
-            <div className="plate"><FoodGlyph item={item} /></div>
+            <FoodPlateArt item={item} selection />
           </div>
           <div>
             <div className="font-display text-2xl font-bold leading-none sm:text-3xl">{item.name}</div>
@@ -1776,8 +1778,7 @@ function Home() {
                               >
                                 <div className="food-illustration">
                                   <div className="plate-display">
-                                    <div className="plate"><FoodGlyph item={item} /></div>
-                                    <span className="plate-glint" aria-hidden="true" />
+                                    <FoodPlateArt item={item} />
                                   </div>
                                   <span className="plate-number font-mono-ui text-[10px] text-[#a34d43]">0{index + 1}</span>
                                 </div>

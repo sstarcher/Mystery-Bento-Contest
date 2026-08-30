@@ -289,7 +289,7 @@
 .displayed-curio .curio-glyph { transform: scale(1.08); margin: -2px 0; }
 .displayed-curio .curio-glyph-shine { display: none; }
 .displayed-curio .curio-place-label { display: none; }
-.restaurant-curio-shelf-grid { position: absolute; top: 280px; left: 59%; right: 5.8%; display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); grid-template-rows: repeat(2, minmax(0, 1fr)); height: 230px; align-items: center; justify-items: center; pointer-events: none; }
+.restaurant-curio-shelf-grid { position: absolute; top: 300px; left: 59%; right: 5.8%; display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); grid-template-rows: repeat(2, minmax(0, 1fr)); height: 230px; align-items: center; justify-items: center; pointer-events: none; }
 .restaurant-curio-shelf-grid .displayed-curio { position: relative; inset: auto; width: 78px; height: 82px; }
 .displayed-curio-hanging-tools .curio-glyph { transform: scale(1.2) rotate(5deg); }
 .displayed-curio-hanging-tools .curio-info-card { top: calc(100% + 13px); bottom: auto; transform: translate(-50%, -8px); }
@@ -346,7 +346,7 @@
 @keyframes conveyor-slide { to { transform: translateX(-50%); } }
 .conveyor-line { height: 8px; background: #756077; border-top: 2px solid #c18b7a; border-bottom: 3px solid #1a1523; }
 .conveyor-line::after { content: ''; display: block; width: 100%; height: 100%; background: repeating-linear-gradient(90deg, transparent 0 22px, rgba(30, 22, 36, .7) 22px 28px); }
-.bar-meter-rail { display: flex; align-items: center; gap: 9px; margin-top: 11px; padding: 2px 8px 1px; color: #f5c968; border-top: 0; background: transparent; }
+.bar-meter-rail { display: flex; align-items: center; gap: 9px; margin-top: -3px; padding: 2px 8px 1px; color: #f5c968; border-top: 0; background: transparent; }
 .bar-meter-rail > span { flex: 0 0 auto; }
 .bar-meter-rail .compact-meter { flex: 1; width: auto; display: grid; grid-template-columns: auto minmax(90px, 1fr) auto; align-items: center; gap: 10px; padding: 0 !important; border: 0; background: transparent; box-shadow: none; }
 .bar-meter-rail .compact-meter > div:first-child { margin: 0; }
@@ -360,8 +360,9 @@
 .food-button:hover { transform: translateY(-5px) rotate(-1deg); filter: drop-shadow(0 8px 0 rgba(245, 201, 104, .12)); }
 .food-button:active { transform: translateY(2px) scale(.98); filter: none; }
 .food-button:disabled { opacity: .5; cursor: not-allowed; transform: none; }
-.food-illustration { height: 82px; display: grid; place-items: center; position: relative; }
-.plate-display { position: relative; width: 128px; height: 86px; display: grid; place-items: center; }
+.food-illustration { height: 96px; display: grid; place-items: center; position: relative; }
+.plate-display { position: relative; width: 164px; height: 106px; display: grid; place-items: center; }
+.food-plate-image { display: block; width: 164px; height: 112px; max-width: none; object-fit: contain; image-rendering: pixelated; filter: drop-shadow(5px 6px 0 rgba(14, 8, 20, .3)); }
 .plate { width: 108px; height: 68px; display: grid; place-items: center; background: #fff1cf; border: 3px solid #32243d; border-radius: 50%; box-shadow: inset 0 -7px 0 #d8bd87, 5px 6px 0 rgba(14, 8, 20, .34); transform: rotate(-5deg); }
 .plate::before { content: ''; position: absolute; width: 85px; height: 47px; border: 2px solid rgba(163, 77, 67, .38); border-radius: 50%; }
 .plate .food-glyph { transform: translateY(-3px) scale(.86); }
@@ -546,6 +547,7 @@
 .selection-card { width: min(100%, 520px); padding: 19px 22px 17px; background: #30223c; border: 3px solid #17121e; color: #f8e7c6; box-shadow: 8px 8px 0 rgba(15,9,20,.42); animation: selection-card-pop .8s cubic-bezier(.18,.9,.24,1) both; }
 .selection-card-main { display: flex; align-items: center; gap: 18px; margin-top: 13px; }
 .selection-plate { flex: 0 0 104px; display: grid; place-items: center; }
+.food-plate-image-selection { width: 150px; height: 124px; }
 .selection-plate .plate { width: 104px; height: 68px; transform: rotate(-7deg); }
 .selection-plate .plate::before { width: 82px; height: 47px; }
 .selection-plate .plate .food-glyph { transform: translateY(-3px) scale(1); }
@@ -717,7 +719,7 @@
   .displayed-curio { width: 54px; height: 58px; }
   .displayed-curio .curio-glyph { transform: scale(.76); margin: -3px 0; }
   .displayed-curio .curio-award-marker { top: 3px; right: 1px; }
-  .restaurant-curio-shelf-grid { top: 230px; left: 72.5%; right: auto; width: 150%; height: 196px; }
+  .restaurant-curio-shelf-grid { top: 244px; left: 72.5%; right: auto; width: 150%; height: 196px; }
   .restaurant-curio-shelf-grid .displayed-curio { width: 50px; height: 54px; }
   .restaurant-curio-shelf-grid .curio-glyph { transform: scale(.76); margin: -3px 0; }
   .background-shelf { width: 118px; height: 70px; gap: 3px; padding: 19px 6px 8px; border-width: 2px; }
@@ -763,7 +765,7 @@
   .kitchen-prep-light { top: 163px; transform: scale(.7); }
   .kitchen-steam { top: 165px; transform: scale(.7) rotate(7deg); }
   .kitchen-steam-two { transform: scale(.7) rotate(-7deg); }
-  .bar-meter-rail { gap: 5px; margin-top: 10px; padding: 1px 5px 0; }
+  .bar-meter-rail { gap: 5px; margin-top: -3px; padding: 1px 5px 0; }
   .bar-meter-rail > span { display: block; font-size: 6px; letter-spacing: .08em; }
   .bar-meter-rail .compact-meter { gap: 6px; }
   .bar-meter-rail .compact-meter > div:last-child span:first-child { max-width: 94px; }
