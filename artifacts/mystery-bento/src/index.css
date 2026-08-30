@@ -141,7 +141,7 @@
 .curio-backsplash { position: absolute; inset: 0; z-index: 0; overflow: hidden; background: linear-gradient(180deg, #4c3242 0%, #3f2b40 49%, #2f2138 100%); pointer-events: none; }
 .curio-backsplash::before { content: ''; position: absolute; inset: 0; background: repeating-linear-gradient(90deg, rgba(218,148,89,.28) 0 3px, transparent 3px 74px), linear-gradient(180deg, rgba(159,91,72,.58), rgba(74,46,67,.4) 72%, rgba(40,29,50,.42)); border-top: 4px solid rgba(245,201,104,.5); box-shadow: inset 0 0 0 2px rgba(255,255,255,.075); pointer-events: none; }
 .curio-backsplash::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 235px; background: linear-gradient(180deg, rgba(156,94,67,.54), rgba(63,42,52,.88)); border-top: 7px solid #c58d6a; box-shadow: inset 0 8px rgba(255,241,207,.12), inset 0 -12px rgba(26,18,33,.5); pointer-events: none; }
-.restaurant-reference-image { position: absolute; inset: 0 auto auto 0; z-index: 0; display: block; width: 100%; height: 100dvh; object-fit: cover; object-position: center center; filter: saturate(.88) brightness(.82); image-rendering: pixelated; }
+.restaurant-reference-image { position: absolute; inset: 0 auto auto -5%; z-index: 0; display: block; width: 110%; height: 100dvh; object-fit: cover; object-position: center center; filter: saturate(.88) brightness(.82); image-rendering: pixelated; }
 .restaurant-reference-backdrop::before { z-index: 1; background: linear-gradient(180deg, rgba(20,22,37,.12), rgba(32,24,35,.14) 52%, rgba(28,20,29,.4)); border-top-color: rgba(245,201,104,.38); }
 .restaurant-reference-backdrop::after { display: none; }
 .restaurant-reference-backdrop .restaurant-background-dressing,
@@ -150,7 +150,7 @@
 .restaurant-reference-backdrop .open-kitchen,
 .restaurant-reference-backdrop .curio-wall-lamp { display: none; }
 .restaurant-chef-layer { position: absolute; inset: 0; z-index: 1; pointer-events: none; }
-.restaurant-chef-layer .counter-chef { bottom: calc(43vh - 150px); }
+.restaurant-chef-layer .counter-chef { bottom: calc(43vh - 110px); }
 .restaurant-reference-belt { position: absolute; inset: 0 0 205px; z-index: 2; overflow: hidden; clip-path: inset(74% 0 14% 0); pointer-events: none; }
 .restaurant-reference-belt-image { position: absolute; inset: 0; display: block; width: 100%; height: 100%; object-fit: cover; object-position: center center; filter: saturate(.88) brightness(.82); image-rendering: pixelated; transform: scaleX(1.18); }
 .restaurant-background-dressing { position: absolute; inset: 0; pointer-events: none; }
@@ -347,7 +347,7 @@
 @keyframes conveyor-slide { to { transform: translateX(-50%); } }
 .conveyor-line { height: 8px; background: #756077; border-top: 2px solid #c18b7a; border-bottom: 3px solid #1a1523; }
 .conveyor-line::after { content: ''; display: block; width: 100%; height: 100%; background: repeating-linear-gradient(90deg, transparent 0 22px, rgba(30, 22, 36, .7) 22px 28px); }
-.bar-meter-rail { display: flex; align-items: center; gap: 9px; margin-top: -19px; padding: 2px 8px 1px; color: #f5c968; border-top: 0; background: transparent; }
+.bar-meter-rail { position: relative; z-index: 5; display: flex; align-items: center; gap: 9px; margin-top: -19px; padding: 2px 8px 1px; color: #f5c968; border-top: 0; background: transparent; transform: translateY(-50px); }
 .bar-meter-rail > span { flex: 0 0 auto; }
 .bar-meter-rail .compact-meter { flex: 1; width: auto; display: grid; grid-template-columns: auto minmax(90px, 1fr) auto; align-items: center; gap: 10px; padding: 0 !important; border: 0; background: transparent; box-shadow: none; }
 .bar-meter-rail .compact-meter > div:first-child { margin: 0; }
@@ -361,7 +361,7 @@
 .food-button:hover { transform: translateY(-5px) rotate(-1deg); filter: drop-shadow(0 8px 0 rgba(245, 201, 104, .12)); }
 .food-button:active { transform: translateY(2px) scale(.98); filter: none; }
 .food-button:disabled { opacity: .5; cursor: not-allowed; transform: none; }
-.food-illustration { height: 96px; display: grid; place-items: center; position: relative; }
+.food-illustration { height: 96px; display: grid; place-items: center; position: relative; transform: translateY(-48px); }
 .plate-display { position: relative; width: 164px; height: 106px; display: grid; place-items: center; }
 .food-plate-image { display: block; width: 164px; height: 112px; max-width: none; object-fit: contain; image-rendering: pixelated; filter: drop-shadow(5px 6px 0 rgba(14, 8, 20, .3)); }
 .plate { width: 108px; height: 68px; display: grid; place-items: center; background: #fff1cf; border: 3px solid #32243d; border-radius: 50%; box-shadow: inset 0 -7px 0 #d8bd87, 5px 6px 0 rgba(14, 8, 20, .34); transform: rotate(-5deg); }
@@ -703,7 +703,7 @@
   .restaurant-counter-label { left: 10px; font-size: 7px; }
   .counter-chef-pip { width: min(420px, 100vw); height: 205px; }
   .counter-chef-pip .counter-chef-sprite { top: -30px; width: min(420px, 110vw); }
-  .restaurant-chef-layer .counter-chef { bottom: calc(45.5vh - 150px); }
+  .restaurant-chef-layer .counter-chef { bottom: calc(45.5vh - 125px); }
   .restaurant-reference-belt { inset: 0 0 205px; clip-path: inset(70% 0 18% 0); }
   .restaurant-top-zone { grid-template-columns: 1fr; gap: 12px; }
   .restaurant-controls { display: flex; flex-direction: row; align-items: flex-start; justify-content: space-between; gap: 8px; }
@@ -768,10 +768,11 @@
   .kitchen-steam { top: 165px; transform: scale(.7) rotate(7deg); }
   .kitchen-steam-two { transform: scale(.7) rotate(-7deg); }
   .conveyor { transform: translateY(-100px); }
-  .bar-meter-rail { gap: 5px; margin-top: -15px; padding: 1px 5px 0; }
+  .bar-meter-rail { gap: 5px; margin-top: -15px; padding: 1px 5px 0; transform: translateY(-46px); }
   .bar-meter-rail > span { display: block; font-size: 6px; letter-spacing: .08em; }
   .bar-meter-rail .compact-meter { gap: 6px; }
   .bar-meter-rail .compact-meter > div:last-child span:first-child { max-width: 94px; }
+  .food-illustration { transform: translateY(-26px); }
   .restaurant-curio-shelf { margin: 18px 0 0; }
   .foreground-seating { height: 118px; margin-top: 6px; }
   .restaurant-chair { bottom: 17px; transform: scale(.78); transform-origin: bottom center; }
