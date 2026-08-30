@@ -999,13 +999,15 @@ function RestaurantCurioDisplays({ collectibles }: { collectibles: Collectible[]
   const byZone = (zone: CurioDisplayZone) => collectibles.filter((item) => getCurioDisplayZone(item) === zone).slice(0, 2);
   const latestCurioId = collectibles[0]?.id;
   const displayClass = (baseClass: string, item: Collectible) => `${baseClass}${item.id === latestCurioId ? ' displayed-curio-latest' : ''}`;
+  const shelfItems = (['house-keeps', 'tea-tools', 'spare-plates', 'little-finds', 'hanging-tools'] as CurioDisplayZone[])
+    .flatMap((zone) => byZone(zone));
   return (
-    <div className="restaurant-curio-displays" aria-label="Curios displayed around the restaurant">
-      {byZone('house-keeps').map((item, index) => <CurioHotspot item={item} className={displayClass(`displayed-curio displayed-curio-house-keeps-${index}`, item)} key={item.id} />)}
-      {byZone('tea-tools').map((item, index) => <CurioHotspot item={item} className={displayClass(`displayed-curio displayed-curio-tea-tools-${index}`, item)} key={item.id} />)}
-      {byZone('spare-plates').map((item, index) => <CurioHotspot item={item} className={displayClass(`displayed-curio displayed-curio-spare-plates-${index}`, item)} key={item.id} />)}
-      {byZone('little-finds').map((item, index) => <CurioHotspot item={item} className={displayClass(`displayed-curio displayed-curio-little-finds-${index}`, item)} key={item.id} />)}
-      {byZone('hanging-tools').slice(0, 1).map((item) => <CurioHotspot item={item} className={displayClass('displayed-curio displayed-curio-hanging-tools', item)} key={item.id} />)}
+    <div className="restaurant-curio-displays" aria-label="Curios displayed on the restaurant shelf">
+      <div className="restaurant-curio-shelf-grid">
+        {shelfItems.map((item) => (
+          <CurioHotspot item={item} className={displayClass('displayed-curio', item)} key={item.id} />
+        ))}
+      </div>
     </div>
   );
 }
@@ -1732,6 +1734,20 @@ function Home() {
       <main className="min-h-[100dvh]" aria-label="Mystery Bento night market">
         <section className="scene-shell min-h-[100dvh] p-4 sm:p-6 md:p-10" aria-label="Mystery Bento night market">
           <CurioBacksplash collectibles={collectibles} />
+          {activeChef && (
+            <div className="restaurant-chef-layer" aria-hidden="true">
+              <div className={`counter-chef counter-chef-${activeChef.id}`}>
+                {activeChef.foodAnimationVideoSrc || activeChef.foodAnimationFrameSrcs || activeChef.foodAnimationSpriteSheetSrc ? (
+                  <AnimatedChefSprite persona={activeChef} />
+                ) : (
+                  <img className="counter-chef-image" src={activeChef.foodSpriteSrc} alt="" />
+                )}
+              </div>
+            </div>
+          )}
+          <div className="restaurant-reference-belt" aria-hidden="true">
+            <img className="restaurant-reference-belt-image" src={RESTAURANT_BACKDROP_SRC} alt="" />
+          </div>
           <RestaurantCurioDisplays collectibles={collectibles} />
           <div className="scene-content">
             <div className="restaurant-top-zone">
@@ -1746,15 +1762,6 @@ function Home() {
               <div className="relative mt-6">
                 <span className="pixel-star left-[8%] top-2" aria-hidden="true">+</span><span className="pixel-star right-[13%] top-10 text-sm" aria-hidden="true">+</span><span className="pixel-star right-[28%] top-0 text-xs" aria-hidden="true">+</span>
               <div className="restaurant-counter">
-                  {activeChef && (
-                    <div className={`counter-chef counter-chef-${activeChef.id}`} aria-label={`${activeChef.name}, the active chef, is preparing food at the conveyor bar`}>
-                      {activeChef.foodAnimationVideoSrc || activeChef.foodAnimationFrameSrcs || activeChef.foodAnimationSpriteSheetSrc ? (
-                        <AnimatedChefSprite persona={activeChef} />
-                      ) : (
-                        <img className="counter-chef-image" src={activeChef.foodSpriteSrc} alt="" />
-                      )}
-                    </div>
-                  )}
                   <div className="conveyor rounded-xl p-3 sm:p-4">
                     <div className="conveyor-window" aria-label="Moving plated bento selections">
                       <div className="conveyor-track">
@@ -1784,10 +1791,10 @@ function Home() {
                         ))}
                       </div>
                     </div>
-                  </div>
-                  <div className="bar-meter-rail">
-                    <span className="font-mono-ui text-[8px] uppercase tracking-[.14em]">mystery bento meter</span>
-                  <Meter compact meter={meter} onPointerStart={(event) => { event.currentTarget.setPointerCapture?.(event.pointerId); startHold(); }} onPointerEnd={cancelHold} onMeterClick={handleMeterClick} onMeterKeyDown={handleMeterKeyDown} onMeterKeyUp={handleMeterKeyUp} onContextMenu={handleMeterContextMenu} meterPulse={meterPulse} isHolding={isHolding} />
+                    <div className="bar-meter-rail">
+                      <span className="font-mono-ui text-[8px] uppercase tracking-[.14em]">mystery bento meter</span>
+                      <Meter compact meter={meter} onPointerStart={(event) => { event.currentTarget.setPointerCapture?.(event.pointerId); startHold(); }} onPointerEnd={cancelHold} onMeterClick={handleMeterClick} onMeterKeyDown={handleMeterKeyDown} onMeterKeyUp={handleMeterKeyUp} onContextMenu={handleMeterContextMenu} meterPulse={meterPulse} isHolding={isHolding} />
+                    </div>
                   </div>
                 </div>
               </div>
