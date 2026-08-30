@@ -700,6 +700,8 @@
   .restaurant-counter-label { left: 10px; font-size: 7px; }
   .counter-chef-pip { width: min(420px, 100vw); height: 205px; }
   .counter-chef-pip .counter-chef-sprite { top: -30px; width: min(420px, 110vw); }
+  .restaurant-chef-layer .counter-chef { bottom: 45.5vh; }
+  .restaurant-reference-belt { inset: 0 0 205px; clip-path: inset(70% 0 18% 0); }
   .restaurant-top-zone { grid-template-columns: 1fr; gap: 12px; }
   .restaurant-controls { display: flex; flex-direction: row; align-items: flex-start; justify-content: space-between; gap: 8px; }
   .restaurant-brand-lockup { gap: 7px; }
@@ -715,16 +717,9 @@
   .displayed-curio { width: 54px; height: 58px; }
   .displayed-curio .curio-glyph { transform: scale(.76); margin: -3px 0; }
   .displayed-curio .curio-award-marker { top: 3px; right: 1px; }
-  .displayed-curio-house-keeps-0 { top: 168px; left: 71%; }
-  .displayed-curio-house-keeps-1 { top: 168px; left: 80%; }
-  .displayed-curio-tea-tools-0 { top: 168px; left: 89%; }
-  .displayed-curio-tea-tools-1 { top: 224px; left: 71%; }
-  .displayed-curio-spare-plates-0 { top: 224px; left: 80%; }
-  .displayed-curio-spare-plates-1 { top: 224px; left: 89%; }
-  .displayed-curio-little-finds-0 { top: 280px; left: 71%; }
-  .displayed-curio-little-finds-1 { top: 280px; left: 80%; }
-  .displayed-curio-hanging-tools { top: 280px; left: 89%; }
-  .displayed-curio-hanging-tools .curio-glyph { transform: scale(.84) rotate(5deg); }
+  .restaurant-curio-shelf-grid { top: 160px; left: 72.5%; right: auto; width: 153%; height: 190px; }
+  .restaurant-curio-shelf-grid .displayed-curio { width: 54px; height: 58px; }
+  .restaurant-curio-shelf-grid .curio-glyph { transform: scale(.76); margin: -3px 0; }
   .background-shelf { width: 118px; height: 70px; gap: 3px; padding: 19px 6px 8px; border-width: 2px; }
   .background-shelf::before { top: 5px; left: 7px; right: 7px; }
   .background-shelf::after { right: -5px; bottom: -7px; left: -5px; height: 6px; border-width: 2px; }
