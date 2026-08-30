@@ -103,6 +103,7 @@ const CURIO_KEY = 'mystery-bento-curios';
 const VOICE_ANNOUNCER_KEY = 'mystery-bento-voice-announcer';
 const ANNOUNCER_AUDIO_BASE = `${import.meta.env.BASE_URL}audio/announcer`;
 const PIP_ANIMATION_SPRITE_SHEET_SRC = `${import.meta.env.BASE_URL}video/pip-making-food-sprite-sheet.png`;
+const SENCHA_ANIMATION_SPRITE_SHEET_SRC = `${import.meta.env.BASE_URL}video/sencha-making-tea-sprite-sheet.png`;
 const MIN_ANNOUNCER_GAP_MS = 520;
 const MAX_RACE_STAGE_GAP = 20;
 
@@ -216,12 +217,17 @@ const personas: Persona[] = contestantDesigns.map((design) => ({
   memorableEvent: design.memorableEvent,
   portraitSrc: contestantPortraits[design.id],
   foodSpriteSrc: contestantFoodSprites[design.id],
-  foodAnimationFrameSrcs: design.id === 'pip' ? undefined : contestantFoodAnimationFrames[design.id],
+  foodAnimationFrameSrcs: design.id === 'pip' || design.id === 'sencha' ? undefined : contestantFoodAnimationFrames[design.id],
   foodAnimationSpriteSheetSrc: design.id === 'pip' ? PIP_ANIMATION_SPRITE_SHEET_SRC : undefined,
-  foodAnimationSpriteSheetColumns: design.id === 'pip' ? 5 : undefined,
-  foodAnimationSpriteSheetRows: design.id === 'pip' ? 5 : undefined,
-  foodAnimationSpriteSheetFrameCount: design.id === 'pip' ? 25 : undefined,
-  foodAnimationFrameDurationMs: design.id === 'pip' ? Math.round(1000 / 12) : undefined,
+  foodAnimationSpriteSheetSrc: design.id === 'pip'
+    ? PIP_ANIMATION_SPRITE_SHEET_SRC
+    : design.id === 'sencha'
+      ? SENCHA_ANIMATION_SPRITE_SHEET_SRC
+      : undefined,
+  foodAnimationSpriteSheetColumns: design.id === 'pip' || design.id === 'sencha' ? 5 : undefined,
+  foodAnimationSpriteSheetRows: design.id === 'pip' || design.id === 'sencha' ? 5 : undefined,
+  foodAnimationSpriteSheetFrameCount: design.id === 'pip' || design.id === 'sencha' ? 25 : undefined,
+  foodAnimationFrameDurationMs: design.id === 'pip' || design.id === 'sencha' ? Math.round(1000 / 12) : undefined,
   foodAnimationAspectRatio: contestantFoodAnimationAspectRatios[design.id],
 }));
 const animatedContestants = personas.filter((persona) => (
@@ -259,6 +265,14 @@ const contestDurations: Record<ContestStep, number> = {
   matchup: 9200,
   finale: 11000,
   winner: 16500,
+};
+
+const contestStepOffsets: Record<ContestStep, number> = {
+  intro: 0,
+  warmup: contestDurations.intro,
+  matchup: contestDurations.intro + contestDurations.warmup,
+  finale: contestDurations.intro + contestDurations.warmup + contestDurations.matchup,
+  winner: contestDurations.intro + contestDurations.warmup + contestDurations.matchup + contestDurations.finale,
 };
 
 const contestNextStep: Partial<Record<ContestStep, ContestStep>> = {
@@ -353,20 +367,20 @@ function getFirstRunnerObstacleHitOffset(stage: ContestStep, obstacle: RaceObsta
 function buildAnnouncerSequence(contestants: Persona[], race: RaceSimulation): AnnouncerBeat[] {
   const beats: AnnouncerBeat[] = [
     {
-      id: 'intro-opening',
-      step: 'intro',
-      label: 'Race opening',
-      offset: 240,
-      clips: [announcerClip('race-starts', 'race-start-primary', 'Race start')],
-    },
-    {
       id: 'intro-contestants',
       step: 'intro',
-      label: 'Contestant roll call',
-      offset: 8_800,
+      label: 'Contestant names',
+      offset: 180,
+      clips: contestants.map((persona) => announcerClip('character-names', persona.id, persona.name)),
+    },
+    {
+      id: 'intro-follow-up',
+      step: 'intro',
+      label: 'Race introduction',
+      offset: 2_600,
       clips: [
         announcerClip('character-intros', 'contestants-are', 'Contestants are'),
-        ...contestants.map((persona) => announcerClip('character-names', persona.id, persona.name)),
+        announcerClip('race-starts', 'race-start-primary', 'Race start'),
       ],
     },
   ];
@@ -449,7 +463,7 @@ function buildAnnouncerSequence(contestants: Persona[], race: RaceSimulation): A
       id: 'winner-call',
       step: 'winner',
       label: `${winner.name} takes the win`,
-      offset: 260,
+      offset: 900,
       clips: [
         announcerClip('character-names', winner.id, winner.name),
         announcerClip('finish-results', 'takes-the-win', 'takes the win'),
