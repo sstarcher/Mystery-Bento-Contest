@@ -290,7 +290,7 @@
 .displayed-curio .curio-glyph { transform: scale(1.08); margin: -2px 0; }
 .displayed-curio .curio-glyph-shine { display: none; }
 .displayed-curio .curio-place-label { display: none; }
-.restaurant-curio-shelf-grid { position: absolute; top: 300px; left: 59%; right: 5.8%; display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); grid-template-rows: repeat(2, minmax(0, 1fr)); height: 230px; align-items: center; justify-items: center; pointer-events: none; }
+.restaurant-curio-shelf-grid { position: absolute; top: 312px; left: 60.5%; right: 4.5%; display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); grid-template-rows: repeat(2, minmax(0, 1fr)); height: 230px; align-items: center; justify-items: center; pointer-events: none; }
 .restaurant-curio-shelf-grid .displayed-curio { position: relative; inset: auto; width: 78px; height: 82px; }
 .displayed-curio-hanging-tools .curio-glyph { transform: scale(1.2) rotate(5deg); }
 .displayed-curio-hanging-tools .curio-info-card { top: calc(100% + 13px); bottom: auto; transform: translate(-50%, -8px); }
@@ -340,14 +340,14 @@
 .counter-curio-item > .curio-place-label { display: none; }
 .counter-curio-item .curio-info-card { right: 0; left: auto; bottom: calc(100% + 9px); transform: translateY(8px); }
 .counter-curio-item:hover .curio-info-card, .counter-curio-item:focus-visible .curio-info-card { transform: translateY(0); }
-.conveyor { position: relative; z-index: 0; background: transparent; border: 0; border-radius: 0; box-shadow: none; padding: 0 !important; transform: translateY(-80px); }
+.conveyor { position: relative; z-index: 0; background: transparent; border: 0; border-radius: 0; box-shadow: none; padding: 0 !important; transform: translateY(-108px); }
 .conveyor-window { --conveyor-gap: clamp(70px, 6vw, 100px); width: 100%; height: 156px; overflow: hidden; position: relative; margin-inline: auto; padding: 2px 0 5px; mask-image: linear-gradient(90deg, transparent, #000 4%, #000 96%, transparent); }
 .conveyor-track { display: flex; width: max-content; animation: conveyor-slide 22s linear infinite; }
 .conveyor-group { display: flex; gap: var(--conveyor-gap); padding-right: var(--conveyor-gap); }
 @keyframes conveyor-slide { to { transform: translateX(-50%); } }
 .conveyor-line { height: 8px; background: #756077; border-top: 2px solid #c18b7a; border-bottom: 3px solid #1a1523; }
 .conveyor-line::after { content: ''; display: block; width: 100%; height: 100%; background: repeating-linear-gradient(90deg, transparent 0 22px, rgba(30, 22, 36, .7) 22px 28px); }
-.bar-meter-rail { display: flex; align-items: center; gap: 9px; margin-top: -3px; padding: 2px 8px 1px; color: #f5c968; border-top: 0; background: transparent; }
+.bar-meter-rail { display: flex; align-items: center; gap: 9px; margin-top: -19px; padding: 2px 8px 1px; color: #f5c968; border-top: 0; background: transparent; }
 .bar-meter-rail > span { flex: 0 0 auto; }
 .bar-meter-rail .compact-meter { flex: 1; width: auto; display: grid; grid-template-columns: auto minmax(90px, 1fr) auto; align-items: center; gap: 10px; padding: 0 !important; border: 0; background: transparent; box-shadow: none; }
 .bar-meter-rail .compact-meter > div:first-child { margin: 0; }
@@ -720,7 +720,7 @@
   .displayed-curio { width: 54px; height: 58px; }
   .displayed-curio .curio-glyph { transform: scale(.76); margin: -3px 0; }
   .displayed-curio .curio-award-marker { top: 3px; right: 1px; }
-  .restaurant-curio-shelf-grid { top: 244px; left: 72.5%; right: auto; width: 150%; height: 196px; }
+  .restaurant-curio-shelf-grid { top: 254px; left: 75%; right: auto; width: 150%; height: 196px; }
   .restaurant-curio-shelf-grid .displayed-curio { width: 50px; height: 54px; }
   .restaurant-curio-shelf-grid .curio-glyph { transform: scale(.76); margin: -3px 0; }
   .background-shelf { width: 118px; height: 70px; gap: 3px; padding: 19px 6px 8px; border-width: 2px; }
@@ -767,7 +767,8 @@
   .kitchen-prep-light { top: 163px; transform: scale(.7); }
   .kitchen-steam { top: 165px; transform: scale(.7) rotate(7deg); }
   .kitchen-steam-two { transform: scale(.7) rotate(-7deg); }
-  .bar-meter-rail { gap: 5px; margin-top: -3px; padding: 1px 5px 0; }
+  .conveyor { transform: translateY(-100px); }
+  .bar-meter-rail { gap: 5px; margin-top: -15px; padding: 1px 5px 0; }
   .bar-meter-rail > span { display: block; font-size: 6px; letter-spacing: .08em; }
   .bar-meter-rail .compact-meter { gap: 6px; }
   .bar-meter-rail .compact-meter > div:last-child span:first-child { max-width: 94px; }
