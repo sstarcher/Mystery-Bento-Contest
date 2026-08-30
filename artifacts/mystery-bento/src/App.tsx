@@ -103,6 +103,7 @@ const CURIO_KEY = 'mystery-bento-curios';
 const VOICE_ANNOUNCER_KEY = 'mystery-bento-voice-announcer';
 const ANNOUNCER_AUDIO_BASE = `${import.meta.env.BASE_URL}audio/announcer`;
 const PIP_ANIMATION_SPRITE_SHEET_SRC = `${import.meta.env.BASE_URL}video/pip-making-food-sprite-sheet.png`;
+const PIP_ANIMATION_VIDEO_SRC = `${import.meta.env.BASE_URL}video/pip-making-food-upload.mp4`;
 const SENCHA_ANIMATION_SPRITE_SHEET_SRC = `${import.meta.env.BASE_URL}video/sencha-making-tea-sprite-sheet.png`;
 const MIN_ANNOUNCER_GAP_MS = 520;
 const MAX_RACE_STAGE_GAP = 20;
@@ -218,6 +219,7 @@ const personas: Persona[] = contestantDesigns.map((design) => ({
   portraitSrc: contestantPortraits[design.id],
   foodSpriteSrc: contestantFoodSprites[design.id],
   foodAnimationFrameSrcs: design.id === 'pip' || design.id === 'sencha' ? undefined : contestantFoodAnimationFrames[design.id],
+  foodAnimationVideoSrc: design.id === 'pip' ? PIP_ANIMATION_VIDEO_SRC : undefined,
   foodAnimationSpriteSheetSrc: design.id === 'pip'
     ? PIP_ANIMATION_SPRITE_SHEET_SRC
     : design.id === 'sencha'
@@ -938,7 +940,7 @@ function AnimatedChefSprite({ persona }: { persona: Persona }) {
         className="counter-chef-sprite counter-chef-video"
         role="img"
         aria-label={`${persona.name} cooking animation`}
-        style={{ aspectRatio: '480 / 720' }}
+        style={{ aspectRatio: '848 / 480' }}
       >
         <video
           className="counter-chef-frame-video"
