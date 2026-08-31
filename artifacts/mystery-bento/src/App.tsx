@@ -302,6 +302,21 @@ const paceAnnouncerClips = [
   announcerClip('pace-lead-changes', 'one-contender-finding-another-gear', 'One contender finds another gear'),
 ];
 
+const cookingSpriteSheetFrameCounts: Record<string, number> = {
+  bibi: 52,
+  toro: 25,
+  kiku: 28,
+  miso: 55,
+  nori: 56,
+  panko: 34,
+  pip: 25,
+  rollo: 51,
+  saffy: 49,
+  sencha: 25,
+  tilda: 49,
+  uma: 44,
+};
+
 const personas: Persona[] = contestantDesigns.map((design) => ({
   id: design.id,
   name: design.name,
@@ -349,7 +364,7 @@ const personas: Persona[] = contestantDesigns.map((design) => ({
         : undefined,
   foodAnimationSpriteSheetColumns: design.id === 'bibi' || design.id === 'kiku' || design.id === 'miso' || design.id === 'nori' || design.id === 'panko' || design.id === 'rollo' || design.id === 'saffy' || design.id === 'tilda' || design.id === 'uma' ? 8 : design.id === 'pip' || design.id === 'sencha' || design.id === 'toro' ? 5 : undefined,
   foodAnimationSpriteSheetRows: design.id === 'kiku' ? 4 : design.id === 'uma' ? 6 : design.id === 'bibi' || design.id === 'miso' || design.id === 'nori' || design.id === 'rollo' || design.id === 'saffy' || design.id === 'tilda' ? 7 : design.id === 'panko' || design.id === 'pip' || design.id === 'sencha' || design.id === 'toro' ? 5 : undefined,
-  foodAnimationSpriteSheetFrameCount: design.id === 'kiku' ? 32 : design.id === 'uma' ? 48 : design.id === 'bibi' || design.id === 'miso' || design.id === 'nori' || design.id === 'rollo' || design.id === 'saffy' || design.id === 'tilda' ? 56 : design.id === 'panko' || design.id === 'pip' || design.id === 'sencha' || design.id === 'toro' ? 25 : undefined,
+  foodAnimationSpriteSheetFrameCount: cookingSpriteSheetFrameCounts[design.id],
   foodAnimationFrameDurationMs: design.id === 'bibi' || design.id === 'kiku' || design.id === 'miso' || design.id === 'nori' || design.id === 'panko' || design.id === 'rollo' || design.id === 'saffy' || design.id === 'tilda' || design.id === 'uma' || design.id === 'pip' || design.id === 'sencha' || design.id === 'toro' ? Math.round(1000 / 12) : undefined,
   foodAnimationAspectRatio: contestantFoodAnimationAspectRatios[design.id],
 }));
