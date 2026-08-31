@@ -7,6 +7,7 @@ import { TooltipProvider } from '@/components/ui/tooltip';
 import NotFound from '@/pages/not-found';
 import { Route, Router as WouterRouter, Switch, useLocation } from 'wouter';
 import { contestantDesigns, contestantFoodAnimationAspectRatios, contestantFoodAnimationFrames, contestantFoodSprites, contestantPortraits } from './contestant-design-config';
+import { getMovementSpriteSheet, type MovementAction } from './movement-sprite-config';
 import {
   getFirstRunnerObstacleHitOffset as getTimelineFirstRunnerObstacleHitOffset,
   getRaceFinishCrossingOffset,
@@ -1205,6 +1206,55 @@ function AnimatedChefSprite({ persona }: { persona: Persona }) {
   );
 }
 
+function MovementSprite({
+  persona,
+  action,
+  prefersReducedMotion,
+}: {
+  persona: Persona;
+  action: MovementAction;
+  prefersReducedMotion: boolean;
+}) {
+  const spriteSheet = getMovementSpriteSheet(persona.id, action);
+  const [frameIndex, setFrameIndex] = useState(0);
+
+  useEffect(() => {
+    setFrameIndex(0);
+    if (!spriteSheet || prefersReducedMotion || spriteSheet.frameCount < 2) return;
+    const timer = window.setInterval(() => {
+      setFrameIndex((current) => (current + 1) % spriteSheet.frameCount);
+    }, spriteSheet.frameDurationMs);
+    return () => window.clearInterval(timer);
+  }, [prefersReducedMotion, spriteSheet]);
+
+  if (!spriteSheet) return <PersonaPortrait persona={persona} />;
+
+  const column = frameIndex % spriteSheet.columns;
+  const row = Math.floor(frameIndex / spriteSheet.columns);
+  const backgroundPosition = `${spriteSheet.columns > 1 ? (column / (spriteSheet.columns - 1)) * 100 : 0}% ${spriteSheet.rows > 1 ? (row / (spriteSheet.rows - 1)) * 100 : 0}%`;
+
+  return (
+    <span
+      className="race-movement-sprite"
+      role="img"
+      aria-label={`${persona.name} ${action} movement`}
+      data-movement-action={action}
+      data-movement-frame={frameIndex}
+      data-movement-grid={`${spriteSheet.columns}x${spriteSheet.rows}`}
+    >
+      <span
+        className="race-movement-frame"
+        aria-hidden="true"
+        style={{
+          backgroundImage: `url(${spriteSheet.src})`,
+          backgroundSize: `${spriteSheet.columns * 100}% ${spriteSheet.rows * 100}%`,
+          backgroundPosition,
+        }}
+      />
+    </span>
+  );
+}
+
 function RestaurantCurioDisplays({ collectibles }: { collectibles: Collectible[] }) {
   const byZone = (zone: CurioDisplayZone) => collectibles.filter((item) => getCurioDisplayZone(item) === zone).slice(0, 2);
   const latestCurioId = collectibles[0]?.id;
@@ -1668,7 +1718,15 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
                       } as CSSProperties}
                     >
                       <span className="race-runner-sprite">
-                        <PersonaPortrait persona={persona} />
+                        {step === 'winner' || finishCrossed ? (
+                          <PersonaPortrait persona={persona} />
+                        ) : (
+                          <MovementSprite
+                            persona={persona}
+                            action={runnerReaction === 'jump' ? 'jump' : step === 'intro' ? 'idle' : step === 'warmup' ? 'walk' : 'run'}
+                            prefersReducedMotion={prefersReducedMotion}
+                          />
+                        )}
                       </span>
                     </div>
                   </div>

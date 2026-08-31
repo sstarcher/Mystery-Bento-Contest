@@ -483,6 +483,8 @@
 .race-lane-name { position: absolute; left: 7px; top: 2px; z-index: 6; opacity: .86; text-shadow: 2px 2px #30223c; }
 .race-runner { position: absolute; z-index: 5; left: var(--race-runner-anchor, var(--race-intro-anchor)); top: 7px; width: 66px; height: 66px; transform: translateX(-50%); will-change: left; }
 .race-runner-sprite { display: block; width: 66px; height: 66px; transform-origin: 50% 100%; }
+.race-movement-sprite { position: relative; display: block; width: 100%; height: 100%; overflow: hidden; }
+.race-movement-frame { position: absolute; inset: 0; display: block; background-repeat: no-repeat; image-rendering: pixelated; }
 .race-runner .persona-portrait { width: 60px; height: 60px; margin: 0; border-width: 3px; border-radius: 13px; }
 .race-runner .persona-portrait-image { inset: 2px; border-radius: 7px; }
 .race-runner .persona-portrait-shine { width: 6px; height: 6px; top: 6px; right: 6px; }
@@ -665,6 +667,7 @@
   .race-lane-name { left: 4px; font-size: 8px; }
   .race-runner { top: 6px; width: 60px; height: 60px; }
   .race-runner-sprite { width: 60px; height: 60px; }
+  .race-movement-sprite { width: 60px; height: 60px; }
   .race-runner .persona-portrait { width: 54px; height: 54px; }
   .race-winner-reveal-card { grid-template-columns: 116px minmax(0, 1fr); gap: 14px; min-height: 150px; padding: 24px 13px 16px; }
   .race-winner-reveal-card .persona-portrait { width: 108px; height: 108px; border-radius: 17px; border-width: 3px; }
