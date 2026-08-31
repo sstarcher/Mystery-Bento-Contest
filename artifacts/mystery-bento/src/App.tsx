@@ -120,6 +120,8 @@ const KIKU_ANIMATION_SPRITE_SHEET_SRC = `${import.meta.env.BASE_URL}video/kiku-k
 const SAFFY_ANIMATION_SPRITE_SHEET_SRC = `${import.meta.env.BASE_URL}video/saffy-sashimi-cooking-sprite-sheet.png`;
 const UMA_ANIMATION_SPRITE_SHEET_SRC = `${import.meta.env.BASE_URL}video/uma-udon-cooking-sprite-sheet.png`;
 const MISO_ANIMATION_SPRITE_SHEET_SRC = `${import.meta.env.BASE_URL}video/miso-mallow-cooking-sprite-sheet.png`;
+const PANKO_ANIMATION_SPRITE_SHEET_SRC = `${import.meta.env.BASE_URL}video/panko-puff-cooking-sprite-sheet.png`;
+const BIBI_ANIMATION_SPRITE_SHEET_SRC = `${import.meta.env.BASE_URL}video/bibi-bento-cooking-sprite-sheet.png`;
 const MIN_ANNOUNCER_GAP_MS = 520;
 
 const FINISH_CROSSING_SETTLE_MS = 240;
@@ -319,11 +321,15 @@ const personas: Persona[] = contestantDesigns.map((design) => ({
             ? UMA_ANIMATION_SPRITE_SHEET_SRC
           : design.id === 'miso'
             ? MISO_ANIMATION_SPRITE_SHEET_SRC
+          : design.id === 'panko'
+            ? PANKO_ANIMATION_SPRITE_SHEET_SRC
+          : design.id === 'bibi'
+            ? BIBI_ANIMATION_SPRITE_SHEET_SRC
         : undefined,
-  foodAnimationSpriteSheetColumns: design.id === 'kiku' || design.id === 'miso' || design.id === 'nori' || design.id === 'rollo' || design.id === 'saffy' || design.id === 'tilda' || design.id === 'uma' ? 8 : design.id === 'pip' || design.id === 'sencha' || design.id === 'toro' ? 5 : undefined,
-  foodAnimationSpriteSheetRows: design.id === 'kiku' ? 4 : design.id === 'uma' ? 6 : design.id === 'miso' || design.id === 'nori' || design.id === 'rollo' || design.id === 'saffy' || design.id === 'tilda' ? 7 : design.id === 'pip' || design.id === 'sencha' || design.id === 'toro' ? 5 : undefined,
-  foodAnimationSpriteSheetFrameCount: design.id === 'kiku' ? 32 : design.id === 'uma' ? 48 : design.id === 'miso' || design.id === 'nori' || design.id === 'rollo' || design.id === 'saffy' || design.id === 'tilda' ? 56 : design.id === 'pip' || design.id === 'sencha' || design.id === 'toro' ? 25 : undefined,
-  foodAnimationFrameDurationMs: design.id === 'kiku' || design.id === 'miso' || design.id === 'nori' || design.id === 'rollo' || design.id === 'saffy' || design.id === 'tilda' || design.id === 'uma' || design.id === 'pip' || design.id === 'sencha' || design.id === 'toro' ? Math.round(1000 / 12) : undefined,
+  foodAnimationSpriteSheetColumns: design.id === 'bibi' || design.id === 'kiku' || design.id === 'miso' || design.id === 'nori' || design.id === 'panko' || design.id === 'rollo' || design.id === 'saffy' || design.id === 'tilda' || design.id === 'uma' ? 8 : design.id === 'pip' || design.id === 'sencha' || design.id === 'toro' ? 5 : undefined,
+  foodAnimationSpriteSheetRows: design.id === 'kiku' ? 4 : design.id === 'uma' ? 6 : design.id === 'bibi' || design.id === 'miso' || design.id === 'nori' || design.id === 'rollo' || design.id === 'saffy' || design.id === 'tilda' ? 7 : design.id === 'panko' || design.id === 'pip' || design.id === 'sencha' || design.id === 'toro' ? 5 : undefined,
+  foodAnimationSpriteSheetFrameCount: design.id === 'kiku' ? 32 : design.id === 'uma' ? 48 : design.id === 'bibi' || design.id === 'miso' || design.id === 'nori' || design.id === 'rollo' || design.id === 'saffy' || design.id === 'tilda' ? 56 : design.id === 'panko' || design.id === 'pip' || design.id === 'sencha' || design.id === 'toro' ? 25 : undefined,
+  foodAnimationFrameDurationMs: design.id === 'bibi' || design.id === 'kiku' || design.id === 'miso' || design.id === 'nori' || design.id === 'panko' || design.id === 'rollo' || design.id === 'saffy' || design.id === 'tilda' || design.id === 'uma' || design.id === 'pip' || design.id === 'sencha' || design.id === 'toro' ? Math.round(1000 / 12) : undefined,
   foodAnimationAspectRatio: contestantFoodAnimationAspectRatios[design.id],
 }));
 const spriteSheetContestants = personas.filter((persona) => (

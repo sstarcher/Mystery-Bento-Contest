@@ -270,10 +270,12 @@
 .counter-chef-toro .counter-chef-sprite { top: -42px; width: min(360px, 40vw); aspect-ratio: 1; }
 .counter-chef-sencha .counter-chef-sprite { top: -65px; width: min(202px, 38vw); }
 .counter-chef-nori .counter-chef-sprite { top: -125px; width: min(190px, 38vw); }
-.counter-chef-nori .counter-chef-sprite-sheet { top: auto; bottom: -55px; width: min(380px, 76vw); }
+.counter-chef-nori .counter-chef-sprite-sheet { top: auto; bottom: -135px; width: min(380px, 76vw); }
 .counter-chef-tilda .counter-chef-sprite { top: -147px; width: min(174px, 38vw); }
 .counter-chef-rollo .counter-chef-sprite { top: auto; bottom: 0; width: min(180px, 38vw); aspect-ratio: 320 / 461; }
 .counter-chef-rollo .counter-chef-frame-image { top: -50.11%; right: auto; bottom: auto; height: auto; }
+.counter-chef-panko .counter-chef-sprite-sheet,
+.counter-chef-bibi .counter-chef-sprite-sheet { top: auto; bottom: -35px; }
 .curio-wall-lamp { position: absolute; top: 82px; z-index: 3; width: 16px; height: 27px; border: 2px solid #17121e; background: #f5c968; box-shadow: 0 0 22px rgba(245,201,104,.48); }
 .curio-wall-lamp::before { content: ''; position: absolute; left: 3px; top: -8px; width: 6px; height: 7px; border: 2px solid #17121e; border-bottom: 0; border-radius: 7px 7px 0 0; }
 .curio-wall-lamp-left { left: 5%; }
@@ -753,9 +755,11 @@
   .counter-chef-toro .counter-chef-sprite { top: -32px; width: min(280px, 70vw); }
   .counter-chef-sencha .counter-chef-sprite { top: -55px; width: min(160px, 38vw); }
   .counter-chef-nori .counter-chef-sprite { top: -89px; width: min(145px, 38vw); }
-  .counter-chef-nori .counter-chef-sprite-sheet { top: auto; bottom: -48px; width: min(290px, 76vw); }
+  .counter-chef-nori .counter-chef-sprite-sheet { top: auto; bottom: -128px; width: min(290px, 76vw); }
   .counter-chef-tilda .counter-chef-sprite { top: -134px; width: min(145px, 38vw); }
   .counter-chef-rollo .counter-chef-sprite { top: auto; bottom: 0; width: min(142px, 42vw); }
+  .counter-chef-panko .counter-chef-sprite-sheet,
+  .counter-chef-bibi .counter-chef-sprite-sheet { top: auto; bottom: -28px; }
   .kitchen-hood { left: 5%; right: 5%; height: 27px; }
   .kitchen-hood span { font-size: 6px; }
   .kitchen-rack { top: 43px; left: 0; right: 0; height: 65px; }
