@@ -106,9 +106,9 @@
 :root {
   --fixed-canvas-width: 1280px;
   --fixed-canvas-height: 800px;
-  --fixed-canvas-scale: 2;
-  --fixed-rendered-width: 2560px;
-  --fixed-rendered-height: 1600px;
+  --fixed-canvas-scale: 1.88;
+  --fixed-rendered-width: 2406.4px;
+  --fixed-rendered-height: 1504px;
 }
 
 .bento-app {
