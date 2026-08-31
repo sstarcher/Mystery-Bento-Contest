@@ -106,10 +106,13 @@
 :root {
   --fixed-canvas-width: 1280px;
   --fixed-canvas-height: 800px;
+  --fixed-canvas-scale: 2;
+  --fixed-rendered-width: 2560px;
+  --fixed-rendered-height: 1600px;
 }
 
 .bento-app {
-  min-height: var(--fixed-canvas-height);
+  min-height: var(--fixed-rendered-height);
   background:
     radial-gradient(circle at 10% 0%, rgba(244, 190, 68, .18), transparent 28rem),
     radial-gradient(circle at 100% 50%, rgba(55, 116, 92, .12), transparent 24rem),
@@ -139,7 +142,7 @@
 .logo-bento::before { width: 2px; height: 100%; left: 7px; top: 0; }
 .logo-bento::after { height: 2px; width: 100%; left: 0; top: 7px; }
 
-.scene-shell { width: var(--fixed-canvas-width); min-width: var(--fixed-canvas-width); min-height: var(--fixed-canvas-height); background: #32243d; position: relative; overflow: hidden; margin-inline: auto; }
+.scene-shell { width: var(--fixed-canvas-width); min-width: var(--fixed-canvas-width); min-height: var(--fixed-canvas-height); zoom: var(--fixed-canvas-scale); background: #32243d; position: relative; overflow: hidden; margin-inline: auto; }
 .scene-shell::before { content: ''; position: absolute; inset: 0; background: linear-gradient(145deg, rgba(255, 210, 111, .1), transparent 38%), repeating-linear-gradient(0deg, rgba(255,255,255,.022) 0 1px, transparent 1px 5px); pointer-events: none; }
 .scene-shell::after { content: ''; position: absolute; width: 420px; height: 420px; border-radius: 50%; right: -160px; top: -190px; background: rgba(239, 141, 55, .16); filter: blur(3px); pointer-events: none; }
 .scene-content { position: relative; z-index: 3; display: flex; flex-direction: column; width: 1200px; min-height: 768px; margin: 0 auto; padding-bottom: 26px; }
@@ -802,7 +805,7 @@
 }
 
 /* Fixed Pixel Tablet canvas: keep the scene at one logical size on every device. */
-.bento-app > main { min-height: var(--fixed-canvas-height); }
+.bento-app > main { min-height: var(--fixed-rendered-height); }
 .scene-shell { width: var(--fixed-canvas-width); min-width: var(--fixed-canvas-width); min-height: var(--fixed-canvas-height); padding: 40px; }
 .scene-content { width: 1200px; min-width: 1200px; min-height: 768px; }
 .contest-stage { width: 100%; min-height: var(--fixed-canvas-height); padding: 20px; }
