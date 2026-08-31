@@ -304,7 +304,14 @@ const personas: Persona[] = contestantDesigns.map((design) => ({
   foodAnimationFrameDurationMs: design.id === 'pip' || design.id === 'sencha' || design.id === 'toro' ? Math.round(1000 / 12) : undefined,
   foodAnimationAspectRatio: contestantFoodAnimationAspectRatios[design.id],
 }));
-const spriteSheetContestants = personas.filter((persona) => Boolean(persona.foodAnimationSpriteSheetSrc));
+const spriteSheetContestants = personas.filter((persona) => (
+  Boolean(
+    persona.foodAnimationSpriteSheetSrc
+    && persona.foodAnimationSpriteSheetColumns
+    && persona.foodAnimationSpriteSheetRows
+    && persona.foodAnimationSpriteSheetFrameCount,
+  )
+));
 
 const foodItems: FoodItem[] = [
   { id: 'tamago', name: 'Sunset tamago', note: 'soft, sweet, perfectly tucked', imageSrc: SUSHI_PLATE_WARM_SRC },
@@ -678,7 +685,8 @@ function buildRaceSimulation(contestants: Persona[], rng: () => number): RaceSim
   }
   const obstacles = selectedKinds.map((kind, index) => {
     const catalog = raceObstacleCatalog[kind];
-    const sourcePersona = contestants[index % Math.max(1, contestants.length)] ?? personas[0];
+    const sourcePersona = contestants[index % Math.max(1, contestants.length)] ?? spriteSheetContestants[0];
+    if (!sourcePersona) throw new Error('No sprite-sheet contestants are configured.');
     return {
       id: `obstacle-${index + 1}`,
       kind,
@@ -771,12 +779,18 @@ function buildRaceSimulation(contestants: Persona[], rng: () => number): RaceSim
 
   limitRaceLaneDisparity(lanes);
   const winnerLane = [...lanes].sort((a, b) => b.finishScore - a.finishScore)[0] ?? lanes[0];
-  return { obstacles, lanes, winnerId: winnerLane?.personaId ?? contestants[0]?.id ?? personas[0].id };
+  const winnerId = winnerLane?.personaId ?? contestants[0]?.id ?? spriteSheetContestants[0]?.id;
+  if (!winnerId) throw new Error('Cannot build a race without a sprite-sheet contestant.');
+  return { obstacles, lanes, winnerId };
 }
 
 function resolveContest(contestants: Persona[], rng: () => number): ContestOutcome {
+  if (contestants.some((contestant) => !spriteSheetContestants.some((persona) => persona.id === contestant.id))) {
+    throw new Error('A contest roster contains a contestant without a cooking sprite sheet.');
+  }
   const race = buildRaceSimulation(contestants, rng);
-  const winner = contestants.find((persona) => persona.id === race.winnerId) ?? contestants[0] ?? spriteSheetContestants[0] ?? personas[0];
+  const winner = contestants.find((persona) => persona.id === race.winnerId) ?? contestants[0] ?? spriteSheetContestants[0];
+  if (!winner) throw new Error('Cannot resolve a contest without a sprite-sheet contestant.');
   return {
     winner,
     memorableEvent: winner.memorableEvent,
@@ -1694,11 +1708,14 @@ function Home() {
   const lastWinner = useMemo(() => {
     const latestEntry = ledger[0];
     if (!latestEntry) return null;
-    return personas.find((persona) => persona.id === latestEntry.winnerId)
-      ?? personas.find((persona) => persona.name === latestEntry.winner)
+    return spriteSheetContestants.find((persona) => persona.id === latestEntry.winnerId)
+      ?? spriteSheetContestants.find((persona) => persona.name === latestEntry.winner)
       ?? null;
   }, [ledger]);
-  const activeChef = winner ?? lastWinner;
+  const activeChef = spriteSheetContestants.find((persona) => persona.id === winner?.id)
+    ?? lastWinner
+    ?? spriteSheetContestants[0]
+    ?? null;
 
   useEffect(() => {
     setCollectibles((current) => {
@@ -1728,7 +1745,7 @@ function Home() {
   const finishContest = () => {
     const outcome = contestOutcome.current;
     const winningPersona = winner ?? outcome?.winner;
-    if (!winningPersona || completionGuard.current) return;
+    if (!winningPersona || !spriteSheetContestants.some((persona) => persona.id === winningPersona.id) || completionGuard.current) return;
     completionGuard.current = true;
     const now = new Date().toISOString();
     const isOwned = (template: (typeof collectiblePool)[number]) => collectibles.some((item) => item.id === template.id || item.id.startsWith(`${template.id}-`));
