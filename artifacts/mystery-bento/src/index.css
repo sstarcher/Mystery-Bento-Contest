@@ -282,6 +282,7 @@
 .counter-chef-rollo .counter-chef-sprite-sheet { top: auto; bottom: -80px; width: min(244px, 38vw); aspect-ratio: 1; }
 .counter-chef-panko .counter-chef-sprite-sheet { top: auto; bottom: -132px; width: 150%; }
 .counter-chef-bibi .counter-chef-sprite-sheet { top: auto; bottom: -188px; width: 200%; }
+.counter-chef-kiku .counter-chef-sprite-sheet { top: auto; bottom: -188px; width: 200%; }
 .curio-wall-lamp { position: absolute; top: 82px; z-index: 3; width: 16px; height: 27px; border: 2px solid #17121e; background: #f5c968; box-shadow: 0 0 22px rgba(245,201,104,.48); }
 .curio-wall-lamp::before { content: ''; position: absolute; left: 3px; top: -8px; width: 6px; height: 7px; border: 2px solid #17121e; border-bottom: 0; border-radius: 7px 7px 0 0; }
 .curio-wall-lamp-left { left: 5%; }
@@ -773,6 +774,7 @@
   .counter-chef-rollo .counter-chef-sprite-sheet { top: auto; bottom: -62px; width: min(190px, 42vw); }
   .counter-chef-panko .counter-chef-sprite-sheet { top: auto; bottom: -104px; width: 150%; }
   .counter-chef-bibi .counter-chef-sprite-sheet { top: auto; bottom: -142px; width: 200%; }
+  .counter-chef-kiku .counter-chef-sprite-sheet { top: auto; bottom: -146px; width: 200%; }
   .kitchen-hood { left: 5%; right: 5%; height: 27px; }
   .kitchen-hood span { font-size: 6px; }
   .kitchen-rack { top: 43px; left: 0; right: 0; height: 65px; }
