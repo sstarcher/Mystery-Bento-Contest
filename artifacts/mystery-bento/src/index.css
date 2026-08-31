@@ -266,7 +266,7 @@
 .counter-chef-frame-video { position: absolute; inset: 0; display: block; width: 100%; height: 100%; object-fit: fill; image-rendering: pixelated; }
 .counter-chef-pip { top: auto; bottom: 100%; width: min(500px, 100vw); height: 260px; overflow: hidden; z-index: 1; }
 .counter-chef-pip .counter-chef-sprite { top: -34px; width: min(460px, 110vw); aspect-ratio: 1; }
-.counter-chef-pip .counter-chef-sprite-sheet { top: auto; bottom: -186px; width: min(460px, 110vw); }
+.counter-chef-pip .counter-chef-sprite-sheet { top: auto; bottom: -140px; width: min(345px, 82.5vw); }
 .counter-chef-sprite-sheet { top: auto; bottom: -104px; width: 100%; aspect-ratio: 1; }
 .counter-chef-sprite-sheet-frame { position: absolute; inset: 0; display: block; background-repeat: no-repeat; image-rendering: pixelated; }
 .counter-chef-toro .counter-chef-sprite { top: -42px; width: min(360px, 40vw); aspect-ratio: 1; }
@@ -284,6 +284,7 @@
 .counter-chef-bibi .counter-chef-sprite-sheet { top: auto; bottom: -188px; width: 200%; }
 .counter-chef-kiku .counter-chef-sprite-sheet { top: auto; bottom: -188px; width: 200%; }
 .counter-chef-miso .counter-chef-sprite-sheet { top: auto; bottom: -208px; width: 200%; }
+.counter-chef-saffy .counter-chef-sprite-sheet { top: auto; bottom: -260px; width: 250%; }
 .curio-wall-lamp { position: absolute; top: 82px; z-index: 3; width: 16px; height: 27px; border: 2px solid #17121e; background: #f5c968; box-shadow: 0 0 22px rgba(245,201,104,.48); }
 .curio-wall-lamp::before { content: ''; position: absolute; left: 3px; top: -8px; width: 6px; height: 7px; border: 2px solid #17121e; border-bottom: 0; border-radius: 7px 7px 0 0; }
 .curio-wall-lamp-left { left: 5%; }
@@ -765,7 +766,7 @@
   .counter-chef-sencha .counter-chef-sprite { top: -55px; width: min(160px, 38vw); }
   .counter-chef-nori .counter-chef-sprite { top: -89px; width: min(145px, 38vw); }
   .counter-chef-sprite-sheet { bottom: -83px; }
-  .counter-chef-pip .counter-chef-sprite-sheet { top: auto; bottom: -167px; width: min(420px, 110vw); }
+  .counter-chef-pip .counter-chef-sprite-sheet { top: auto; bottom: -125px; width: min(315px, 82.5vw); }
   .counter-chef-toro .counter-chef-sprite-sheet { top: auto; bottom: -88px; width: min(280px, 70vw); }
   .counter-chef-sencha .counter-chef-sprite-sheet { top: auto; bottom: -61px; width: min(160px, 38vw); }
   .counter-chef-nori .counter-chef-sprite-sheet { top: auto; bottom: -108px; width: min(290px, 76vw); }
@@ -777,6 +778,7 @@
   .counter-chef-bibi .counter-chef-sprite-sheet { top: auto; bottom: -142px; width: 200%; }
   .counter-chef-kiku .counter-chef-sprite-sheet { top: auto; bottom: -146px; width: 200%; }
   .counter-chef-miso .counter-chef-sprite-sheet { top: auto; bottom: -166px; width: 200%; }
+  .counter-chef-saffy .counter-chef-sprite-sheet { top: auto; bottom: -208px; width: 250%; }
   .kitchen-hood { left: 5%; right: 5%; height: 27px; }
   .kitchen-hood span { font-size: 6px; }
   .kitchen-rack { top: 43px; left: 0; right: 0; height: 65px; }

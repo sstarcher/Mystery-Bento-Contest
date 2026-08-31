@@ -366,7 +366,11 @@ const personas: Persona[] = contestantDesigns.map((design) => ({
   foodAnimationSpriteSheetColumns: design.id === 'bibi' || design.id === 'kiku' || design.id === 'miso' || design.id === 'nori' || design.id === 'panko' || design.id === 'rollo' || design.id === 'saffy' || design.id === 'tilda' || design.id === 'uma' || design.id === 'toro' ? 8 : design.id === 'pip' || design.id === 'sencha' ? 5 : undefined,
   foodAnimationSpriteSheetRows: design.id === 'kiku' ? 4 : design.id === 'uma' ? 6 : design.id === 'bibi' || design.id === 'miso' || design.id === 'nori' || design.id === 'rollo' || design.id === 'saffy' || design.id === 'tilda' ? 7 : design.id === 'panko' || design.id === 'pip' || design.id === 'sencha' ? 5 : design.id === 'toro' ? 4 : undefined,
   foodAnimationSpriteSheetFrameCount: cookingSpriteSheetFrameCounts[design.id],
-  foodAnimationFrameDurationMs: design.id === 'bibi' || design.id === 'kiku' || design.id === 'miso' || design.id === 'nori' || design.id === 'panko' || design.id === 'rollo' || design.id === 'saffy' || design.id === 'tilda' || design.id === 'uma' || design.id === 'pip' || design.id === 'sencha' || design.id === 'toro' ? Math.round(1000 / 12) : undefined,
+  foodAnimationFrameDurationMs: design.id === 'saffy'
+    ? Math.round(1000 / 16)
+    : design.id === 'bibi' || design.id === 'kiku' || design.id === 'miso' || design.id === 'nori' || design.id === 'panko' || design.id === 'rollo' || design.id === 'tilda' || design.id === 'uma' || design.id === 'pip' || design.id === 'sencha' || design.id === 'toro'
+      ? Math.round(1000 / 12)
+      : undefined,
   foodAnimationAspectRatio: contestantFoodAnimationAspectRatios[design.id],
 }));
 const spriteSheetContestants = personas.filter((persona) => (
@@ -1873,7 +1877,7 @@ function Home() {
       ?? null;
   }, [ledger]);
   const activeChef = spriteSheetContestants.find((persona) => persona.id === winner?.id)
-    ?? spriteSheetContestants.find((persona) => persona.id === 'pip')
+    ?? spriteSheetContestants.find((persona) => persona.id === 'saffy')
     ?? lastWinner
     ?? null;
 
