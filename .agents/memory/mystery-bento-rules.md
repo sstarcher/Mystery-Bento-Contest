@@ -56,3 +56,9 @@ Chef videos should preserve their native aspect ratio and use a proportion-match
 **Why:** Stretching a tall still into a landscape video box makes the chef look distorted, while a checkerboard baked into the source will become a visible scene rectangle during playback.
 
 **How to apply:** Use contain-style video rendering and a correctly framed poster for loading/autoplay fallback, and key or replace the source background before treating the video as a final transparent composite.
+
+Fixed-canvas shell padding must be budgeted inside the logical canvas height when the scene is rendered with CSS zoom.
+
+**Why:** The shell’s vertical padding participates in the rendered layout, so keeping a full logical content minimum in addition to top and bottom padding creates an extra scroll range on the target tablet.
+
+**How to apply:** For the 800px logical scene, keep the shell’s top spacing but account for its bottom spacing in the content minimum; verify both the exact 1600px target and a narrow cropped viewport after changes.
