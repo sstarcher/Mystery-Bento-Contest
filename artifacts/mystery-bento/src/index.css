@@ -151,6 +151,7 @@
 .restaurant-reference-backdrop .open-kitchen > *:not(.kitchen-return-sign) { display: none; }
 .restaurant-chef-layer { position: absolute; inset: 0; z-index: 1; --restaurant-counter-top: calc(62% - 55px); pointer-events: none; }
 .restaurant-chef-layer .counter-chef { top: var(--restaurant-counter-top); bottom: auto; left: 45%; transform: translate(-50%, -100%); }
+.restaurant-chef-layer .counter-chef-uma { left: calc(45% + 20px); }
 .restaurant-reference-belt { position: absolute; inset: 0 0 205px; z-index: 2; overflow: hidden; clip-path: inset(74% 0 14% 0); pointer-events: none; }
 .restaurant-reference-belt-image { position: absolute; inset: 0; display: block; width: 100%; height: 100%; object-fit: cover; object-position: center center; filter: saturate(.88) brightness(.82); image-rendering: pixelated; transform: scaleX(1.18); }
 .restaurant-background-dressing { position: absolute; inset: 0; transform: translateX(-10px); pointer-events: none; }
@@ -285,6 +286,7 @@
 .counter-chef-kiku .counter-chef-sprite-sheet { top: auto; bottom: -188px; width: 200%; }
 .counter-chef-miso .counter-chef-sprite-sheet { top: auto; bottom: -208px; width: 200%; }
 .counter-chef-saffy .counter-chef-sprite-sheet { top: auto; bottom: -260px; width: 250%; }
+.counter-chef-uma .counter-chef-sprite-sheet { top: auto; bottom: -286px; width: 275%; }
 .curio-wall-lamp { position: absolute; top: 82px; z-index: 3; width: 16px; height: 27px; border: 2px solid #17121e; background: #f5c968; box-shadow: 0 0 22px rgba(245,201,104,.48); }
 .curio-wall-lamp::before { content: ''; position: absolute; left: 3px; top: -8px; width: 6px; height: 7px; border: 2px solid #17121e; border-bottom: 0; border-radius: 7px 7px 0 0; }
 .curio-wall-lamp-left { left: 5%; }
@@ -779,6 +781,7 @@
   .counter-chef-kiku .counter-chef-sprite-sheet { top: auto; bottom: -146px; width: 200%; }
   .counter-chef-miso .counter-chef-sprite-sheet { top: auto; bottom: -166px; width: 200%; }
   .counter-chef-saffy .counter-chef-sprite-sheet { top: auto; bottom: -208px; width: 250%; }
+  .counter-chef-uma .counter-chef-sprite-sheet { top: auto; bottom: -228px; width: 275%; }
   .kitchen-hood { left: 5%; right: 5%; height: 27px; }
   .kitchen-hood span { font-size: 6px; }
   .kitchen-rack { top: 43px; left: 0; right: 0; height: 65px; }
