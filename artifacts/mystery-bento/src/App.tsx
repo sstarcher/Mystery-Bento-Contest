@@ -115,6 +115,7 @@ const SENCHA_ANIMATION_SPRITE_SHEET_SRC = `${import.meta.env.BASE_URL}video/senc
 const TORO_ANIMATION_SPRITE_SHEET_SRC = `${import.meta.env.BASE_URL}video/captain-toro-cooking-sprite-sheet.png`;
 const NORI_ANIMATION_SPRITE_SHEET_SRC = `${import.meta.env.BASE_URL}video/nori-nib-cooking-sprite-sheet.png`;
 const TILDA_ANIMATION_SPRITE_SHEET_SRC = `${import.meta.env.BASE_URL}video/tilda-tofu-cooking-sprite-sheet.png`;
+const ROLLO_ANIMATION_SPRITE_SHEET_SRC = `${import.meta.env.BASE_URL}video/rollo-radish-cooking-sprite-sheet.png`;
 const MIN_ANNOUNCER_GAP_MS = 520;
 
 const FINISH_CROSSING_SETTLE_MS = 240;
@@ -304,11 +305,13 @@ const personas: Persona[] = contestantDesigns.map((design) => ({
           ? NORI_ANIMATION_SPRITE_SHEET_SRC
           : design.id === 'tilda'
             ? TILDA_ANIMATION_SPRITE_SHEET_SRC
+          : design.id === 'rollo'
+            ? ROLLO_ANIMATION_SPRITE_SHEET_SRC
         : undefined,
-  foodAnimationSpriteSheetColumns: design.id === 'nori' || design.id === 'tilda' ? 8 : design.id === 'pip' || design.id === 'sencha' || design.id === 'toro' ? 5 : undefined,
-  foodAnimationSpriteSheetRows: design.id === 'nori' || design.id === 'tilda' ? 7 : design.id === 'pip' || design.id === 'sencha' || design.id === 'toro' ? 5 : undefined,
-  foodAnimationSpriteSheetFrameCount: design.id === 'nori' || design.id === 'tilda' ? 56 : design.id === 'pip' || design.id === 'sencha' || design.id === 'toro' ? 25 : undefined,
-  foodAnimationFrameDurationMs: design.id === 'nori' || design.id === 'tilda' || design.id === 'pip' || design.id === 'sencha' || design.id === 'toro' ? Math.round(1000 / 12) : undefined,
+  foodAnimationSpriteSheetColumns: design.id === 'nori' || design.id === 'tilda' || design.id === 'rollo' ? 8 : design.id === 'pip' || design.id === 'sencha' || design.id === 'toro' ? 5 : undefined,
+  foodAnimationSpriteSheetRows: design.id === 'nori' || design.id === 'tilda' || design.id === 'rollo' ? 7 : design.id === 'pip' || design.id === 'sencha' || design.id === 'toro' ? 5 : undefined,
+  foodAnimationSpriteSheetFrameCount: design.id === 'nori' || design.id === 'tilda' || design.id === 'rollo' ? 56 : design.id === 'pip' || design.id === 'sencha' || design.id === 'toro' ? 25 : undefined,
+  foodAnimationFrameDurationMs: design.id === 'nori' || design.id === 'tilda' || design.id === 'rollo' || design.id === 'pip' || design.id === 'sencha' || design.id === 'toro' ? Math.round(1000 / 12) : undefined,
   foodAnimationAspectRatio: contestantFoodAnimationAspectRatios[design.id],
 }));
 const spriteSheetContestants = personas.filter((persona) => (
