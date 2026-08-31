@@ -113,6 +113,7 @@ const SUSHI_PLATE_NIGIRI_SRC = `${import.meta.env.BASE_URL}sushi-plate-nigiri.pn
 const SENCHA_ANIMATION_SPRITE_SHEET_SRC = `${import.meta.env.BASE_URL}video/sencha-making-tea-sprite-sheet.png`;
 
 const TORO_ANIMATION_SPRITE_SHEET_SRC = `${import.meta.env.BASE_URL}video/captain-toro-cooking-sprite-sheet.png`;
+const NORI_ANIMATION_SPRITE_SHEET_SRC = `${import.meta.env.BASE_URL}video/nori-nib-cooking-sprite-sheet.png`;
 const MIN_ANNOUNCER_GAP_MS = 520;
 
 const FINISH_CROSSING_SETTLE_MS = 240;
@@ -297,11 +298,13 @@ const personas: Persona[] = contestantDesigns.map((design) => ({
       ? SENCHA_ANIMATION_SPRITE_SHEET_SRC
       : design.id === 'toro'
         ? TORO_ANIMATION_SPRITE_SHEET_SRC
+        : design.id === 'nori'
+          ? NORI_ANIMATION_SPRITE_SHEET_SRC
         : undefined,
-  foodAnimationSpriteSheetColumns: design.id === 'pip' || design.id === 'sencha' || design.id === 'toro' ? 5 : undefined,
-  foodAnimationSpriteSheetRows: design.id === 'pip' || design.id === 'sencha' || design.id === 'toro' ? 5 : undefined,
-  foodAnimationSpriteSheetFrameCount: design.id === 'pip' || design.id === 'sencha' || design.id === 'toro' ? 25 : undefined,
-  foodAnimationFrameDurationMs: design.id === 'pip' || design.id === 'sencha' || design.id === 'toro' ? Math.round(1000 / 12) : undefined,
+  foodAnimationSpriteSheetColumns: design.id === 'nori' ? 8 : design.id === 'pip' || design.id === 'sencha' || design.id === 'toro' ? 5 : undefined,
+  foodAnimationSpriteSheetRows: design.id === 'nori' ? 7 : design.id === 'pip' || design.id === 'sencha' || design.id === 'toro' ? 5 : undefined,
+  foodAnimationSpriteSheetFrameCount: design.id === 'nori' ? 56 : design.id === 'pip' || design.id === 'sencha' || design.id === 'toro' ? 25 : undefined,
+  foodAnimationFrameDurationMs: design.id === 'nori' || design.id === 'pip' || design.id === 'sencha' || design.id === 'toro' ? Math.round(1000 / 12) : undefined,
   foodAnimationAspectRatio: contestantFoodAnimationAspectRatios[design.id],
 }));
 const spriteSheetContestants = personas.filter((persona) => (
