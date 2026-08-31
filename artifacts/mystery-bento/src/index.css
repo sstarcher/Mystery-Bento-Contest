@@ -147,8 +147,8 @@
 .restaurant-reference-backdrop .restaurant-background-dressing,
 .restaurant-reference-backdrop .restaurant-window,
 .restaurant-reference-backdrop .restaurant-menu-board,
-.restaurant-reference-backdrop .open-kitchen,
 .restaurant-reference-backdrop .curio-wall-lamp { display: none; }
+.restaurant-reference-backdrop .open-kitchen > *:not(.kitchen-return-sign) { display: none; }
 .restaurant-chef-layer { position: absolute; inset: 0; z-index: 1; --restaurant-counter-top: calc(62% - 55px); pointer-events: none; }
 .restaurant-chef-layer .counter-chef { top: var(--restaurant-counter-top); bottom: auto; left: 45%; transform: translate(-50%, -100%); }
 .restaurant-reference-belt { position: absolute; inset: 0 0 205px; z-index: 2; overflow: hidden; clip-path: inset(74% 0 14% 0); pointer-events: none; }
