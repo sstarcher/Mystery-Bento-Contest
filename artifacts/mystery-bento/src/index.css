@@ -254,7 +254,7 @@
 .kitchen-prep-light-one { left: 24%; } .kitchen-prep-light-two { right: 24%; background: #e57d5a; box-shadow: 0 0 19px rgba(229,125,90,.64); }
 .kitchen-steam { position: absolute; top: 237px; width: 18px; height: 52px; border-left: 3px dotted rgba(245,232,201,.45); transform: rotate(7deg); }
 .kitchen-steam-one { left: 27%; } .kitchen-steam-two { right: 27%; transform: rotate(-7deg); }
-.kitchen-return-sign { position: absolute; top: 300px; left: 50%; z-index: 2; display: grid; justify-items: center; gap: 5px; width: 176px; padding: 11px 12px 10px; transform: translateX(-50%) rotate(-2deg); color: #f5e8c9; background: #342139; border: 3px solid #17121e; box-shadow: inset 0 0 0 2px rgba(245,201,104,.38), 5px 5px 0 rgba(16,10,23,.28); text-align: center; }
+.kitchen-return-sign { position: absolute; top: 300px; left: 35%; z-index: 2; display: grid; justify-items: center; gap: 5px; width: 176px; padding: 11px 12px 10px; transform: translateX(-50%) rotate(-2deg); color: #f5e8c9; background: #342139; border: 3px solid #17121e; box-shadow: inset 0 0 0 2px rgba(245,201,104,.38), 5px 5px 0 rgba(16,10,23,.28); text-align: center; }
 .kitchen-return-sign::before, .kitchen-return-sign::after { content: ''; position: absolute; top: -10px; width: 5px; height: 11px; background: #a17a66; border: 2px solid #17121e; }
 .kitchen-return-sign::before { left: 20px; } .kitchen-return-sign::after { right: 20px; }
 .kitchen-return-sign strong { color: #f5c968; font-family: var(--font-display); font-size: 20px; line-height: 1; letter-spacing: .08em; }
@@ -745,7 +745,7 @@
   .curio-info-card strong { font-size: 13px; }
   .curio-info-description { font-size: 10px; }
   .open-kitchen { top: 76px; left: 25%; right: 25%; height: 325px; }
-  .kitchen-return-sign { top: 250px; width: 146px; padding: 8px 8px 7px; gap: 4px; }
+  .kitchen-return-sign { top: 250px; left: 31%; width: 146px; padding: 8px 8px 7px; gap: 4px; }
   .kitchen-return-sign strong { font-size: 16px; }
   .kitchen-return-sign span { font-size: 6px; }
   .counter-chef { width: min(190px, 47vw); height: 205px; }
