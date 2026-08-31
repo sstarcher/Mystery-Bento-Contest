@@ -437,7 +437,7 @@
 .contest-progress span.is-active i { background: #f5c968; border-color: #f5c968; box-shadow: 2px 2px 0 rgba(0,0,0,.3); }
 .contest-race { position: relative; margin: 28px 0 2px; padding: 14px 12px 10px 54px; background: #241a30; border: 2px solid #15101b; box-shadow: inset 0 0 0 3px rgba(255,255,255,.035); overflow: hidden; }
 .race-track-label { position: absolute; inset: 5px 14px auto 54px; z-index: 6; display: flex; justify-content: space-between; }
-.race-course-viewport { --race-finish-anchor: calc(100% - 28px); position: relative; height: 324px; overflow: hidden; border: 2px solid rgba(245,201,104,.22); background: #3a2940; isolation: isolate; }
+.race-course-viewport { --race-finish-anchor: calc(100% - 31px); position: relative; height: 324px; overflow: hidden; border: 2px solid rgba(245,201,104,.22); background: #3a2940; isolation: isolate; }
 .race-course-viewport::before { content: ''; position: absolute; inset: 0; z-index: 1; background: linear-gradient(180deg, rgba(25,17,32,.2), transparent 42%, rgba(17,12,25,.35)); pointer-events: none; }
 .race-world-track { position: absolute; inset: 0 auto 0 0; z-index: 0; width: 200%; height: 100%; transform: translateX(0); }
 .race-scenery-track { position: absolute; inset: 0; z-index: 0; display: flex; width: 100%; }
@@ -480,14 +480,7 @@
 .race-runner .persona-portrait { width: 60px; height: 60px; margin: 0; border-width: 3px; border-radius: 13px; }
 .race-runner .persona-portrait-image { inset: 2px; border-radius: 7px; }
 .race-runner .persona-portrait-shine { width: 6px; height: 6px; top: 6px; right: 6px; }
-.contest-race-intro .race-world-track { transform: translateX(0); }
-.contest-race-warmup .race-world-track { animation: race-world-warmup 7.6s linear both; }
-.contest-race-matchup .race-world-track { animation: race-world-matchup 9.2s linear both; }
-.contest-race-finale .race-world-track { animation: race-world-finale 11s linear both; }
-.contest-race-winner .race-world-track { transform: translateX(-50%); }
-@keyframes race-world-warmup { from { transform: translateX(0); } to { transform: translateX(-13.67%); } }
-@keyframes race-world-matchup { from { transform: translateX(-13.67%); } to { transform: translateX(-30.22%); } }
-@keyframes race-world-finale { from { transform: translateX(-30.22%); } to { transform: translateX(-50%); } }
+.race-world-track { transition: none; }
 .race-runner-reaction-ready .race-runner-sprite { animation: race-runner-ready .72s steps(2, end) infinite; }
 .race-runner-reaction-jump .race-runner-sprite { animation: race-runner-jump var(--race-runner-tempo, 1.05s) cubic-bezier(.28,.82,.34,1) infinite; }
 .race-runner-reaction-dodge .race-runner-sprite { animation: race-runner-dodge var(--race-runner-tempo, 1.05s) cubic-bezier(.3,.7,.35,1) infinite; }
@@ -507,7 +500,12 @@
 @keyframes race-runner-warmup { 0% { left: var(--race-intro-anchor); transform: translateX(-50%) translateY(0) rotate(0); } 30% { transform: translateX(-50%) translateY(-4px) rotate(-4deg); } 62% { transform: translateX(-50%) translateY(2px) rotate(3deg); } 100% { left: var(--race-warmup-anchor); transform: translateX(-50%) translateY(0) rotate(0); } }
 @keyframes race-runner-matchup { 0% { left: var(--race-warmup-anchor); transform: translateX(-50%) translateY(0) rotate(0); } 28% { transform: translateX(-50%) translateY(-4px) rotate(4deg); } 58% { transform: translateX(-50%) translateY(2px) rotate(-3deg); } 100% { left: var(--race-matchup-anchor); transform: translateX(-50%) translateY(0) rotate(0); } }
 @keyframes race-runner-finale { 0% { left: var(--race-matchup-anchor); transform: translateX(-50%) translateY(0) rotate(0); } 27% { transform: translateX(-50%) translateY(-3px) rotate(3deg); } 55% { transform: translateX(-50%) translateY(2px) rotate(-3deg); } 100% { left: var(--race-finale-anchor); transform: translateX(-50%) translateY(0) rotate(0); } }
+.contest-race-finale .race-runner.is-finish-crossing { animation: race-runner-finish-crossing var(--race-finish-crossing-duration, 220ms) linear both; }
 .contest-race-winner .race-runner.is-winner { animation: winner-dash .8s cubic-bezier(.22,1,.36,1) both; }
+@keyframes race-runner-finish-crossing {
+  from { left: var(--race-runner-anchor); transform: translateX(-50%) scale(1); }
+  to { left: var(--race-finish-anchor); transform: translateX(-50%) scale(1.04); }
+}
 @keyframes winner-dash { from { transform: translateX(-50%) scale(.98); } to { transform: translateX(-50%) scale(1.12); } }
 .contest-race-winner .race-runner.is-winner .persona-portrait { animation: winner-bob .8s ease-in-out .45s 2; }
 @keyframes winner-bob { 50% { transform: translateY(-7px) rotate(-6deg); } }
@@ -648,7 +646,7 @@
   .contest-progress span:not(.is-active) { color: #66536f; }
   .contest-stage > .contest-race { margin-top: 8px; }
   .contest-race { padding: 11px 8px 8px 45px; }
-  .race-course-viewport { --race-finish-anchor: calc(100% - 20px); height: 286px; }
+  .race-course-viewport { --race-finish-anchor: calc(100% - 23px); height: 286px; }
   .race-course-road { padding-top: 18px; }
   .race-finish-line { top: 18px; right: 12px; width: 16px; background: repeating-linear-gradient(0deg, #f5c968 0 8px, #30223c 8px 16px); }
   .race-finish-line::before { top: -21px; padding: 2px 3px; font-size: 6px; }
@@ -785,13 +783,9 @@
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .001ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; transition-duration: .001ms !important; }
-  .race-world-track { animation: none !important; }
-  .contest-race-intro .race-world-track { transform: translateX(0); }
-  .contest-race-warmup .race-world-track { transform: translateX(-13.67%); }
-  .contest-race-matchup .race-world-track { transform: translateX(-30.22%); }
-  .contest-race-finale .race-world-track { transform: translateX(-50%); }
-  .contest-race-winner .race-world-track { transform: translateX(-50%); }
+  .race-world-track { transition: none !important; }
   .conveyor-track { animation: none; }
   .contest-race .race-runner, .contest-race .race-runner-sprite { animation: none; }
+  .contest-race-finale .race-runner.is-finish-crossing { animation: none !important; }
   .selection-splash { animation: none; }
 }
