@@ -273,10 +273,10 @@
 .counter-chef-sencha .counter-chef-sprite { top: -65px; width: min(202px, 38vw); }
 .counter-chef-nori .counter-chef-sprite { top: -125px; width: min(190px, 38vw); }
 .counter-chef-toro .counter-chef-sprite-sheet { top: auto; bottom: -120px; width: min(360px, 40vw); }
-.counter-chef-sencha .counter-chef-sprite-sheet { top: auto; bottom: -77px; width: min(202px, 38vw); }
+.counter-chef-sencha .counter-chef-sprite-sheet { top: auto; bottom: -154px; width: min(404px, 76vw); }
 .counter-chef-nori .counter-chef-sprite-sheet { top: auto; bottom: -122px; width: min(380px, 76vw); }
 .counter-chef-tilda .counter-chef-sprite { top: -147px; width: min(174px, 38vw); }
-.counter-chef-tilda .counter-chef-sprite-sheet { top: auto; bottom: -80px; width: min(244px, 38vw); }
+.counter-chef-tilda .counter-chef-sprite-sheet { top: auto; bottom: -120px; width: min(366px, 57vw); }
 .counter-chef-rollo .counter-chef-sprite { top: auto; bottom: 0; width: min(180px, 38vw); aspect-ratio: 320 / 461; }
 .counter-chef-rollo .counter-chef-frame-image { top: -50.11%; right: auto; bottom: auto; height: auto; }
 .counter-chef-rollo .counter-chef-sprite-sheet { top: auto; bottom: -96px; width: min(293px, 45.6vw); aspect-ratio: 1; }
@@ -768,10 +768,10 @@
   .counter-chef-sprite-sheet { bottom: -83px; }
   .counter-chef-pip .counter-chef-sprite-sheet { top: auto; bottom: -125px; width: min(315px, 82.5vw); }
   .counter-chef-toro .counter-chef-sprite-sheet { top: auto; bottom: -88px; width: min(280px, 70vw); }
-  .counter-chef-sencha .counter-chef-sprite-sheet { top: auto; bottom: -61px; width: min(160px, 38vw); }
+  .counter-chef-sencha .counter-chef-sprite-sheet { top: auto; bottom: -122px; width: min(320px, 76vw); }
   .counter-chef-nori .counter-chef-sprite-sheet { top: auto; bottom: -108px; width: min(290px, 76vw); }
   .counter-chef-tilda .counter-chef-sprite { top: -134px; width: min(145px, 38vw); }
-  .counter-chef-tilda .counter-chef-sprite-sheet { top: auto; bottom: -61px; width: min(190px, 38vw); }
+  .counter-chef-tilda .counter-chef-sprite-sheet { top: auto; bottom: -92px; width: min(285px, 57vw); }
   .counter-chef-rollo .counter-chef-sprite { top: auto; bottom: 0; width: min(142px, 42vw); }
   .counter-chef-rollo .counter-chef-sprite-sheet { top: auto; bottom: -74px; width: min(228px, 50.4vw); }
   .counter-chef-panko .counter-chef-sprite-sheet { top: auto; bottom: -104px; width: 150%; }

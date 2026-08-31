@@ -1877,7 +1877,7 @@ function Home() {
       ?? null;
   }, [ledger]);
   const activeChef = spriteSheetContestants.find((persona) => persona.id === winner?.id)
-    ?? spriteSheetContestants.find((persona) => persona.id === 'saffy')
+    ?? spriteSheetContestants.find((persona) => persona.id === 'uma')
     ?? lastWinner
     ?? null;
 
