@@ -314,8 +314,8 @@
 .displayed-curio .curio-glyph { transform: scale(1.08); margin: -2px 0; }
 .displayed-curio .curio-glyph-shine { display: none; }
 .displayed-curio .curio-place-label { display: none; }
-.restaurant-curio-shelf-grid { position: absolute; top: 312px; left: 60.5%; right: 4.5%; display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); grid-template-rows: repeat(2, minmax(0, 1fr)); height: 230px; align-items: center; justify-items: center; transform: translateX(-10px); pointer-events: none; }
-.restaurant-curio-shelf-grid .displayed-curio { position: relative; inset: auto; width: 78px; height: 82px; transform: translate(-42px, 15px); }
+.restaurant-curio-shelf-grid { position: absolute; top: 212px; left: 60.5%; right: 4.5%; display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); grid-template-rows: repeat(2, minmax(0, 1fr)); height: 230px; align-items: center; justify-items: center; transform: translateX(10px); pointer-events: none; }
+.restaurant-curio-shelf-grid .displayed-curio { position: relative; inset: auto; width: 78px; height: 82px; transform: translate(-42px, 15px) scale(.7); transform-origin: center center; }
 .displayed-curio-hanging-tools .curio-glyph { transform: scale(1.2) rotate(5deg); }
 .displayed-curio-hanging-tools .curio-info-card { top: calc(100% + 13px); bottom: auto; transform: translate(-50%, -8px); }
 .displayed-curio-hanging-tools .curio-info-card::after { top: -9px; bottom: auto; transform: translateX(-50%) rotate(225deg); }
@@ -732,7 +732,7 @@
   .displayed-curio { width: 54px; height: 58px; }
   .displayed-curio .curio-glyph { transform: scale(.76); margin: -3px 0; }
   .displayed-curio .curio-award-marker { top: 3px; right: 1px; }
-  .restaurant-curio-shelf-grid { top: 254px; left: 75%; right: auto; width: 150%; height: 196px; }
+  .restaurant-curio-shelf-grid { top: 154px; left: 75%; right: auto; width: 150%; height: 196px; }
   .restaurant-curio-shelf-grid .displayed-curio { width: 50px; height: 54px; }
   .restaurant-curio-shelf-grid .curio-glyph { transform: scale(.76); margin: -3px 0; }
   .background-shelf { width: 118px; height: 70px; gap: 3px; padding: 19px 6px 8px; border-width: 2px; }
