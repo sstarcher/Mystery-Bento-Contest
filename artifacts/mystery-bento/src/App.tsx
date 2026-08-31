@@ -18,7 +18,9 @@ import {
   RACE_MATCHUP_WORLD_END_PERCENT,
   RACE_STAGE_DURATIONS,
   RACE_WARMUP_WORLD_END_PERCENT,
+  type RaceTimelineCheckpoint,
 } from './race-timeline';
+import { resolveRaceEncounterResult } from './race-momentum';
 
 type MeterState = { progress: number; lastAcknowledgement: string };
 type Persona = {
@@ -99,11 +101,20 @@ type RaceLaneSimulation = {
   finishPosition: number;
   finishScore: number;
   encounters: Record<string, RaceEncounter>;
+  checkpoints: RaceTimelineCheckpoint[];
+};
+type RaceLeadChange = {
+  obstacleId: string;
+  fromPersonaId: string;
+  toPersonaId: string;
+  kind: 'overtake' | 'reversal';
 };
 type RaceSimulation = {
   obstacles: RaceObstacle[];
   lanes: RaceLaneSimulation[];
   winnerId: string;
+  checkpointLeaders: Record<string, { beforeId: string; afterId: string }>;
+  leadChanges: RaceLeadChange[];
 };
 type ContestOutcome = { winner: Persona; memorableEvent: string; contestName: string; race: RaceSimulation };
 type ContestStep = 'intro' | 'warmup' | 'matchup' | 'finale' | 'winner';
@@ -137,8 +148,6 @@ const BIBI_ANIMATION_SPRITE_SHEET_SRC = `${import.meta.env.BASE_URL}video/bibi-b
 const MIN_ANNOUNCER_GAP_MS = 520;
 
 const FINISH_CROSSING_SETTLE_MS = 240;
-const MAX_RACE_STAGE_GAP = 20;
-
 type AnnouncerClip = { id: string; src: string; label: string; durationMs: number };
 type AnnouncerBeat = {
   id: string;
@@ -411,12 +420,6 @@ const contestNextStep: Partial<Record<ContestStep, ContestStep>> = {
   finale: 'winner',
 };
 
-const contestPreviousStep: Partial<Record<ContestStep, ContestStep>> = {
-  warmup: 'intro',
-  matchup: 'warmup',
-  finale: 'matchup',
-};
-
 const raceStepProgress: Record<ContestStep, number> = {
   intro: 0,
   warmup: 1,
@@ -530,10 +533,14 @@ function buildAnnouncerSequence(contestants: Persona[], race: RaceSimulation, pr
       });
     }
     obstacleMilestones.forEach(({ obstacle, offset }, obstacleOrder) => {
-      const lanesAtBeat = race.lanes
-        .map((lane) => ({ lane, position: lane.positions[stage] }))
-        .sort((a, b) => b.position - a.position);
-      const leadLane = lanesAtBeat[0]?.lane ?? race.lanes[0];
+      const leaderId = race.checkpointLeaders[obstacle.id]?.afterId;
+      const leadLane = race.lanes.find((lane) => lane.personaId === leaderId)
+        ?? [...race.lanes].sort((a, b) => {
+          const aCheckpoint = a.checkpoints.find((checkpoint) => checkpoint.obstacleId === obstacle.id);
+          const bCheckpoint = b.checkpoints.find((checkpoint) => checkpoint.obstacleId === obstacle.id);
+          return (bCheckpoint?.exitPosition ?? b.positions[stage]) - (aCheckpoint?.exitPosition ?? a.positions[stage]);
+        })[0]
+        ?? race.lanes[0];
       const encounter = leadLane?.encounters[obstacle.id];
       const reaction = encounter ? getRaceRunnerReaction(obstacle.kind, encounter.result) : 'ready';
       const clips: AnnouncerClip[] = [
@@ -559,23 +566,34 @@ function buildAnnouncerSequence(contestants: Persona[], race: RaceSimulation, pr
       });
     });
 
-    const previousStage = contestPreviousStep[stage];
-    const currentLeader = [...race.lanes].sort((a, b) => b.positions[stage] - a.positions[stage])[0];
-    const previousLeader = previousStage
-      ? [...race.lanes].sort((a, b) => b.positions[previousStage] - a.positions[previousStage])[0]
-      : undefined;
-    const leaderChanged = Boolean(currentLeader && previousLeader && currentLeader.personaId !== previousLeader.personaId);
+    const stageObstacleIds = obstacleIndices
+      .map((obstacleIndex) => race.obstacles[obstacleIndex]?.id)
+      .filter((obstacleId): obstacleId is string => Boolean(obstacleId));
+    const stageLeadChanges = race.leadChanges.filter((change) => stageObstacleIds.includes(change.obstacleId));
     const gap = race.lanes.length > 1
       ? (Math.max(...race.lanes.map((lane) => lane.positions[stage])) - Math.min(...race.lanes.map((lane) => lane.positions[stage])))
       : 0;
-    const paceClip = stage === 'warmup'
-      ? paceAnnouncerClips[0]
-      : leaderChanged
-        ? paceAnnouncerClips[2 + stageIndex - 1]
+    stageLeadChanges.forEach((change) => {
+      const changeObstacle = race.obstacles.find((obstacle) => obstacle.id === change.obstacleId);
+      const changeMilestone = obstacleMilestones.find((milestone) => milestone.obstacle.id === change.obstacleId);
+      if (!changeObstacle || !changeMilestone) return;
+      const paceClip = change.kind === 'reversal' ? paceAnnouncerClips[3] : paceAnnouncerClips[2];
+      const changeIndex = stageLeadChanges.indexOf(change);
+      beats.push({
+        id: `pace-${stage}-${changeObstacle.id}-${changeIndex}`,
+        step: stage,
+        label: paceClip.label,
+        offset: changeMilestone.offset,
+        deadlineOffset: obstacleMilestones[obstacleMilestones.indexOf(changeMilestone) + 1]?.offset ?? stageDuration,
+        clips: [paceClip],
+      });
+    });
+    if (!stageLeadChanges.length && stage !== 'finale') {
+      const paceClip = stage === 'warmup'
+        ? paceAnnouncerClips[0]
         : gap > 28
           ? paceAnnouncerClips[1]
           : paceAnnouncerClips[4];
-    if (stage !== 'finale') {
       const paceOffset = stage === 'warmup' ? 4_600 : 5_700;
       const nextMilestone = obstacleMilestones.find((milestone) => milestone.offset > paceOffset)?.offset ?? stageDuration;
       beats.push({
@@ -670,21 +688,6 @@ function clampRacePosition(value: number) {
   return Math.min(96, Math.max(4, value));
 }
 
-function limitRaceLaneDisparity(lanes: RaceLaneSimulation[]) {
-  const stages: ContestStep[] = ['intro', 'warmup', 'matchup', 'finale'];
-  stages.forEach((stage) => {
-    const positions = lanes.map((lane) => lane.positions[stage]);
-    const minimum = Math.min(...positions);
-    const maximum = Math.max(...positions);
-    const spread = maximum - minimum;
-    if (spread <= MAX_RACE_STAGE_GAP) return;
-    const compression = MAX_RACE_STAGE_GAP / spread;
-    lanes.forEach((lane) => {
-      lane.positions[stage] = clampRacePosition(maximum - (maximum - lane.positions[stage]) * compression);
-    });
-  });
-}
-
 function buildRaceSimulation(contestants: Persona[], rng: () => number): RaceSimulation {
   const obstaclePositions = [18, 40, 62, 83];
   const fallbackKinds = shuffleWithRng(Object.keys(raceObstacleCatalog) as RaceObstacleKind[], rng);
@@ -709,49 +712,80 @@ function buildRaceSimulation(contestants: Persona[], rng: () => number): RaceSim
     };
   });
 
-  const lanes = contestants.map((persona) => {
+  type WorkingRaceLane = RaceLaneSimulation & { persona: Persona; progress: number };
+  const lanes: WorkingRaceLane[] = contestants.map((persona) => {
     const startingStagger = (persona.traits.speed - 50) * 0.11
       + (persona.traits.chaos - 50) * 0.07
       + rng() * 8 - 4;
     let progress = 6 + persona.traits.speed * 0.06 + startingStagger;
-    const encounters: Record<string, RaceEncounter> = {};
-    const positions: Record<ContestStep, number> = {
-      intro: clampRacePosition(progress),
-      warmup: clampRacePosition(progress),
-      matchup: clampRacePosition(progress),
-      finale: clampRacePosition(progress),
-      winner: 92,
+    const lane: WorkingRaceLane = {
+      persona,
+      progress,
+      encounters: {},
+      checkpoints: [],
+      finishPosition: 92,
+      finishScore: 0,
+      personaId: persona.id,
+      positions: {
+        intro: clampRacePosition(progress),
+        warmup: clampRacePosition(progress),
+        matchup: clampRacePosition(progress),
+        finale: clampRacePosition(progress),
+        winner: 92,
+      },
     };
+    return lane;
+  });
 
-    obstacles.forEach((obstacle, obstacleIndex) => {
+  const checkpointLeaders: Record<string, { beforeId: string; afterId: string }> = {};
+  const leadChanges: RaceLeadChange[] = [];
+  const previouslyLed = new Set<string>();
+  const startingLeader = [...lanes].sort((a, b) => b.progress - a.progress)[0];
+  if (startingLeader) previouslyLed.add(startingLeader.personaId);
+
+  obstacles.forEach((obstacle, obstacleIndex) => {
+    const rankingBefore = [...lanes].sort((a, b) => b.progress - a.progress);
+    const spread = (rankingBefore[0]?.progress ?? 0) - (rankingBefore[rankingBefore.length - 1]?.progress ?? 0);
+    const leaderBefore = rankingBefore[0];
+
+    lanes.forEach((lane) => {
+      const rankIndex = rankingBefore.indexOf(lane);
       const catalog = raceObstacleCatalog[obstacle.kind];
-      const control = persona.traits[catalog.primaryTrait] * 0.52
-        + persona.traits[catalog.secondaryTrait] * 0.24
-        + persona.traits.luck * 0.12
-        + (100 - persona.traits.chaos) * 0.12;
-      const luckyBreak = persona.traits.chaos >= 70
-        && (catalog.primaryTrait === 'luck' || obstacle.kind === 'ribbon-tunnel' || obstacle.kind === 'shortcut-reflection')
-        && rng() > 0.35;
-      const roll = control + rng() * 22 - 11;
-      const result: RaceEncounterResult = luckyBreak
-        ? 'surge'
-        : roll >= 76
-          ? 'clear'
-          : roll < 51
-            ? 'slow'
-            : persona.traits.chaos >= 72 && rng() > 0.48
-              ? 'reroute'
-              : 'clear';
+      const result: RaceEncounterResult = resolveRaceEncounterResult({
+        traits: lane.persona.traits,
+        primaryTrait: catalog.primaryTrait,
+        secondaryTrait: catalog.secondaryTrait,
+        obstacleKind: obstacle.kind,
+        rankIndex,
+        laneCount: rankingBefore.length,
+        spread,
+        rng,
+      });
       const progressDelta = result === 'surge' ? 16 : result === 'slow' ? -16 : result === 'reroute' ? -7 : 3;
       const pace = 18
-        + (persona.traits.speed - 50) * 0.05
-        + (persona.traits.focus - 50) * 0.015;
-      progress = clampRacePosition(progress + pace + progressDelta);
+        + (lane.persona.traits.speed - 50) * 0.05
+        + (lane.persona.traits.focus - 50) * 0.015;
+      const approachPosition = lane.progress;
+      const rawExitPosition = approachPosition + pace + progressDelta;
+      const nextObstaclePosition = obstacles[obstacleIndex + 1]?.position;
+      const maximumExitPosition = typeof nextObstaclePosition === 'number'
+        ? nextObstaclePosition - 2
+        : 96;
+      const exitPosition = clampRacePosition(
+        Math.max(obstacle.position + 1, Math.min(rawExitPosition, maximumExitPosition)),
+      );
+      lane.progress = exitPosition;
+      lane.checkpoints.push({
+        obstacleId: obstacle.id,
+        approachPosition,
+        crossingPosition: obstacle.position,
+        exitPosition,
+      });
       const encounterCopy: Record<RaceEncounterResult, { headline: string; detail: string }> = {
-        clear: { headline: 'clean line', detail: `${persona.name} reads the ${catalog.shortLabel} and keeps pace. Their routine holds.` },
-        slow: { headline: 'slowed down', detail: `${persona.name} loses a few steps at the ${catalog.shortLabel}; ${persona.contestBehavior.toLowerCase()}` },
-        surge: { headline: 'found a break', detail: `${persona.name} turns the ${catalog.shortLabel} into an unexpected opening. ${persona.quirk}` },
-        reroute: { headline: 'rerouted', detail: `${persona.name} takes the strange line around the ${catalog.shortLabel}; ${persona.contestBehavior}` },
+        clear: { headline: 'clean line', detail: `${lane.persona.name} reads the ${catalog.shortLabel} and keeps pace. Their routine holds.` },
+        slow: { headline: 'slowed down', detail: `${lane.persona.name} loses a few steps at the ${catalog.shortLabel}; ${lane.persona.contestBehavior.toLowerCase()}` },
+        surge: { headline: 'found a break', detail: `${lane.persona.name} turns the ${catalog.shortLabel} into an unexpected opening. ${lane.persona.quirk}` },
+        reroute: { headline: 'rerouted', detail: `${lane.persona.name} takes the strange line around the ${catalog.shortLabel}; ${lane.persona.contestBehavior}` },
       };
       const reaction = getRaceRunnerReaction(obstacle.kind, result);
       const reactionCopy: Record<RaceRunnerReaction, string> = {
@@ -764,34 +798,57 @@ function buildRaceSimulation(contestants: Persona[], rng: () => number): RaceSim
         weave: 'They weave through the clutter and find a stranger line.',
         surge: 'They spring over the opening and surge ahead.',
       };
-      encounters[obstacle.id] = {
+      lane.encounters[obstacle.id] = {
         result,
         ...encounterCopy[result],
         detail: `${encounterCopy[result].detail} ${reactionCopy[reaction]}`,
       };
-      if (obstacleIndex === 0) positions.warmup = progress;
-      if (obstacleIndex === 1) positions.matchup = progress;
-      if (obstacleIndex >= 2) positions.finale = progress;
     });
 
-    if (obstacles.length < 3) positions.finale = progress;
-    const finishScore = progress
-      + persona.traits.speed * 0.28
-      + persona.traits.balance * 0.1
-      + persona.traits.focus * 0.12
-      + persona.traits.luck * 0.14
-      + (100 - persona.traits.chaos) * 0.06
-      + rng() * 8 - 4;
-    const finishPosition = clampRacePosition(progress + persona.traits.focus * 0.08 + persona.traits.luck * 0.06 + persona.traits.chaos * 0.03 + rng() * 10 - 5);
-    positions.winner = finishPosition;
-    return { personaId: persona.id, positions, finishPosition, finishScore, encounters };
+    const rankingAfter = [...lanes].sort((a, b) => b.progress - a.progress);
+    const leaderAfter = rankingAfter[0];
+    if (!leaderBefore || !leaderAfter) return;
+    checkpointLeaders[obstacle.id] = {
+      beforeId: leaderBefore.personaId,
+      afterId: leaderAfter.personaId,
+    };
+    if (leaderBefore.personaId !== leaderAfter.personaId) {
+      leadChanges.push({
+        obstacleId: obstacle.id,
+        fromPersonaId: leaderBefore.personaId,
+        toPersonaId: leaderAfter.personaId,
+        kind: previouslyLed.has(leaderAfter.personaId) ? 'reversal' : 'overtake',
+      });
+    }
+    previouslyLed.add(leaderAfter.personaId);
+    if (obstacleIndex === 0) lanes.forEach((lane) => { lane.positions.warmup = lane.progress; });
+    if (obstacleIndex === 1) lanes.forEach((lane) => { lane.positions.matchup = lane.progress; });
+    if (obstacleIndex >= 2) lanes.forEach((lane) => { lane.positions.finale = lane.progress; });
   });
 
-  limitRaceLaneDisparity(lanes);
+  if (obstacles.length < 3) lanes.forEach((lane) => { lane.positions.finale = lane.progress; });
+  lanes.forEach((lane) => {
+    lane.finishScore = lane.progress
+      + lane.persona.traits.speed * 0.28
+      + lane.persona.traits.balance * 0.1
+      + lane.persona.traits.focus * 0.12
+      + lane.persona.traits.luck * 0.14
+      + (100 - lane.persona.traits.chaos) * 0.06
+      + rng() * 8 - 4;
+    lane.finishPosition = clampRacePosition(lane.progress + lane.persona.traits.focus * 0.08 + lane.persona.traits.luck * 0.06 + lane.persona.traits.chaos * 0.03 + rng() * 10 - 5);
+    lane.positions.winner = lane.finishPosition;
+  });
+
   const winnerLane = [...lanes].sort((a, b) => b.finishScore - a.finishScore)[0] ?? lanes[0];
   const winnerId = winnerLane?.personaId ?? contestants[0]?.id ?? spriteSheetContestants[0]?.id;
   if (!winnerId) throw new Error('Cannot build a race without a sprite-sheet contestant.');
-  return { obstacles, lanes, winnerId };
+  return {
+    obstacles,
+    lanes: lanes.map(({ persona: _persona, progress: _progress, ...lane }) => lane),
+    winnerId,
+    checkpointLeaders,
+    leadChanges,
+  };
 }
 
 function resolveContest(contestants: Persona[], rng: () => number): ContestOutcome {

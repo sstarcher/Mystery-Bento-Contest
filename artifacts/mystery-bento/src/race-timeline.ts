@@ -4,6 +4,13 @@ export type RaceTimelineObstacle = { id: string; position: number };
 export type RaceTimelineLane = {
   positions: Record<RaceTimelineStage, number>;
   encounters: Record<string, { result: RaceTimelineEncounterResult }>;
+  checkpoints?: RaceTimelineCheckpoint[];
+};
+export type RaceTimelineCheckpoint = {
+  obstacleId: string;
+  approachPosition: number;
+  crossingPosition: number;
+  exitPosition: number;
 };
 
 export const RACE_STAGE_DURATIONS: Record<RaceTimelineStage, number> = {
@@ -84,12 +91,27 @@ export function getRaceStageObstacleMilestones(stage: RaceTimelineStage, lane: R
       const obstacle = obstacles[obstacleIndex];
       const startPosition = getRaceStageStartPosition(stage, lane);
       const endPosition = lane.positions[stage];
-      const position = Math.max(startPosition, Math.min(endPosition, obstacle.position));
-      const offset = getRunnerObstacleHitOffset(stage, obstacle, lane);
+      const checkpoint = lane.checkpoints?.find((candidate) => candidate.obstacleId === obstacle.id);
+      const position = checkpoint?.crossingPosition
+        ?? Math.max(startPosition, Math.min(endPosition, obstacle.position));
+      const offset = checkpoint
+        ? getRunnerObstacleHitOffset(stage, { ...obstacle, position }, lane)
+        : getRunnerObstacleHitOffset(stage, obstacle, lane);
+      const nextObstacle = getRaceStageObstacleIndices(stage, obstacles.length)
+        .map((candidateIndex) => obstacles[candidateIndex])
+        .find((candidate) => candidate && candidate.position > position);
+      const nextOffset = nextObstacle
+        ? getRunnerObstacleHitOffset(stage, nextObstacle, lane)
+        : RACE_STAGE_DURATIONS[stage];
+      const exitOffset = checkpoint
+        ? Math.max(offset, Math.min(nextOffset, offset + Math.min(360, Math.max(120, (nextOffset - offset) * 0.18))))
+        : offset;
       const milestone = {
         position,
         offset: Math.max(previousOffset, Math.min(RACE_STAGE_DURATIONS[stage], offset)),
         obstacle,
+        exitPosition: checkpoint?.exitPosition,
+        exitOffset,
       };
       previousOffset = milestone.offset;
       return milestone;
@@ -133,8 +155,22 @@ export function getRaceLaneProgressAtTime(
   const endPosition = lane.positions[stage];
   const stageDuration = RACE_STAGE_DURATIONS[stage];
   const elapsed = Math.max(0, Math.min(stageDuration, elapsedMs));
+  const obstacleMilestones = getRaceStageObstacleMilestones(stage, lane, obstacles);
   const milestones: Array<{ position: number; offset: number; obstacle?: RaceTimelineObstacle }> = [
-    ...getRaceStageObstacleMilestones(stage, lane, obstacles),
+    ...obstacleMilestones.flatMap((milestone) => [
+      {
+        position: milestone.position,
+        offset: milestone.offset,
+        obstacle: milestone.obstacle,
+      },
+      ...(typeof milestone.exitPosition === 'number' && milestone.exitOffset > milestone.offset
+        ? [{
+          position: milestone.exitPosition,
+          offset: milestone.exitOffset,
+          obstacle: milestone.obstacle,
+        }]
+        : []),
+    ]),
     { position: endPosition, offset: stageDuration, obstacle: undefined },
   ].sort((a, b) => a.offset - b.offset);
 

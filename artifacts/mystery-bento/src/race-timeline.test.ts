@@ -68,6 +68,27 @@ assert.equal(getRaceWorldTravelPercentAtTime('finale', 0, false), RACE_MATCHUP_W
 assert.equal(getRaceFinishCrossingOffset(false), RACE_STAGE_DURATIONS.finale);
 assert.equal(getRaceFinishCrossingOffset(true), 0);
 
+const checkpointLane: RaceTimelineLane = {
+  positions: { intro: 10, warmup: 30, matchup: 52, finale: 90, winner: 94 },
+  encounters: {
+    'finish-hazard': { result: 'surge' },
+    'last-hazard': { result: 'slow' },
+  },
+  checkpoints: [
+    { obstacleId: 'finish-hazard', approachPosition: 52, crossingPosition: 62, exitPosition: 70 },
+    { obstacleId: 'last-hazard', approachPosition: 70, crossingPosition: 83, exitPosition: 90 },
+  ],
+};
+const checkpointMilestones = getRaceStageObstacleMilestones('finale', checkpointLane, obstacles);
+const finishCheckpoint = checkpointMilestones.find((milestone) => milestone.obstacle.id === 'finish-hazard');
+assert.ok(finishCheckpoint);
+assert.equal(finishCheckpoint.position, 62, 'checkpoint crossing should stay on the authored obstacle position');
+assert.equal(
+  getRaceLaneProgressAtTime('finale', checkpointLane, obstacles, finishCheckpoint.exitOffset, false),
+  70,
+  'checkpoint exit should be visible after the encounter reaction',
+);
+
 const moonLane = lineups[0][1];
 const moonMilestone = getRaceStageObstacleMilestones('matchup', moonLane, obstacles)
   .find((milestone) => milestone.obstacle.id === 'moon-reflection');
