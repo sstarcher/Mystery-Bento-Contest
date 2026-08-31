@@ -11,7 +11,7 @@ type SpriteSheetAudit = {
 
 const spriteSheets: SpriteSheetAudit[] = [
   { file: 'bibi-bento-cooking-sprite-sheet.png', columns: 8, rows: 7, occupiedFrames: 52 },
-  { file: 'captain-toro-cooking-sprite-sheet.png', columns: 5, rows: 5, occupiedFrames: 25 },
+  { file: 'captain-toro-cooking-sprite-sheet.png', columns: 8, rows: 4, occupiedFrames: 31 },
   { file: 'kiku-kettle-cooking-sprite-sheet.png', columns: 8, rows: 4, occupiedFrames: 28 },
   { file: 'miso-mallow-cooking-sprite-sheet.png', columns: 8, rows: 7, occupiedFrames: 55 },
   { file: 'nori-nib-cooking-sprite-sheet.png', columns: 8, rows: 7, occupiedFrames: 56 },
