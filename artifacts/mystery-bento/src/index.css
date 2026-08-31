@@ -111,12 +111,15 @@
 }
 
 .bento-app {
-  min-height: var(--fixed-rendered-height);
+  height: 100dvh;
+  min-height: 0;
+  max-height: 100dvh;
   background:
     radial-gradient(circle at 10% 0%, rgba(244, 190, 68, .18), transparent 28rem),
     radial-gradient(circle at 100% 50%, rgba(55, 116, 92, .12), transparent 24rem),
     hsl(var(--background));
   overflow-x: auto;
+  overflow-y: hidden;
 }
 
 .bento-app::before {
