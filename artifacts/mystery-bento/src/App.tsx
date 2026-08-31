@@ -116,6 +116,10 @@ const TORO_ANIMATION_SPRITE_SHEET_SRC = `${import.meta.env.BASE_URL}video/captai
 const NORI_ANIMATION_SPRITE_SHEET_SRC = `${import.meta.env.BASE_URL}video/nori-nib-cooking-sprite-sheet.png`;
 const TILDA_ANIMATION_SPRITE_SHEET_SRC = `${import.meta.env.BASE_URL}video/tilda-tofu-cooking-sprite-sheet.png`;
 const ROLLO_ANIMATION_SPRITE_SHEET_SRC = `${import.meta.env.BASE_URL}video/rollo-radish-cooking-sprite-sheet.png`;
+const KIKU_ANIMATION_SPRITE_SHEET_SRC = `${import.meta.env.BASE_URL}video/kiku-kettle-cooking-sprite-sheet.png`;
+const SAFFY_ANIMATION_SPRITE_SHEET_SRC = `${import.meta.env.BASE_URL}video/saffy-sashimi-cooking-sprite-sheet.png`;
+const UMA_ANIMATION_SPRITE_SHEET_SRC = `${import.meta.env.BASE_URL}video/uma-udon-cooking-sprite-sheet.png`;
+const MISO_ANIMATION_SPRITE_SHEET_SRC = `${import.meta.env.BASE_URL}video/miso-mallow-cooking-sprite-sheet.png`;
 const MIN_ANNOUNCER_GAP_MS = 520;
 
 const FINISH_CROSSING_SETTLE_MS = 240;
@@ -307,11 +311,19 @@ const personas: Persona[] = contestantDesigns.map((design) => ({
             ? TILDA_ANIMATION_SPRITE_SHEET_SRC
           : design.id === 'rollo'
             ? ROLLO_ANIMATION_SPRITE_SHEET_SRC
+          : design.id === 'kiku'
+            ? KIKU_ANIMATION_SPRITE_SHEET_SRC
+          : design.id === 'saffy'
+            ? SAFFY_ANIMATION_SPRITE_SHEET_SRC
+          : design.id === 'uma'
+            ? UMA_ANIMATION_SPRITE_SHEET_SRC
+          : design.id === 'miso'
+            ? MISO_ANIMATION_SPRITE_SHEET_SRC
         : undefined,
-  foodAnimationSpriteSheetColumns: design.id === 'nori' || design.id === 'tilda' || design.id === 'rollo' ? 8 : design.id === 'pip' || design.id === 'sencha' || design.id === 'toro' ? 5 : undefined,
-  foodAnimationSpriteSheetRows: design.id === 'nori' || design.id === 'tilda' || design.id === 'rollo' ? 7 : design.id === 'pip' || design.id === 'sencha' || design.id === 'toro' ? 5 : undefined,
-  foodAnimationSpriteSheetFrameCount: design.id === 'nori' || design.id === 'tilda' || design.id === 'rollo' ? 56 : design.id === 'pip' || design.id === 'sencha' || design.id === 'toro' ? 25 : undefined,
-  foodAnimationFrameDurationMs: design.id === 'nori' || design.id === 'tilda' || design.id === 'rollo' || design.id === 'pip' || design.id === 'sencha' || design.id === 'toro' ? Math.round(1000 / 12) : undefined,
+  foodAnimationSpriteSheetColumns: design.id === 'kiku' || design.id === 'miso' || design.id === 'nori' || design.id === 'rollo' || design.id === 'saffy' || design.id === 'tilda' || design.id === 'uma' ? 8 : design.id === 'pip' || design.id === 'sencha' || design.id === 'toro' ? 5 : undefined,
+  foodAnimationSpriteSheetRows: design.id === 'kiku' ? 4 : design.id === 'uma' ? 6 : design.id === 'miso' || design.id === 'nori' || design.id === 'rollo' || design.id === 'saffy' || design.id === 'tilda' ? 7 : design.id === 'pip' || design.id === 'sencha' || design.id === 'toro' ? 5 : undefined,
+  foodAnimationSpriteSheetFrameCount: design.id === 'kiku' ? 32 : design.id === 'uma' ? 48 : design.id === 'miso' || design.id === 'nori' || design.id === 'rollo' || design.id === 'saffy' || design.id === 'tilda' ? 56 : design.id === 'pip' || design.id === 'sencha' || design.id === 'toro' ? 25 : undefined,
+  foodAnimationFrameDurationMs: design.id === 'kiku' || design.id === 'miso' || design.id === 'nori' || design.id === 'rollo' || design.id === 'saffy' || design.id === 'tilda' || design.id === 'uma' || design.id === 'pip' || design.id === 'sencha' || design.id === 'toro' ? Math.round(1000 / 12) : undefined,
   foodAnimationAspectRatio: contestantFoodAnimationAspectRatios[design.id],
 }));
 const spriteSheetContestants = personas.filter((persona) => (
@@ -1109,7 +1121,7 @@ function AnimatedChefSprite({ persona }: { persona: Persona }) {
         className="counter-chef-sprite counter-chef-sprite-sheet"
         role="img"
         aria-label={`${persona.name} cooking animation`}
-        style={{ aspectRatio: `${spriteSheetColumns} / ${spriteSheetRows}` }}
+        style={{ aspectRatio: '1' }}
       >
         <span
           className="counter-chef-sprite-sheet-frame"
