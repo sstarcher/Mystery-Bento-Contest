@@ -160,7 +160,7 @@
 .restaurant-reference-backdrop .curio-wall-lamp { display: none; }
 .restaurant-reference-backdrop .open-kitchen > *:not(.kitchen-return-sign) { display: none; }
 .restaurant-chef-layer { position: absolute; inset: 0; z-index: 1; --restaurant-counter-top: calc(62% - 15px); pointer-events: none; }
-.restaurant-chef-layer .counter-chef { top: var(--restaurant-counter-top); bottom: auto; left: 45%; transform: translate(-50%, -100%); }
+.restaurant-chef-layer .counter-chef { top: var(--restaurant-counter-top); bottom: auto; left: 45%; transform: translate(-50%, -100%) scale(.7); transform-origin: center bottom; }
 .restaurant-chef-layer .counter-chef-uma { left: calc(45% + 20px); }
 .restaurant-reference-belt { position: absolute; inset: 0 0 205px; z-index: 2; overflow: hidden; clip-path: inset(74% 0 14% 0); pointer-events: none; }
 .restaurant-reference-belt-image { position: absolute; inset: 0; display: block; width: 100%; height: 100%; object-fit: cover; object-position: center center; filter: saturate(.88) brightness(.82); image-rendering: pixelated; transform: scaleX(1.18); }
@@ -265,7 +265,7 @@
 .kitchen-prep-light-one { left: 24%; } .kitchen-prep-light-two { right: 24%; background: #e57d5a; box-shadow: 0 0 19px rgba(229,125,90,.64); }
 .kitchen-steam { position: absolute; top: 237px; width: 18px; height: 52px; border-left: 3px dotted rgba(245,232,201,.45); transform: rotate(7deg); }
 .kitchen-steam-one { left: 27%; } .kitchen-steam-two { right: 27%; transform: rotate(-7deg); }
-.kitchen-return-sign { position: absolute; top: 150px; left: 35%; z-index: 2; display: grid; justify-items: center; gap: 5px; width: 176px; padding: 11px 12px 10px; transform: translateX(-50%) rotate(-2deg); color: #f5e8c9; background: #342139; border: 3px solid #17121e; box-shadow: inset 0 0 0 2px rgba(245,201,104,.38), 5px 5px 0 rgba(16,10,23,.28); text-align: center; }
+.kitchen-return-sign { position: absolute; top: 140px; left: 35%; z-index: 2; display: grid; justify-items: center; gap: 5px; width: 176px; padding: 11px 12px 10px; transform: translateX(-50%) rotate(-2deg); color: #f5e8c9; background: #342139; border: 3px solid #17121e; box-shadow: inset 0 0 0 2px rgba(245,201,104,.38), 5px 5px 0 rgba(16,10,23,.28); text-align: center; }
 .kitchen-return-sign::before, .kitchen-return-sign::after { content: ''; position: absolute; top: -10px; width: 5px; height: 11px; background: #a17a66; border: 2px solid #17121e; }
 .kitchen-return-sign::before { left: 20px; } .kitchen-return-sign::after { right: 20px; }
 .kitchen-return-sign strong { color: #f5c968; font-family: var(--font-display); font-size: 20px; line-height: 1; letter-spacing: .08em; }
@@ -387,8 +387,8 @@
 .food-button:disabled { opacity: .5; cursor: not-allowed; transform: none; }
 .food-illustration { height: 96px; display: grid; place-items: center; position: relative; transform: translateY(-22px); }
 .plate-display { position: relative; width: 148px; height: 96px; display: grid; place-items: center; }
-.plate-display .food-name { position: absolute; top: 9px; left: 50%; z-index: 2; transform: translateX(-50%); }
-.food-plate-image { display: block; width: 120px; height: 82px; max-width: none; object-fit: contain; image-rendering: pixelated; filter: drop-shadow(5px 6px 0 rgba(14, 8, 20, .3)); transform: translateY(10px); }
+.plate-display .food-name { position: absolute; top: 14px; left: 50%; z-index: 2; transform: translateX(-50%); }
+.food-plate-image { display: block; width: 96px; height: 65.6px; max-width: none; object-fit: contain; image-rendering: pixelated; filter: drop-shadow(5px 6px 0 rgba(14, 8, 20, .3)); transform: translateY(10px); }
 .food-plate-image[src$="sushi-plate-rolls.png"] { transform: translate(12px, 10px); }
 .plate { width: 108px; height: 68px; display: grid; place-items: center; background: #fff1cf; border: 3px solid #32243d; border-radius: 50%; box-shadow: inset 0 -7px 0 #d8bd87, 5px 6px 0 rgba(14, 8, 20, .34); transform: rotate(-5deg); }
 .plate::before { content: ''; position: absolute; width: 85px; height: 47px; border: 2px solid rgba(163, 77, 67, .38); border-radius: 50%; }
@@ -761,7 +761,7 @@
   .curio-info-card strong { font-size: 13px; }
   .curio-info-description { font-size: 10px; }
   .open-kitchen { top: 76px; left: 25%; right: 25%; height: 325px; }
-  .kitchen-return-sign { top: 100px; left: 31%; width: 146px; padding: 8px 8px 7px; gap: 4px; }
+  .kitchen-return-sign { top: 90px; left: 31%; width: 146px; padding: 8px 8px 7px; gap: 4px; }
   .kitchen-return-sign strong { font-size: 16px; }
   .kitchen-return-sign span { font-size: 6px; }
   .counter-chef { width: min(190px, 47vw); height: 205px; }
