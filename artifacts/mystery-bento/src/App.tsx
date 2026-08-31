@@ -8,6 +8,7 @@ import NotFound from '@/pages/not-found';
 import { Route, Router as WouterRouter, Switch, useLocation } from 'wouter';
 import { contestantDesigns, contestantFoodAnimationAspectRatios, contestantFoodAnimationFrames, contestantFoodSprites, contestantPortraits } from './contestant-design-config';
 import { getMovementSpriteSheet, type MovementAction } from './movement-sprite-config';
+import { RACE_BACKGROUND_SEQUENCE } from './race-backgrounds';
 import {
   getFirstRunnerObstacleHitOffset as getTimelineFirstRunnerObstacleHitOffset,
   getRaceFinishCrossingOffset,
@@ -126,6 +127,8 @@ const LEDGER_KEY = 'mystery-bento-ledger';
 const CURIO_KEY = 'mystery-bento-curios';
 const VOICE_ANNOUNCER_KEY = 'mystery-bento-voice-announcer';
 const ANNOUNCER_AUDIO_BASE = `${import.meta.env.BASE_URL}audio/announcer`;
+
+const RACE_BACKGROUND_BASE = `${import.meta.env.BASE_URL}race-backgrounds`;
 const PIP_ANIMATION_SPRITE_SHEET_SRC = `${import.meta.env.BASE_URL}video/pip-making-food-sprite-sheet.png`;
 const RESTAURANT_BACKDROP_SRC = `${import.meta.env.BASE_URL}restaurant-background-attached.png`;
 const SUSHI_PLATE_WARM_SRC = `${import.meta.env.BASE_URL}sushi-plate-warm.png`;
@@ -1650,11 +1653,19 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
               data-world-travel-percent={worldTravelPercent.toFixed(3)}
             >
               <div className="race-scenery-track" aria-hidden="true">
-                {['lantern alley', 'steam crossing', 'market bend', 'moon gate', 'finish stall'].map((section, index) => (
-                  <div className={`race-scenery-panel race-scenery-panel-${index}`} key={section}>
-                    <span className="race-scenery-skyline" />
-                    <span className="race-scenery-lantern" />
-                    <span className="race-scenery-detail">{section}</span>
+                {RACE_BACKGROUND_SEQUENCE.map((scene, index) => (
+                  <div
+                    className={`race-scenery-panel race-scenery-panel-${index}`}
+                    key={scene.id}
+                    data-scene-id={scene.id}
+                    data-destination={scene.isDestination || undefined}
+                  >
+                    <img
+                      className="race-scenery-image"
+                      src={`${RACE_BACKGROUND_BASE}/${scene.file}`}
+                      alt=""
+                      draggable="false"
+                    />
                   </div>
                 ))}
               </div>

@@ -17,8 +17,20 @@ optimized files used by the app.
 - `tilda-tofu-animation-sheet.png`
 - `rollo-radish-animation-sheet.png`
 
+`source-images/race-backgrounds/`
+
+- The six original high-resolution race scenes are preserved here in the
+  deterministic course order: `asset_Jg8...`, `asset_HZMG...`, `asset_5ja...`,
+  `asset_DLD...`, `asset_JLEx...`, then `asset_mqEP...`.
+- `asset_mqEP...` is the final moonlit-pavilion destination used for the finish
+  crossing and winner state.
+
 The extracted and optimized image files used by the app live in
 `src/assets/contestants/`, grouped by contestant and named by role.
+
+The race uses reduced, pixel-crisp WebP derivatives from
+`public/race-backgrounds/`; the six source PNG uploads remain available above
+for future editing and are not shipped to the browser.
 
 ## Source audio
 
