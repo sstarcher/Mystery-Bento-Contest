@@ -114,6 +114,7 @@ const SENCHA_ANIMATION_SPRITE_SHEET_SRC = `${import.meta.env.BASE_URL}video/senc
 
 const TORO_ANIMATION_SPRITE_SHEET_SRC = `${import.meta.env.BASE_URL}video/captain-toro-cooking-sprite-sheet.png`;
 const NORI_ANIMATION_SPRITE_SHEET_SRC = `${import.meta.env.BASE_URL}video/nori-nib-cooking-sprite-sheet.png`;
+const TILDA_ANIMATION_SPRITE_SHEET_SRC = `${import.meta.env.BASE_URL}video/tilda-tofu-cooking-sprite-sheet.png`;
 const MIN_ANNOUNCER_GAP_MS = 520;
 
 const FINISH_CROSSING_SETTLE_MS = 240;
@@ -127,6 +128,7 @@ type AnnouncerBeat = {
   clips: AnnouncerClip[];
   offset: number;
   deadlineOffset: number;
+  gapAfterMs?: number;
 };
 
 // These are conservative metadata hints for the bundled clips. Runtime metadata
@@ -300,11 +302,13 @@ const personas: Persona[] = contestantDesigns.map((design) => ({
         ? TORO_ANIMATION_SPRITE_SHEET_SRC
         : design.id === 'nori'
           ? NORI_ANIMATION_SPRITE_SHEET_SRC
+          : design.id === 'tilda'
+            ? TILDA_ANIMATION_SPRITE_SHEET_SRC
         : undefined,
-  foodAnimationSpriteSheetColumns: design.id === 'nori' ? 8 : design.id === 'pip' || design.id === 'sencha' || design.id === 'toro' ? 5 : undefined,
-  foodAnimationSpriteSheetRows: design.id === 'nori' ? 7 : design.id === 'pip' || design.id === 'sencha' || design.id === 'toro' ? 5 : undefined,
-  foodAnimationSpriteSheetFrameCount: design.id === 'nori' ? 56 : design.id === 'pip' || design.id === 'sencha' || design.id === 'toro' ? 25 : undefined,
-  foodAnimationFrameDurationMs: design.id === 'nori' || design.id === 'pip' || design.id === 'sencha' || design.id === 'toro' ? Math.round(1000 / 12) : undefined,
+  foodAnimationSpriteSheetColumns: design.id === 'nori' || design.id === 'tilda' ? 8 : design.id === 'pip' || design.id === 'sencha' || design.id === 'toro' ? 5 : undefined,
+  foodAnimationSpriteSheetRows: design.id === 'nori' || design.id === 'tilda' ? 7 : design.id === 'pip' || design.id === 'sencha' || design.id === 'toro' ? 5 : undefined,
+  foodAnimationSpriteSheetFrameCount: design.id === 'nori' || design.id === 'tilda' ? 56 : design.id === 'pip' || design.id === 'sencha' || design.id === 'toro' ? 25 : undefined,
+  foodAnimationFrameDurationMs: design.id === 'nori' || design.id === 'tilda' || design.id === 'pip' || design.id === 'sencha' || design.id === 'toro' ? Math.round(1000 / 12) : undefined,
   foodAnimationAspectRatio: contestantFoodAnimationAspectRatios[design.id],
 }));
 const spriteSheetContestants = personas.filter((persona) => (
@@ -482,6 +486,9 @@ function buildAnnouncerSequence(contestants: Persona[], race: RaceSimulation, pr
       label: 'Tonight’s contestants are',
       offset: 0,
       deadlineOffset: contestDurations.intro,
+      // Names are individual clips, so a shorter handoff keeps the roster
+      // sounding like one introduction instead of a series of pauses.
+      gapAfterMs: 180,
       clips: [
         announcerClip('character-intros', 'contestants-are', 'Tonight’s contestants are'),
         ...contestants.map((persona) => announcerClip('character-names', persona.id, persona.name)),
@@ -1426,8 +1433,9 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
         if (cancelled || announcerAudio.current !== audio) return;
         pendingAudio.current = null;
         announcerAudio.current = null;
-        announcerAudioReadyAt.current = Date.now() + MIN_ANNOUNCER_GAP_MS;
-        schedule(() => skipClip(beat, clipIndex), MIN_ANNOUNCER_GAP_MS);
+        const gapAfterClip = beat.gapAfterMs ?? MIN_ANNOUNCER_GAP_MS;
+        announcerAudioReadyAt.current = Date.now() + gapAfterClip;
+        schedule(() => skipClip(beat, clipIndex), gapAfterClip);
       };
       audio.addEventListener('ended', continueBeat, { once: true });
       audio.addEventListener('error', continueBeat, { once: true });
