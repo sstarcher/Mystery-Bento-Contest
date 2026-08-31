@@ -1873,7 +1873,7 @@ function Home() {
       ?? null;
   }, [ledger]);
   const activeChef = spriteSheetContestants.find((persona) => persona.id === winner?.id)
-    ?? spriteSheetContestants.find((persona) => persona.id === 'panko')
+    ?? spriteSheetContestants.find((persona) => persona.id === 'pip')
     ?? lastWinner
     ?? null;
 
