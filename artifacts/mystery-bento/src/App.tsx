@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState, type CSSProperties, type KeyboardEvent, type MouseEvent, type PointerEvent } from 'react';
-import { BookOpen, ChevronRight, Eye, LockKeyhole, RotateCcw, SkipForward, Sparkles, Volume2, VolumeX, X } from 'lucide-react';
+import { BookOpen, ChevronRight, LockKeyhole, RotateCcw, SkipForward, Sparkles, Volume2, VolumeX, X } from 'lucide-react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ErrorBoundary } from '@/components/error-boundary';
 import { Toaster } from '@/components/ui/toaster';
@@ -1334,6 +1334,10 @@ function Meter({ meter, onPointerStart, onPointerEnd, onMeterClick, onMeterKeyDo
 
 function ContestOverlay({ contestants, winner, step, contestName, memorableEvent, race, finishLineVisible, finishCrossed, contestStartedAt, announcerResetKey, onAnnouncerBeat, onSkip, onClose }: { contestants: Persona[]; winner: Persona | null; step: ContestStep; contestName: string; memorableEvent: string; race: RaceSimulation; finishLineVisible: boolean; finishCrossed: boolean; contestStartedAt: number | null; announcerResetKey: number; onAnnouncerBeat: (label: string) => void; onSkip: () => void; onClose: () => void }) {
   const [showWinnerReveal, setShowWinnerReveal] = useState(false);
+  const [announcedContestantCount, setAnnouncedContestantCount] = useState(0);
+  const [announcementCardsVisible, setAnnouncementCardsVisible] = useState(false);
+  const [announcementPhaseComplete, setAnnouncementPhaseComplete] = useState(false);
+  const [announcementStatus, setAnnouncementStatus] = useState('Tonight’s contestants are waiting behind the curtain.');
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(() => window.matchMedia('(prefers-reduced-motion: reduce)').matches);
   const [raceClockMs, setRaceClockMs] = useState(() => contestStartedAt ? Math.max(0, Date.now() - contestStartedAt) : 0);
   const [voiceEnabled, setVoiceEnabled] = useState(() => {
@@ -1358,6 +1362,17 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
   const announcerSequence = useMemo(() => buildAnnouncerSequence(contestants, race, prefersReducedMotion), [contestants, race, prefersReducedMotion]);
   const announcerBeatCallback = useRef(onAnnouncerBeat);
   announcerBeatCallback.current = onAnnouncerBeat;
+  const announcementTimeline = useMemo(() => {
+    const introBeat = announcerSequence.find((beat) => beat.id === 'intro-opening');
+    const nameClips = introBeat?.clips.slice(1, contestants.length + 1) ?? [];
+    let offset = (introBeat?.clips[0]?.durationMs ?? 0) + (introBeat?.gapAfterMs ?? 180);
+    return contestants.map((persona, index) => {
+      const clip = nameClips[index];
+      const reveal = { persona, offset };
+      offset += (clip?.durationMs ?? 900) + (introBeat?.gapAfterMs ?? 180);
+      return reveal;
+    });
+  }, [announcerSequence, contestants]);
   const currentObstacleIndex = step === 'intro' ? -1 : Math.min(race.obstacles.length - 1, raceStepProgress[step] - 1);
   const currentObstacle = currentObstacleIndex >= 0 ? race.obstacles[currentObstacleIndex] : null;
   const currentObstacleCopy = currentObstacle
@@ -1386,6 +1401,47 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
   useEffect(() => {
     if (finishLineVisible) setSpokenBeatLabel('Finish in sight');
   }, [finishLineVisible]);
+  useEffect(() => {
+    setAnnouncedContestantCount(0);
+    setAnnouncementCardsVisible(false);
+    setAnnouncementPhaseComplete(false);
+    setAnnouncementStatus('Tonight’s contestants are waiting behind the curtain.');
+    if (step !== 'intro' || !contestStartedAt || !contestants.length) return;
+    const startedAt = contestStartedAt;
+    const timers: number[] = [];
+    const schedule = (callback: () => void, delay: number) => {
+      const timer = window.setTimeout(callback, Math.max(0, delay));
+      timers.push(timer);
+    };
+
+    schedule(() => {
+      setAnnouncementStatus('Tonight’s contestants are');
+      setSpokenBeatLabel('Tonight’s contestants are');
+    }, 0);
+
+    announcementTimeline.forEach(({ persona, offset }, index) => {
+      schedule(() => {
+        setAnnouncedContestantCount(index + 1);
+        setAnnouncementCardsVisible(true);
+        setAnnouncementStatus(`${persona.name} is taking a place beneath the lanterns.`);
+        setSpokenBeatLabel(persona.name);
+        announcerBeatCallback.current(persona.name);
+      }, startedAt + offset - Date.now());
+    });
+
+    const finalReveal = announcementTimeline[announcementTimeline.length - 1];
+    if (finalReveal) {
+      const finalClip = announcerSequence.find((beat) => beat.id === 'intro-opening')?.clips[announcementTimeline.length];
+      schedule(() => {
+        setAnnouncementCardsVisible(false);
+        setAnnouncementPhaseComplete(true);
+        setAnnouncementStatus('The roster is set. The race begins beneath the lanterns.');
+        setSpokenBeatLabel('The roster is set');
+      }, startedAt + finalReveal.offset + (finalClip?.durationMs ?? 900) + 520 - Date.now());
+    }
+
+    return () => timers.forEach((timer) => window.clearTimeout(timer));
+  }, [announcementTimeline, announcerSequence, contestStartedAt, contestants.length, step]);
   const getLaneProgress = (lane: RaceLaneSimulation | undefined) => lane
     ? getTimelineLaneProgressAtTime(step, lane, race.obstacles, raceClockMs - contestStepOffsets[step], prefersReducedMotion)
     : 0;
@@ -1407,7 +1463,10 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
     if (step === 'intro' || step === 'winner' || reachedIndex < stageObstacleIndex) return -1;
     return reachedIndex;
   };
-  const displayedContestants = finishCrossed || step === 'winner' ? [] : contestants;
+  const isAnnouncementPhase = step === 'intro' && !finishCrossed && !announcementPhaseComplete;
+  const displayedContestants = isAnnouncementPhase && announcementCardsVisible
+    ? contestants.slice(0, announcedContestantCount)
+    : [];
   const toggleVoice = () => {
     if (voiceEnabled && audioNeedsGesture && pendingAudio.current) {
       const pending = pendingAudio.current;
@@ -1641,10 +1700,32 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
   return (
     <div className="contest-backdrop fixed inset-0 z-30 flex items-stretch justify-center" role="dialog" aria-modal="true" aria-labelledby="contest-title">
       <div className="contest-stage w-full p-3 sm:p-5">
-        <div className="mb-3 flex items-start justify-between gap-4">
+        <div className="contest-header">
           <h2 id="contest-title" className="font-display text-3xl font-bold tracking-tight sm:text-5xl">{contestName}</h2>
           <button type="button" className="flex items-center gap-2 border border-[#806a85] px-3 py-2 text-xs font-bold text-[#f8e7c6] hover:bg-[#f5c968] hover:text-[#30223c]" onClick={onSkip} data-testid="button-skip-contest"><SkipForward className="h-4 w-4" aria-hidden="true" />Skip scene</button>
         </div>
+        {isAnnouncementPhase ? (
+          <section className="contest-announcement" aria-labelledby="contest-announcement-title">
+            <div className="contest-announcement-copy" role="status" aria-live="polite">
+              <span className="font-mono-ui text-[10px] uppercase tracking-[.2em] text-[#f5c968]">line-up call</span>
+              <h3 id="contest-announcement-title" className="font-display text-5xl font-bold tracking-tight">Tonight’s contestants are</h3>
+              <p>{announcementStatus}</p>
+            </div>
+            <div className="contest-announcement-cards" aria-label="Announced contestants">
+              {displayedContestants.map((persona, index) => (
+                <div key={persona.id} className="contest-announcement-card persona-tile rounded-lg p-4 text-center" data-testid={`card-contestant-${persona.id}`}>
+                  <PersonaPortrait persona={persona} large />
+                  <h4 className="font-display text-lg font-bold">{persona.name}</h4>
+                  <p className="mt-1 min-h-10 text-xs leading-4 text-[#765752]">{persona.flavorText}</p>
+                  <div className="mt-3 flex justify-center gap-1" aria-label={`${persona.name} contest traits`}>
+                    {[persona.traits.speed, persona.traits.focus, persona.traits.luck].map((trait, traitIndex) => <span key={traitIndex} className={`h-1.5 w-5 ${trait > 75 ? 'bg-[#37745c]' : 'bg-[#d8b879]'}`} />)}
+                  </div>
+                  <div className="mt-3 font-mono-ui text-[9px] uppercase tracking-wider text-[#a34d43]">{index === displayedContestants.length - 1 ? 'just announced' : 'on the line'}</div>
+                </div>
+              ))}
+            </div>
+          </section>
+        ) : (
         <div className={`contest-race contest-race-${step}`} data-finish-visible={finishLineVisible || undefined} data-finish-crossed={finishCrossed || undefined} aria-label="Animated contest race">
           <div className="race-track-label font-mono-ui text-[9px] uppercase tracking-[.16em] text-[#bca99b]"><span>start</span><span>finish</span></div>
           <div className="race-course-viewport">
@@ -1718,8 +1799,6 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
                    : getRaceWorldScreenAnchor(laneProgress, worldTravelPercent);
                 return (
                   <div className="race-runner-lane" key={persona.id}>
-                    <div className="race-lane-number font-mono-ui text-[10px] text-[#bca99b]">{String(index + 1).padStart(2, '0')}</div>
-                    <div className="race-lane-name font-mono-ui text-[10px] uppercase tracking-wider text-[#d8c6af]">{persona.name}</div>
                     <div
                       className={`race-runner race-runner-reaction-${runnerReaction} ${isWinner ? 'is-winner' : ''} ${finishCrossingActive ? 'is-finish-crossing' : ''}`}
                       style={{
@@ -1790,6 +1869,7 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
             ))}
           </div>
         </div>
+        )}
         {winner && showWinnerReveal && (
           <div className="race-winner-reveal" role="status" aria-live="polite" data-testid="winner-reveal-card">
             <div className="race-winner-reveal-card">
@@ -1804,26 +1884,7 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
             </div>
           </div>
         )}
-        <div className="my-9 grid grid-cols-1 gap-5 sm:grid-cols-3">
-          {displayedContestants.map((persona, index) => (
-            <div key={persona.id} className={`persona-tile rounded-lg p-4 text-center transition-transform ${winner?.id === persona.id ? 'scale-[1.04] ring-4 ring-[#f5c968]' : ''}`} data-testid={`card-contestant-${persona.id}`}>
-              <PersonaPortrait persona={persona} large={winner?.id === persona.id} />
-              <h3 className="font-display text-lg font-bold">{persona.name}</h3>
-              <p className="mt-1 min-h-10 text-xs leading-4 text-[#765752]">{persona.flavorText}</p>
-              <div className="mt-3 flex justify-center gap-1" aria-label={`${persona.name} contest traits`}>
-                {[persona.traits.speed, persona.traits.focus, persona.traits.luck].map((trait, traitIndex) => <span key={traitIndex} className={`h-1.5 w-5 ${trait > 75 ? 'bg-[#37745c]' : 'bg-[#d8b879]'}`} />)}
-              </div>
-              {winner?.id === persona.id && <div className="mt-4"><span className="winner-stamp">LANE WINNER</span></div>}
-              {step === 'warmup' && index === 0 && <div className="mt-3 font-mono-ui text-[10px] uppercase tracking-wider text-[#b88f66]">checking the trays</div>}
-              {step === 'matchup' && index === 1 && <div className="mt-3 font-mono-ui text-[10px] uppercase tracking-wider text-[#b88f66]">making a scene</div>}
-              {step === 'finale' && index === 2 && <div className="mt-3 font-mono-ui text-[10px] uppercase tracking-wider text-[#b88f66]">last corner</div>}
-            </div>
-          ))}
-        </div>
-        <div className="flex flex-col items-center justify-between gap-4 border-t border-[#64516b] pt-5 sm:flex-row">
-          <div className="flex items-center gap-2 text-xs text-[#bca99b]"><Eye className="h-4 w-4 text-[#f5c968]" aria-hidden="true" />Spectator mode · the stall handles the rest</div>
-          {winner && <button type="button" onClick={onClose} className="flex items-center gap-2 bg-[#f5c968] px-5 py-3 text-sm font-extrabold text-[#30223c] shadow-[4px_4px_0_#17121e] transition-transform hover:-translate-y-1 active:translate-y-1 active:shadow-none" data-testid="button-close-contest">Return to the stall <ChevronRight className="h-4 w-4" aria-hidden="true" /></button>}
-        </div>
+        {winner && <button type="button" onClick={onClose} className="contest-close-button flex items-center gap-2 bg-[#f5c968] px-5 py-3 text-sm font-extrabold text-[#30223c] shadow-[4px_4px_0_#17121e] transition-transform hover:-translate-y-1 active:translate-y-1 active:shadow-none" data-testid="button-close-contest">Return to the stall <ChevronRight className="h-4 w-4" aria-hidden="true" /></button>}
       </div>
     </div>
   );
