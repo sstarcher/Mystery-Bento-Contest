@@ -304,11 +304,7 @@ const personas: Persona[] = contestantDesigns.map((design) => ({
   foodAnimationFrameDurationMs: design.id === 'pip' || design.id === 'sencha' || design.id === 'toro' ? Math.round(1000 / 12) : undefined,
   foodAnimationAspectRatio: contestantFoodAnimationAspectRatios[design.id],
 }));
-const animatedContestants = personas.filter((persona) => (
-  (persona.foodAnimationFrameSrcs?.length ?? 0) >= 2
-  || persona.foodAnimationSpriteSheetSrc
-  || persona.foodAnimationVideoSrc
-));
+const spriteSheetContestants = personas.filter((persona) => Boolean(persona.foodAnimationSpriteSheetSrc));
 
 const foodItems: FoodItem[] = [
   { id: 'tamago', name: 'Sunset tamago', note: 'soft, sweet, perfectly tucked', imageSrc: SUSHI_PLATE_WARM_SRC },
@@ -780,7 +776,7 @@ function buildRaceSimulation(contestants: Persona[], rng: () => number): RaceSim
 
 function resolveContest(contestants: Persona[], rng: () => number): ContestOutcome {
   const race = buildRaceSimulation(contestants, rng);
-  const winner = contestants.find((persona) => persona.id === race.winnerId) ?? contestants[0] ?? animatedContestants[0] ?? personas[0];
+  const winner = contestants.find((persona) => persona.id === race.winnerId) ?? contestants[0] ?? spriteSheetContestants[0] ?? personas[0];
   return {
     winner,
     memorableEvent: winner.memorableEvent,
@@ -902,7 +898,7 @@ function CurioHotspot({ item, className }: { item: Collectible; className: strin
   );
 }
 
-function CurioBacksplash({ collectibles }: { collectibles: Collectible[] }) {
+function CurioBacksplash({ collectibles, showReturnSign }: { collectibles: Collectible[]; showReturnSign: boolean }) {
   const byZone = (zone: CurioDisplayZone) => collectibles.filter((item) => getCurioDisplayZone(item) === zone);
   const houseKeeps = byZone('house-keeps');
   const teaTools = byZone('tea-tools');
@@ -1019,7 +1015,7 @@ function CurioBacksplash({ collectibles }: { collectibles: Collectible[] }) {
         <div className="kitchen-prep-light kitchen-prep-light-two" />
         <div className="kitchen-steam kitchen-steam-one" />
         <div className="kitchen-steam kitchen-steam-two" />
-        {!collectibles.length && (
+        {showReturnSign && (
           <div className="kitchen-return-sign" aria-hidden="true">
             <strong lang="ja">すぐ戻ります</strong>
             <span>be right back</span>
@@ -1702,11 +1698,7 @@ function Home() {
       ?? personas.find((persona) => persona.name === latestEntry.winner)
       ?? null;
   }, [ledger]);
-  const activeChef = personas.find((persona) => persona.id === 'pip')
-    ?? lastWinner
-    ?? animatedContestants[0]
-    ?? personas[0]
-    ?? null;
+  const activeChef = winner ?? lastWinner;
 
   useEffect(() => {
     setCollectibles((current) => {
@@ -1778,7 +1770,7 @@ function Home() {
 
   const launchContest = () => {
     const rng = createRng(Date.now() ^ Math.floor(Math.random() * 0xffffffff));
-    const selected = shuffleWithRng(animatedContestants, rng).slice(0, rng() > 0.62 ? 4 : 3);
+    const selected = shuffleWithRng(spriteSheetContestants, rng).slice(0, rng() > 0.62 ? 4 : 3);
     const outcome = resolveContest(selected, rng);
     contestOutcome.current = outcome;
     completionGuard.current = false;
@@ -1937,7 +1929,7 @@ function Home() {
     <div className="bento-app">
       <main className="min-h-[100dvh]" aria-label="Mystery Bento night market">
         <section className="scene-shell min-h-[100dvh] p-4 sm:p-6 md:p-10" aria-label="Mystery Bento night market">
-          <CurioBacksplash collectibles={collectibles} />
+          <CurioBacksplash collectibles={collectibles} showReturnSign={!ledger.length && !winner && !contestOpen} />
           {activeChef && (
             <div className="restaurant-chef-layer" aria-hidden="true">
               <div className={`counter-chef counter-chef-${activeChef.id}`}>
