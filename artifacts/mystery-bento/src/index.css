@@ -270,7 +270,7 @@
 .counter-chef-toro .counter-chef-sprite { top: -42px; width: min(360px, 40vw); aspect-ratio: 1; }
 .counter-chef-sencha .counter-chef-sprite { top: -65px; width: min(202px, 38vw); }
 .counter-chef-nori .counter-chef-sprite { top: -125px; width: min(190px, 38vw); }
-.counter-chef-nori .counter-chef-sprite-sheet { top: auto; bottom: -35px; }
+.counter-chef-nori .counter-chef-sprite-sheet { top: auto; bottom: -55px; width: min(380px, 76vw); }
 .counter-chef-tilda .counter-chef-sprite { top: -147px; width: min(174px, 38vw); }
 .counter-chef-rollo .counter-chef-sprite { top: auto; bottom: 0; width: min(180px, 38vw); aspect-ratio: 320 / 461; }
 .counter-chef-rollo .counter-chef-frame-image { top: -50.11%; right: auto; bottom: auto; height: auto; }
@@ -753,7 +753,7 @@
   .counter-chef-toro .counter-chef-sprite { top: -32px; width: min(280px, 70vw); }
   .counter-chef-sencha .counter-chef-sprite { top: -55px; width: min(160px, 38vw); }
   .counter-chef-nori .counter-chef-sprite { top: -89px; width: min(145px, 38vw); }
-  .counter-chef-nori .counter-chef-sprite-sheet { top: auto; bottom: -28px; }
+  .counter-chef-nori .counter-chef-sprite-sheet { top: auto; bottom: -48px; width: min(290px, 76vw); }
   .counter-chef-tilda .counter-chef-sprite { top: -134px; width: min(145px, 38vw); }
   .counter-chef-rollo .counter-chef-sprite { top: auto; bottom: 0; width: min(142px, 42vw); }
   .kitchen-hood { left: 5%; right: 5%; height: 27px; }
