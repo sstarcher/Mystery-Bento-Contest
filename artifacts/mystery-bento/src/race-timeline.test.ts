@@ -8,6 +8,7 @@ import {
   getRaceWorldTravelPercentAtTime,
   RACE_FINALE_WORLD_END_PERCENT,
   RACE_MATCHUP_WORLD_END_PERCENT,
+  RACE_WORLD_TRACK_WIDTH_MULTIPLIER,
   RACE_STAGE_DURATIONS,
   RACE_WARMUP_WORLD_END_PERCENT,
   type RaceTimelineLane,
@@ -102,6 +103,11 @@ assert.equal(
   getRaceWorldScreenAnchor(moonMilestone.position, moonWorldTravel),
   getRaceWorldScreenAnchor(obstacles[1].position, moonWorldTravel),
   'moon reflection cue and runner should share the same projected crossing anchor',
+);
+assert.equal(
+  getRaceWorldScreenAnchor(50, 40),
+  `${(50 - 40) * RACE_WORLD_TRACK_WIDTH_MULTIPLIER}.000%`,
+  'full-width race projection should use the six-panel world track',
 );
 
 assert.equal(getFirstRunnerObstacleHitOffset('warmup', obstacles[0], lineups[0], obstacles, true), 0);

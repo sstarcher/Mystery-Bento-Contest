@@ -150,6 +150,12 @@ const MISO_ANIMATION_SPRITE_SHEET_SRC = `${import.meta.env.BASE_URL}video/miso-m
 const PANKO_ANIMATION_SPRITE_SHEET_SRC = `${import.meta.env.BASE_URL}video/panko-puff-cooking-sprite-sheet.png`;
 const BIBI_ANIMATION_SPRITE_SHEET_SRC = `${import.meta.env.BASE_URL}video/bibi-bento-cooking-sprite-sheet.png`;
 const MIN_ANNOUNCER_GAP_MS = 520;
+/**
+ * The course report and hazard strip are implemented spectator details.
+ * Keep their data, narration, and styling available, but leave the lower race
+ * UI disabled while the full-screen course is being simplified.
+ */
+const SHOW_RACE_COURSE_REPORT = false;
 
 const FINISH_CROSSING_SETTLE_MS = 240;
 type AnnouncerClip = { id: string; src: string; label: string; durationMs: number };
@@ -1829,6 +1835,8 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
               })}
             </div>
           </div>
+          {SHOW_RACE_COURSE_REPORT && (
+            <>
           <div className="race-event-report" role="status" aria-live="polite">
             <div className="race-event-heading">
               <span className="font-mono-ui text-[9px] uppercase tracking-[.16em] text-[#f5c968]">{step === 'winner' || finishCrossed ? 'finish report' : 'course report'}</span>
@@ -1868,6 +1876,8 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
               </span>
             ))}
           </div>
+            </>
+          )}
         </div>
         )}
         {winner && showWinnerReveal && (

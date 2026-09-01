@@ -21,10 +21,11 @@ export const RACE_STAGE_DURATIONS: Record<RaceTimelineStage, number> = {
   winner: 16500,
 };
 
-export const RACE_WARMUP_WORLD_END_PERCENT = 13.67;
-export const RACE_MATCHUP_WORLD_END_PERCENT = 30.22;
+export const RACE_WORLD_TRACK_WIDTH_MULTIPLIER = 6;
+export const RACE_WARMUP_WORLD_END_PERCENT = 20;
+export const RACE_MATCHUP_WORLD_END_PERCENT = 40;
 export const RACE_FINALE_WORLD_START_PERCENT = RACE_MATCHUP_WORLD_END_PERCENT;
-export const RACE_FINALE_WORLD_END_PERCENT = 50;
+export const RACE_FINALE_WORLD_END_PERCENT = 83.333;
 
 export const RACE_STAGE_OBSTACLE_INDICES: Record<Exclude<RaceTimelineStage, 'intro' | 'winner'>, number[]> = {
   warmup: [0],
@@ -61,7 +62,7 @@ export function getRaceWorldTravelPercentAtTime(stage: RaceTimelineStage, elapse
 }
 
 export function getRaceWorldScreenAnchor(position: number, worldTravelPercent: number) {
-  return `${(position * 2 - worldTravelPercent * 2).toFixed(3)}%`;
+  return `${(position * RACE_WORLD_TRACK_WIDTH_MULTIPLIER - worldTravelPercent * RACE_WORLD_TRACK_WIDTH_MULTIPLIER).toFixed(3)}%`;
 }
 
 function getRaceStageStartPosition(stage: RaceTimelineStage, lane: RaceTimelineLane) {
