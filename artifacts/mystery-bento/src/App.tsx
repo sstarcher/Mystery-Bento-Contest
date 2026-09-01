@@ -64,6 +64,8 @@ type Collectible = {
   description: string;
   earnedBy: string;
   earnedAt: string;
+  imageSrc?: string;
+  artVariant?: 'pip-pocket-watch' | 'pip-rice-bowl' | 'pip-satchel-tag';
 };
 type FoodItem = { id: string; name: string; note: string; imageSrc: string };
 type RaceTrait = keyof Persona['traits'];
@@ -130,6 +132,8 @@ const ANNOUNCER_AUDIO_BASE = `${import.meta.env.BASE_URL}audio/announcer`;
 
 const RACE_BACKGROUND_BASE = `${import.meta.env.BASE_URL}race-backgrounds`;
 const PIP_ANIMATION_SPRITE_SHEET_SRC = `${import.meta.env.BASE_URL}video/pip-making-food-sprite-sheet.png`;
+
+const PIP_POCKET_WATCH_SRC = `${import.meta.env.BASE_URL}pip-pocket-watch.png`;
 const RESTAURANT_BACKDROP_SRC = `${import.meta.env.BASE_URL}restaurant-background-attached.png`;
 const SUSHI_PLATE_WARM_SRC = `${import.meta.env.BASE_URL}sushi-plate-warm.png`;
 const SUSHI_PLATE_COOL_SRC = `${import.meta.env.BASE_URL}sushi-plate-cool.png`;
@@ -675,6 +679,9 @@ const collectiblePool = [
   { id: 'wrench-do-not-relocate', kind: 'pantry tool', title: 'The Do-Not-Relocate Wrench', description: 'A perfectly labeled wrench from Tilda’s chair-and-tool maintenance system.', earnedBy: 'tilda' },
   { id: 'plate-moon-checker', kind: 'plate pattern', title: 'Moonlit Checker', description: 'A ceramic plate pattern in the exact colors of a late-night shortcut.', earnedBy: 'bibi' },
   { id: 'plate-rainbow-rim', kind: 'plate pattern', title: 'Rainbow Rim Test Tile', description: 'A test tile with a rim that catches every color of the market sign.', earnedBy: 'saffy' },
+  { id: 'pip-pocket-watch', kind: 'Pip keepsake', title: 'The Brass Sunrise Pocket Watch', description: 'A tiny brass pocket watch with an apricot face, kept ticking for the first warm light of morning.', earnedBy: 'pip', imageSrc: PIP_POCKET_WATCH_SRC, artVariant: 'pip-pocket-watch' as const },
+  { id: 'pip-rice-bowl', kind: 'Pip keepsake', title: 'The Teal-Ribbon Rice Bowl', description: 'A little rice bowl tied with a teal ribbon, saved for meals that deserve a gentle beginning.', earnedBy: 'pip', imageSrc: PIP_RICE_BOWL_SRC, artVariant: 'pip-rice-bowl' as const },
+  { id: 'pip-satchel-tag', kind: 'Pip keepsake', title: 'The Apricot Satchel Tag', description: 'An apricot luggage tag with a tiny rice charm, ready for one more shortcut home.', earnedBy: 'pip', imageSrc: PIP_SATCHEL_TAG_SRC, artVariant: 'pip-satchel-tag' as const },
   { id: 'snapshot-great-wobble', kind: 'victory snapshot', title: 'The Great Wobble', description: 'A framed snapshot of a rice ball refusing to give up.', earnedBy: 'panko' },
   { id: 'snapshot-last-tray', kind: 'victory snapshot', title: 'The Last Tray Home', description: 'A tiny photograph of an empty tray making it safely back to the pass.', earnedBy: 'pip' },
   { id: 'radish-spark-sticker', kind: 'chef sticker', title: 'Radish Spark', description: 'A zippy little sticker that seems to vibrate when nobody is looking.', earnedBy: 'rollo' },
@@ -692,6 +699,9 @@ const showcaseCollectibles: Collectible[] = collectiblePool.map((item) => ({
 type CurioDisplayZone = 'house-keeps' | 'tea-tools' | 'spare-plates' | 'little-finds' | 'hanging-tools';
 
 function getCurioDisplayZone(item: Collectible): CurioDisplayZone {
+  if (item.id.includes('pip-pocket-watch')) return 'house-keeps';
+  if (item.id.includes('pip-rice-bowl')) return 'house-keeps';
+  if (item.id.includes('pip-satchel-tag')) return 'little-finds';
   if (item.id.includes('chef-ladle-champion')) return 'hanging-tools';
   if (item.id.includes('chef-ladle-night-shift')) return 'hanging-tools';
   if (item.id.includes('wrench-do-not-relocate')) return 'hanging-tools';
@@ -953,6 +963,14 @@ function FoodSelectionSplash({ item }: { item: FoodItem }) {
 }
 
 function CurioGlyph({ item }: { item: Collectible }) {
+  if (item.imageSrc) {
+    const artVariant = item.artVariant ?? 'pip-pocket-watch';
+    return (
+      <div className={`curio-glyph curio-glyph-image curio-glyph-image-${artVariant}`} aria-hidden="true">
+        <img src={item.imageSrc} alt="" draggable="false" />
+      </div>
+    );
+  }
   const glyphClass = item.id.includes('recipe-midnight-sauce')
     ? 'recipe'
     : item.id.includes('recipe-after-hours-note')
@@ -1285,9 +1303,12 @@ function MovementSprite({
 }
 
 function RestaurantCurioDisplays({ collectibles }: { collectibles: Collectible[] }) {
-  const byZone = (zone: CurioDisplayZone) => collectibles.filter((item) => getCurioDisplayZone(item) === zone).slice(0, 2);
+  const pocketWatch = showcaseCollectibles.find((item) => item.id === 'pip-pocket-watch');
+  const hasPocketWatch = collectibles.some((item) => item.id === 'pip-pocket-watch');
+  const shelfCollectibles = pocketWatch && !hasPocketWatch ? [pocketWatch, ...collectibles] : collectibles;
+  const byZone = (zone: CurioDisplayZone) => shelfCollectibles.filter((item) => getCurioDisplayZone(item) === zone).slice(0, 2);
   const latestCurioId = collectibles[0]?.id;
-  const displayClass = (baseClass: string, item: Collectible) => `${baseClass}${item.id === latestCurioId ? ' displayed-curio-latest' : ''}`;
+  const displayClass = (baseClass: string, item: Collectible) => `${baseClass}${item.id === latestCurioId ? ' displayed-curio-latest' : ''}${item.id === 'pip-pocket-watch' && !hasPocketWatch ? ' displayed-curio-showcase' : ''}`;
   const shelfItems = (['house-keeps', 'tea-tools', 'spare-plates', 'little-finds', 'hanging-tools'] as CurioDisplayZone[])
     .flatMap((zone) => byZone(zone));
   return (
@@ -2012,7 +2033,7 @@ function Home() {
       const showcaseById = new Map(showcaseCollectibles.map((item) => [item.id, item]));
       const refreshed = current.map((item) => {
         const template = showcaseById.get(item.id);
-        return template ? { ...item, kind: template.kind, title: template.title, description: template.description, earnedBy: template.earnedBy } : item;
+        return template ? { ...item, kind: template.kind, title: template.title, description: template.description, earnedBy: template.earnedBy, imageSrc: template.imageSrc, artVariant: template.artVariant } : item;
       });
       const needsRefresh = refreshed.some((item, index) => item !== current[index]);
       return needsRefresh ? refreshed : current;
@@ -2325,3 +2346,7 @@ function App() {
 }
 
 export default App;
+
+const PIP_SATCHEL_TAG_SRC = `${import.meta.env.BASE_URL}pip-satchel-tag.png`;
+
+const PIP_RICE_BOWL_SRC = `${import.meta.env.BASE_URL}pip-rice-bowl.png`;

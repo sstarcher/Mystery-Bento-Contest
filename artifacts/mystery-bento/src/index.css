@@ -322,6 +322,7 @@
 .displayed-curio-hanging-tools:hover .curio-info-card, .displayed-curio-hanging-tools:focus .curio-info-card, .displayed-curio-hanging-tools:focus-visible .curio-info-card { transform: translate(-50%, 0); }
 .displayed-curio-latest .curio-glyph::before, .displayed-curio-latest .curio-glyph::after, .displayed-curio-latest .curio-glyph-detail, .displayed-curio-latest .curio-glyph-shine { z-index: 1; }
 .displayed-curio-latest .curio-glyph { filter: drop-shadow(0 0 4px rgba(245,201,104,.9)) drop-shadow(0 0 10px rgba(245,201,104,.44)); animation: curio-award-shimmer 1.65s ease-in-out infinite; }
+.displayed-curio-showcase .curio-glyph { filter: drop-shadow(0 0 3px rgba(245,201,104,.62)); }
 .curio-award-marker { position: absolute; top: 5px; right: 5px; z-index: 5; min-width: 24px; padding: 2px 4px; border: 2px solid #17121e; border-radius: 3px; background: #f5c968; box-shadow: 0 0 8px rgba(245,201,104,.9), 2px 2px 0 rgba(23,18,30,.38); color: #30223c; font-family: var(--app-font-mono); font-size: 6px; font-weight: 800; line-height: 1; letter-spacing: .08em; text-align: center; text-transform: uppercase; transform: rotate(2deg); animation: curio-award-marker-pulse 1.65s ease-in-out infinite; }
 @keyframes curio-award-marker-pulse { 50% { box-shadow: 0 0 14px rgba(255,248,202,1), 2px 2px 0 rgba(23,18,30,.38); } }
 @keyframes curio-award-shimmer { 50% { filter: drop-shadow(0 0 6px rgba(255,248,202,1)) drop-shadow(0 0 14px rgba(245,201,104,.62)); } }
@@ -617,6 +618,11 @@
 .curio-glyph-kettle::after { width: 27px; height: 15px; top: 23px; right: 7px; background: #b86f4b; border: 3px solid #30223c; border-left: 0; clip-path: polygon(0 35%, 68% 0, 100% 50%, 68% 100%, 0 65%); transform: rotate(-8deg); }
 .curio-glyph-kettle .curio-glyph-detail { width: 18px; height: 14px; top: 7px; left: 29px; border: 3px solid #30223c; border-bottom: 0; border-radius: 12px 12px 0 0; z-index: 2; box-shadow: -15px -8px 0 -5px #f3dfb4, -15px -8px 0 -2px #30223c; }
 .curio-glyph-shine { width: 7px; height: 4px; background: rgba(255,248,223,.72); transform: rotate(-25deg); z-index: 3; right: 18px; top: 15px; }
+.curio-glyph-image { overflow: visible; }
+.curio-glyph-image img { display: block; width: 100%; height: 100%; object-fit: contain; image-rendering: pixelated; image-rendering: crisp-edges; user-select: none; }
+.curio-glyph-image-pip-pocket-watch { width: 79.2px; height: 79.2px; }
+.curio-glyph-image-pip-rice-bowl { width: 90px; height: 73.8px; }
+.curio-glyph-image-pip-satchel-tag { width: 75.6px; height: 86.4px; }
 .curio-room { position: relative; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 22px; min-height: 430px; padding: 32px 24px 28px; background: linear-gradient(180deg, #e9d09d, #f5e8c9 56%, #d8bd87); border: 3px solid #30223c; box-shadow: inset 0 0 0 8px rgba(255,255,255,.18), 6px 6px 0 rgba(48,34,60,.16); overflow: hidden; }
 .curio-room::before { content: ''; position: absolute; inset: 0; pointer-events: none; opacity: .42; background: repeating-linear-gradient(90deg, rgba(163,77,67,.12) 0 2px, transparent 2px 50px), repeating-linear-gradient(0deg, rgba(48,34,60,.08) 0 2px, transparent 2px 42px); }
 .curio-room::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 24px; background: #30223c; box-shadow: inset 0 7px #806a55; }
@@ -692,6 +698,9 @@
   .curio-display { min-height: 148px; padding: 12px; gap: 10px; }
   .curio-display-art { flex-basis: 82px; min-height: 100px; }
   .curio-display-art .curio-glyph { transform: scale(.9); }
+  .curio-display-art .curio-glyph-image-pip-pocket-watch { transform: scale(.88); }
+  .curio-display-art .curio-glyph-image-pip-rice-bowl { transform: scale(.86); }
+  .curio-display-art .curio-glyph-image-pip-satchel-tag { transform: scale(.8); }
   .restaurant-window { top: 87px; width: 92px; height: 96px; }
   .restaurant-window-left { left: 3%; }
   .restaurant-window-right { right: 3%; }
