@@ -134,6 +134,8 @@ const RACE_BACKGROUND_BASE = `${import.meta.env.BASE_URL}race-backgrounds`;
 const PIP_ANIMATION_SPRITE_SHEET_SRC = `${import.meta.env.BASE_URL}video/pip-making-food-sprite-sheet.png`;
 
 const PIP_POCKET_WATCH_SRC = `${import.meta.env.BASE_URL}pip-pocket-watch.png`;
+const PIP_RICE_BOWL_SRC = `${import.meta.env.BASE_URL}pip-rice-bowl.png`;
+const PIP_SATCHEL_TAG_SRC = `${import.meta.env.BASE_URL}pip-satchel-tag.png`;
 const RESTAURANT_BACKDROP_SRC = `${import.meta.env.BASE_URL}restaurant-background-attached.png`;
 const SUSHI_PLATE_WARM_SRC = `${import.meta.env.BASE_URL}sushi-plate-warm.png`;
 const SUSHI_PLATE_COOL_SRC = `${import.meta.env.BASE_URL}sushi-plate-cool.png`;
@@ -2346,7 +2348,3 @@ function App() {
 }
 
 export default App;
-
-const PIP_SATCHEL_TAG_SRC = `${import.meta.env.BASE_URL}pip-satchel-tag.png`;
-
-const PIP_RICE_BOWL_SRC = `${import.meta.env.BASE_URL}pip-rice-bowl.png`;
