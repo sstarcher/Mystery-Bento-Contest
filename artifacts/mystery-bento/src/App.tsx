@@ -1884,16 +1884,14 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
                 return (
                   <div className="race-runner-lane" key={persona.id}>
                     <div
-                      className={`race-runner race-runner-reaction-${runnerReaction} ${isWinner ? 'is-winner' : ''} ${finishCrossingActive ? 'is-finish-crossing' : ''}`}
+                      className={`race-runner ${finishCrossingActive ? 'is-finish-crossing' : ''}`}
                       style={{
                         '--race-intro-anchor': formatRunnerAnchor(stageRunnerAnchors.intro[index]),
                         '--race-warmup-anchor': formatRunnerAnchor(stageRunnerAnchors.warmup[index]),
                         '--race-matchup-anchor': formatRunnerAnchor(stageRunnerAnchors.matchup[index]),
                         '--race-finale-anchor': formatRunnerAnchor(stageRunnerAnchors.finale[index]),
-                        '--race-winner-anchor': formatRunnerAnchor(currentRunnerAnchors[index]),
                         '--race-runner-anchor': runnerScreenAnchor,
                         '--race-finish-crossing-duration': `${finishCrossingDuration}ms`,
-                        '--race-runner-tempo': `${Math.max(0.72, 1.28 - persona.traits.speed * 0.0032 + persona.traits.balance * 0.001).toFixed(2)}s`,
                       } as CSSProperties}
                     >
                       <span className="race-runner-sprite">
