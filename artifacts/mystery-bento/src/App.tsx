@@ -150,6 +150,7 @@ const MISO_ANIMATION_SPRITE_SHEET_SRC = `${import.meta.env.BASE_URL}video/miso-m
 const PANKO_ANIMATION_SPRITE_SHEET_SRC = `${import.meta.env.BASE_URL}video/panko-puff-cooking-sprite-sheet.png`;
 const BIBI_ANIMATION_SPRITE_SHEET_SRC = `${import.meta.env.BASE_URL}video/bibi-bento-cooking-sprite-sheet.png`;
 const MIN_ANNOUNCER_GAP_MS = 520;
+const NAME_ANNOUNCER_GAP_MS = 80;
 /**
  * The course report and hazard strip are implemented spectator details.
  * Keep their data, narration, and styling available, but leave the lower race
@@ -519,7 +520,7 @@ function buildAnnouncerSequence(contestants: Persona[], race: RaceSimulation, pr
       deadlineOffset: contestDurations.intro,
       // Names are individual clips, so a shorter handoff keeps the roster
       // sounding like one introduction instead of a series of pauses.
-      gapAfterMs: 180,
+      gapAfterMs: NAME_ANNOUNCER_GAP_MS,
       clips: [
         announcerClip('character-intros', 'contestants-are', 'Tonight’s contestants are'),
         ...contestants.map((persona) => announcerClip('character-names', persona.id, persona.name)),
@@ -1371,11 +1372,11 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
   const announcementTimeline = useMemo(() => {
     const introBeat = announcerSequence.find((beat) => beat.id === 'intro-opening');
     const nameClips = introBeat?.clips.slice(1, contestants.length + 1) ?? [];
-    let offset = (introBeat?.clips[0]?.durationMs ?? 0) + (introBeat?.gapAfterMs ?? 180);
+    let offset = (introBeat?.clips[0]?.durationMs ?? 0) + (introBeat?.gapAfterMs ?? NAME_ANNOUNCER_GAP_MS);
     return contestants.map((persona, index) => {
       const clip = nameClips[index];
       const reveal = { persona, offset };
-      offset += (clip?.durationMs ?? 900) + (introBeat?.gapAfterMs ?? 180);
+      offset += (clip?.durationMs ?? 900) + (introBeat?.gapAfterMs ?? NAME_ANNOUNCER_GAP_MS);
       return reveal;
     });
   }, [announcerSequence, contestants]);
@@ -1426,13 +1427,26 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
     }, 0);
 
     announcementTimeline.forEach(({ persona, offset }, index) => {
-      schedule(() => {
+      const revealContestant = () => {
+        const priorAudio = announcerAudio.current;
+        const pending = pendingAudio.current;
+        const priorClipIsStillPlaying = voiceEnabled
+          && priorAudio
+          && !priorAudio.paused
+          && !priorAudio.ended
+          && pending?.beat.id === 'intro-opening'
+          && pending.clipIndex === index;
+        if (priorClipIsStillPlaying) {
+          schedule(revealContestant, 40);
+          return;
+        }
         setAnnouncedContestantCount(index + 1);
         setAnnouncementCardsVisible(true);
         setAnnouncementStatus(`${persona.name} is taking a place beneath the lanterns.`);
         setSpokenBeatLabel(persona.name);
         announcerBeatCallback.current(persona.name);
-      }, startedAt + offset - Date.now());
+      };
+      schedule(revealContestant, startedAt + offset - Date.now());
     });
 
     const finalReveal = announcementTimeline[announcementTimeline.length - 1];
@@ -1443,7 +1457,7 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
         setAnnouncementPhaseComplete(true);
         setAnnouncementStatus('The roster is set. The race begins beneath the lanterns.');
         setSpokenBeatLabel('The roster is set');
-      }, startedAt + finalReveal.offset + (finalClip?.durationMs ?? 900) + 520 - Date.now());
+      }, startedAt + finalReveal.offset + (finalClip?.durationMs ?? 900) + NAME_ANNOUNCER_GAP_MS - Date.now());
     }
 
     return () => timers.forEach((timer) => window.clearTimeout(timer));
