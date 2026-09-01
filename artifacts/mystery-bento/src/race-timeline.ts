@@ -26,6 +26,9 @@ export const RACE_WARMUP_WORLD_END_PERCENT = 20;
 export const RACE_MATCHUP_WORLD_END_PERCENT = 40;
 export const RACE_FINALE_WORLD_START_PERCENT = RACE_MATCHUP_WORLD_END_PERCENT;
 export const RACE_FINALE_WORLD_END_PERCENT = 83.333;
+export const RACE_RUNNER_SCREEN_MIN_PERCENT = 12;
+export const RACE_RUNNER_SCREEN_MAX_PERCENT = 88;
+export const RACE_RUNNER_MAX_SPREAD_PERCENT = 64;
 
 export const RACE_STAGE_OBSTACLE_INDICES: Record<Exclude<RaceTimelineStage, 'intro' | 'winner'>, number[]> = {
   warmup: [0],
@@ -63,6 +66,30 @@ export function getRaceWorldTravelPercentAtTime(stage: RaceTimelineStage, elapse
 
 export function getRaceWorldScreenAnchor(position: number, worldTravelPercent: number) {
   return `${(position * RACE_WORLD_TRACK_WIDTH_MULTIPLIER - worldTravelPercent * RACE_WORLD_TRACK_WIDTH_MULTIPLIER).toFixed(3)}%`;
+}
+
+export function getRaceRunnerScreenAnchors(positions: number[], worldTravelPercent: number) {
+  if (!positions.length) return [];
+
+  const rawAnchors = positions.map((position) => (
+    position * RACE_WORLD_TRACK_WIDTH_MULTIPLIER - worldTravelPercent * RACE_WORLD_TRACK_WIDTH_MULTIPLIER
+  ));
+  const rawMin = Math.min(...rawAnchors);
+  const rawMax = Math.max(...rawAnchors);
+  const rawSpread = rawMax - rawMin;
+  const maxSpread = Math.min(
+    RACE_RUNNER_MAX_SPREAD_PERCENT,
+    RACE_RUNNER_SCREEN_MAX_PERCENT - RACE_RUNNER_SCREEN_MIN_PERCENT,
+  );
+  const scale = rawSpread > maxSpread ? maxSpread / rawSpread : 1;
+  const projectedSpread = rawSpread * scale;
+  const rawCenter = (rawMin + rawMax) / 2;
+  const projectedCenter = Math.max(
+    RACE_RUNNER_SCREEN_MIN_PERCENT + projectedSpread / 2,
+    Math.min(RACE_RUNNER_SCREEN_MAX_PERCENT - projectedSpread / 2, rawCenter),
+  );
+
+  return rawAnchors.map((anchor) => projectedCenter + (anchor - rawCenter) * scale);
 }
 
 function getRaceStageStartPosition(stage: RaceTimelineStage, lane: RaceTimelineLane) {

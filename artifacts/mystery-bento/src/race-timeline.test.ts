@@ -3,11 +3,15 @@ import {
   getFirstRunnerObstacleHitOffset,
   getRaceFinishCrossingOffset,
   getRaceLaneProgressAtTime,
+  getRaceRunnerScreenAnchors,
   getRaceStageObstacleMilestones,
   getRaceWorldScreenAnchor,
   getRaceWorldTravelPercentAtTime,
   RACE_FINALE_WORLD_END_PERCENT,
   RACE_MATCHUP_WORLD_END_PERCENT,
+  RACE_RUNNER_MAX_SPREAD_PERCENT,
+  RACE_RUNNER_SCREEN_MAX_PERCENT,
+  RACE_RUNNER_SCREEN_MIN_PERCENT,
   RACE_WORLD_TRACK_WIDTH_MULTIPLIER,
   RACE_STAGE_DURATIONS,
   RACE_WARMUP_WORLD_END_PERCENT,
@@ -108,6 +112,27 @@ assert.equal(
   getRaceWorldScreenAnchor(50, 40),
   `${(50 - 40) * RACE_WORLD_TRACK_WIDTH_MULTIPLIER}.000%`,
   'full-width race projection should use the six-panel world track',
+);
+
+const parseAnchors = (anchors: number[]) => anchors.map((anchor) => Number(anchor.toFixed(3)));
+const boundedAnchors = parseAnchors(getRaceRunnerScreenAnchors([8, 60, 100], 0));
+assert.ok(
+  boundedAnchors.every((anchor) => anchor >= RACE_RUNNER_SCREEN_MIN_PERCENT && anchor <= RACE_RUNNER_SCREEN_MAX_PERCENT),
+  'oversized runners should stay within the visible race viewport',
+);
+assert.ok(
+  Math.max(...boundedAnchors) - Math.min(...boundedAnchors) <= RACE_RUNNER_MAX_SPREAD_PERCENT,
+  'runner projection should cap the visible pack spread',
+);
+assert.deepEqual(
+  parseAnchors(getRaceRunnerScreenAnchors([50, 54, 58], 40)),
+  [40, 64, 88],
+  'a close pack should retain its relative spacing while remaining visible',
+);
+assert.deepEqual(
+  parseAnchors(getRaceRunnerScreenAnchors([8, 60, 100], 0)),
+  [24, 60.174, 88],
+  'a widely spread pack should be compressed around the viewport center',
 );
 
 assert.equal(getFirstRunnerObstacleHitOffset('warmup', obstacles[0], lineups[0], obstacles, true), 0);

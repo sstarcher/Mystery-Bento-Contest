@@ -13,7 +13,7 @@ import {
   getFirstRunnerObstacleHitOffset as getTimelineFirstRunnerObstacleHitOffset,
   getRaceFinishCrossingOffset,
   getRaceLaneProgressAtTime as getTimelineLaneProgressAtTime,
-  getRaceWorldScreenAnchor,
+  getRaceRunnerScreenAnchors,
   getRaceWorldTravelPercentAtTime,
   RACE_FINALE_WORLD_END_PERCENT,
   RACE_FINALE_WORLD_START_PERCENT,
@@ -1522,6 +1522,18 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
     raceClockMs - contestStepOffsets[step],
     prefersReducedMotion,
   );
+  const raceLanes = contestants.map((_, index) => race.lanes.find((lane) => lane.personaId === contestants[index]?.id) ?? race.lanes[index]);
+  const stageRunnerAnchors = {
+    intro: getRaceRunnerScreenAnchors(raceLanes.map((lane) => lane?.positions.intro ?? 5), 0),
+    warmup: getRaceRunnerScreenAnchors(raceLanes.map((lane) => lane?.positions.warmup ?? 28), RACE_WARMUP_WORLD_END_PERCENT),
+    matchup: getRaceRunnerScreenAnchors(raceLanes.map((lane) => lane?.positions.matchup ?? 52), RACE_MATCHUP_WORLD_END_PERCENT),
+    finale: getRaceRunnerScreenAnchors(raceLanes.map((lane) => lane?.positions.finale ?? 78), RACE_FINALE_WORLD_END_PERCENT),
+  };
+  const currentRunnerAnchors = getRaceRunnerScreenAnchors(
+    raceLanes.map((lane) => getLaneProgress(lane)),
+    worldTravelPercent,
+  );
+  const formatRunnerAnchor = (anchor: number | undefined) => `${(anchor ?? 50).toFixed(3)}%`;
   const getReachedObstacleIndex = (lane: RaceLaneSimulation | undefined) => {
     if (!lane || step === 'intro') return -1;
     const progress = getLaneProgress(lane);
@@ -1854,7 +1866,7 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
             </div>
             <div className="race-runner-overlay">
               {contestants.map((persona, index) => {
-                const lane = race.lanes.find((candidate) => candidate.personaId === persona.id) ?? race.lanes[index];
+                const lane = raceLanes[index];
                 const laneProgress = getLaneProgress(lane);
                 const laneCurrentObstacleIndex = getCurrentLaneObstacleIndex(lane);
                 const laneCurrentObstacle = laneCurrentObstacleIndex >= 0 ? race.obstacles[laneCurrentObstacleIndex] : null;
@@ -1868,17 +1880,17 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
                  );
                  const runnerScreenAnchor = isWinner && (step === 'winner' || finishCrossed)
                    ? 'var(--race-finish-anchor)'
-                   : getRaceWorldScreenAnchor(laneProgress, worldTravelPercent);
+                  : formatRunnerAnchor(currentRunnerAnchors[index]);
                 return (
                   <div className="race-runner-lane" key={persona.id}>
                     <div
                       className={`race-runner race-runner-reaction-${runnerReaction} ${isWinner ? 'is-winner' : ''} ${finishCrossingActive ? 'is-finish-crossing' : ''}`}
                       style={{
-                        '--race-intro-anchor': getRaceWorldScreenAnchor(lane?.positions.intro ?? 5, 0),
-                        '--race-warmup-anchor': getRaceWorldScreenAnchor(lane?.positions.warmup ?? 28, RACE_WARMUP_WORLD_END_PERCENT),
-                        '--race-matchup-anchor': getRaceWorldScreenAnchor(lane?.positions.matchup ?? 52, RACE_MATCHUP_WORLD_END_PERCENT),
-                        '--race-finale-anchor': getRaceWorldScreenAnchor(lane?.positions.finale ?? 78, RACE_FINALE_WORLD_END_PERCENT),
-                        '--race-winner-anchor': 'var(--race-finish-anchor)',
+                        '--race-intro-anchor': formatRunnerAnchor(stageRunnerAnchors.intro[index]),
+                        '--race-warmup-anchor': formatRunnerAnchor(stageRunnerAnchors.warmup[index]),
+                        '--race-matchup-anchor': formatRunnerAnchor(stageRunnerAnchors.matchup[index]),
+                        '--race-finale-anchor': formatRunnerAnchor(stageRunnerAnchors.finale[index]),
+                        '--race-winner-anchor': formatRunnerAnchor(currentRunnerAnchors[index]),
                         '--race-runner-anchor': runnerScreenAnchor,
                         '--race-finish-crossing-duration': `${finishCrossingDuration}ms`,
                         '--race-runner-tempo': `${Math.max(0.72, 1.28 - persona.traits.speed * 0.0032 + persona.traits.balance * 0.001).toFixed(2)}s`,

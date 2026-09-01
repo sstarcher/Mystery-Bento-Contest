@@ -22,6 +22,10 @@ import pankoIdle from './assets/contestants/movement/panko-idle.png';
 import pankoJump from './assets/contestants/movement/panko-jump.png';
 import pankoRun from './assets/contestants/movement/panko-run.png';
 import pankoWalk from './assets/contestants/movement/panko-walk.png';
+import pipIdle from './assets/contestants/movement/pip-idle.png';
+import pipJump from './assets/contestants/movement/pip-jump.png';
+import pipRun from './assets/contestants/movement/pip-run.png';
+import pipWalk from './assets/contestants/movement/pip-walk.png';
 import rolloIdle from './assets/contestants/movement/rollo-idle.png';
 import rolloJump from './assets/contestants/movement/rollo-jump.png';
 import rolloRun from './assets/contestants/movement/rollo-run.png';
@@ -111,6 +115,12 @@ export const movementSpriteSheets: Record<string, MovementSet> = {
     walk: sheet(pankoWalk, 8, 7, 49),
     run: sheet(pankoRun, 7, 7, 48),
     jump: sheet(pankoJump, 8, 5, 33),
+  },
+  pip: {
+    idle: sheet(pipIdle, 8, 7, 52),
+    walk: sheet(pipWalk, 8, 6, 48),
+    run: sheet(pipRun, 8, 7, 50),
+    jump: sheet(pipJump, 8, 4, 32),
   },
   rollo: {
     idle: sheet(rolloIdle, 8, 6, 46),
