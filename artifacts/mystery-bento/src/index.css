@@ -877,14 +877,16 @@
 }
 .race-track-label { inset: 28px 34px auto; }
 .race-course-viewport { height: 100%; border: 0; }
-.race-course-road, .race-runner-overlay { padding-top: 280px; }
-.race-lane, .race-runner-lane { height: 116px; border-bottom: 0; }
+/* Bento Dash presentation: oversized runners cluster in the lower half of the
+   fixed canvas while the authored lane order and race positions stay intact. */
+.race-course-road, .race-runner-overlay { padding-top: 380px; }
+.race-lane, .race-runner-lane { height: 88px; border-bottom: 0; }
 .race-lane::before, .race-lane::after { display: none; }
-.race-runner { top: -5px; width: 108px; height: 108px; }
-.race-runner-sprite, .race-movement-sprite { width: 108px; height: 108px; }
-.race-runner .persona-portrait { width: 98px; height: 98px; border-radius: 18px; }
+.race-runner { top: -64px; width: 216px; height: 216px; }
+.race-runner-sprite, .race-movement-sprite { width: 216px; height: 216px; }
+.race-runner .persona-portrait { width: 196px; height: 196px; border-radius: 18px; }
 .race-runner .persona-portrait-image { border-radius: 12px; }
-.race-obstacle { top: 58px; width: 140px; }
+.race-obstacle { top: 44px; width: 140px; }
 .race-obstacle b { width: 50px; height: 50px; font-size: 30px; }
 .race-obstacle small { max-width: 140px; font-size: 10px; }
 .race-event-report {
