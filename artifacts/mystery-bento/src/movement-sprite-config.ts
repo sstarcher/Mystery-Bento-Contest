@@ -38,6 +38,10 @@ import umaIdle from './assets/contestants/movement/uma-idle.png';
 import umaJump from './assets/contestants/movement/uma-jump.png';
 import umaRun from './assets/contestants/movement/uma-run.png';
 import umaWalk from './assets/contestants/movement/uma-walk.png';
+import senchaIdle from './assets/contestants/movement/sencha-idle.png';
+import senchaJump from './assets/contestants/movement/sencha-jump.png';
+import senchaRun from './assets/contestants/movement/sencha-run.png';
+import senchaWalk from './assets/contestants/movement/sencha-walk.png';
 
 export type MovementAction = 'idle' | 'walk' | 'run' | 'jump';
 
@@ -51,12 +55,17 @@ export type MovementSpriteSheet = {
 
 const MOVEMENT_FRAME_DURATION_MS = 1000 / 12;
 
-function sheet(src: string, columns: number, rows: number): MovementSpriteSheet {
+function sheet(
+  src: string,
+  columns: number,
+  rows: number,
+  frameCount = columns * rows,
+): MovementSpriteSheet {
   return {
     src,
     columns,
     rows,
-    frameCount: columns * rows,
+    frameCount,
     frameDurationMs: MOVEMENT_FRAME_DURATION_MS,
   };
 }
@@ -125,6 +134,12 @@ export const movementSpriteSheets: Record<string, MovementSet> = {
     walk: sheet(umaWalk, 8, 7),
     run: sheet(umaRun, 8, 4),
     jump: sheet(umaJump, 8, 5),
+  },
+  sencha: {
+    idle: sheet(senchaIdle, 8, 7, 50),
+    walk: sheet(senchaWalk, 8, 7, 51),
+    run: sheet(senchaRun, 8, 6, 42),
+    jump: sheet(senchaJump, 8, 4, 32),
   },
 };
 

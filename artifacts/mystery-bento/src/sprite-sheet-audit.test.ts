@@ -24,10 +24,20 @@ const spriteSheets: SpriteSheetAudit[] = [
   { file: 'uma-udon-cooking-sprite-sheet.png', columns: 8, rows: 6, occupiedFrames: 44 },
 ];
 
-const runtimeAssetPath = (file: string) => fileURLToPath(new URL(`../public/video/${file}`, import.meta.url));
+const movementSpriteSheets: SpriteSheetAudit[] = [
+  { file: 'sencha-idle.png', columns: 8, rows: 7, occupiedFrames: 50 },
+  { file: 'sencha-walk.png', columns: 8, rows: 7, occupiedFrames: 51 },
+  { file: 'sencha-run.png', columns: 8, rows: 6, occupiedFrames: 42 },
+  { file: 'sencha-jump.png', columns: 8, rows: 4, occupiedFrames: 32 },
+];
 
-for (const sheet of spriteSheets) {
-  const file = runtimeAssetPath(sheet.file);
+const runtimeAssetPath = (file: string) => fileURLToPath(new URL(`../public/video/${file}`, import.meta.url));
+const movementRuntimeAssetPath = (file: string) => fileURLToPath(new URL(`./assets/contestants/movement/${file}`, import.meta.url));
+
+for (const sheet of [...spriteSheets, ...movementSpriteSheets]) {
+  const file = movementSpriteSheets.includes(sheet)
+    ? movementRuntimeAssetPath(sheet.file)
+    : runtimeAssetPath(sheet.file);
   const width = Number(execFileSync('identify', ['-format', '%w', file], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }));
   const frameSize = width / sheet.columns;
   const alphaMeans = execFileSync(
@@ -44,6 +54,9 @@ for (const sheet of spriteSheets) {
   assert.equal(alphaMeans.length, sheet.columns * sheet.rows, `${sheet.file}: unexpected grid size`);
   assert.equal(occupiedFrames, sheet.occupiedFrames, `${sheet.file}: occupied frame count changed`);
   assert.ok(alphaMeans.slice(0, sheet.occupiedFrames).every((mean) => mean > 0.0001), `${sheet.file}: a configured frame is blank`);
+  assert.ok(alphaMeans[Math.floor(sheet.occupiedFrames / 2)] > 0.0001, `${sheet.file}: middle occupied frame is blank`);
+  assert.ok(alphaMeans[sheet.occupiedFrames - 1] > 0.0001, `${sheet.file}: last occupied frame is blank`);
+  assert.ok(alphaMeans.slice(sheet.occupiedFrames).every((mean) => mean <= 0.0001), `${sheet.file}: padded frame is not transparent`);
 }
 
-console.log(`Sprite-sheet audit passed for ${spriteSheets.length} runtime sheets.`);
+console.log(`Sprite-sheet audit passed for ${spriteSheets.length + movementSpriteSheets.length} runtime sheets.`);
