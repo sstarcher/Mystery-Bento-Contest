@@ -1262,9 +1262,22 @@ function MovementSprite({
 }) {
   const spriteSheet = getMovementSpriteSheet(persona.id, action);
   const [frameIndex, setFrameIndex] = useState(0);
+  const previousSpriteSource = useRef<string | null>(null);
+  const previousFrameCount = useRef(1);
 
   useEffect(() => {
-    setFrameIndex(0);
+    const priorSource = previousSpriteSource.current;
+    const priorFrameCount = previousFrameCount.current;
+    previousSpriteSource.current = spriteSheet?.src ?? null;
+    previousFrameCount.current = spriteSheet?.frameCount ?? 1;
+    setFrameIndex((current) => {
+      if (!spriteSheet) return 0;
+      if (!priorSource || priorSource === spriteSheet.src) return current % spriteSheet.frameCount;
+      return Math.floor((current / priorFrameCount) * spriteSheet.frameCount) % spriteSheet.frameCount;
+    });
+  }, [spriteSheet]);
+
+  useEffect(() => {
     if (!spriteSheet || prefersReducedMotion || spriteSheet.frameCount < 2) return;
     const timer = window.setInterval(() => {
       setFrameIndex((current) => (current + 1) % spriteSheet.frameCount);
@@ -1403,6 +1416,18 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
   } | null>(null);
   const announcerAudioReadyAt = useRef(0);
   const spokenBeatIds = useRef(new Set<string>());
+  useEffect(() => {
+    const movementActions: MovementAction[] = ['idle', 'walk', 'run', 'jump'];
+    contestants.forEach((persona) => {
+      movementActions.forEach((action) => {
+        const spriteSheet = getMovementSpriteSheet(persona.id, action);
+        if (!spriteSheet) return;
+        const image = new Image();
+        image.decoding = 'async';
+        image.src = spriteSheet.src;
+      });
+    });
+  }, [contestants]);
   const announcerSequence = useMemo(() => buildAnnouncerSequence(contestants, race, prefersReducedMotion), [contestants, race, prefersReducedMotion]);
   const announcerBeatCallback = useRef(onAnnouncerBeat);
   announcerBeatCallback.current = onAnnouncerBeat;
@@ -1523,15 +1548,16 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
     prefersReducedMotion,
   );
   const raceLanes = contestants.map((_, index) => race.lanes.find((lane) => lane.personaId === contestants[index]?.id) ?? race.lanes[index]);
+  const introRunnerPositions = raceLanes.map((lane) => lane?.positions.intro ?? 5);
   const stageRunnerAnchors = {
-    intro: getRaceRunnerScreenAnchors(raceLanes.map((lane) => lane?.positions.intro ?? 5), 0),
-    warmup: getRaceRunnerScreenAnchors(raceLanes.map((lane) => lane?.positions.warmup ?? 28), RACE_WARMUP_WORLD_END_PERCENT),
-    matchup: getRaceRunnerScreenAnchors(raceLanes.map((lane) => lane?.positions.matchup ?? 52), RACE_MATCHUP_WORLD_END_PERCENT),
-    finale: getRaceRunnerScreenAnchors(raceLanes.map((lane) => lane?.positions.finale ?? 78), RACE_FINALE_WORLD_END_PERCENT),
+    intro: getRaceRunnerScreenAnchors(introRunnerPositions, introRunnerPositions),
+    warmup: getRaceRunnerScreenAnchors(raceLanes.map((lane) => lane?.positions.warmup ?? 28), introRunnerPositions),
+    matchup: getRaceRunnerScreenAnchors(raceLanes.map((lane) => lane?.positions.matchup ?? 52), introRunnerPositions),
+    finale: getRaceRunnerScreenAnchors(raceLanes.map((lane) => lane?.positions.finale ?? 78), introRunnerPositions),
   };
   const currentRunnerAnchors = getRaceRunnerScreenAnchors(
     raceLanes.map((lane) => getLaneProgress(lane)),
-    worldTravelPercent,
+    introRunnerPositions,
   );
   const formatRunnerAnchor = (anchor: number | undefined) => `${(anchor ?? 50).toFixed(3)}%`;
   const getReachedObstacleIndex = (lane: RaceLaneSimulation | undefined) => {

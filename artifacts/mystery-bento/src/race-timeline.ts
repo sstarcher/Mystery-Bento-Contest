@@ -29,6 +29,8 @@ export const RACE_FINALE_WORLD_END_PERCENT = 83.333;
 export const RACE_RUNNER_SCREEN_MIN_PERCENT = 12;
 export const RACE_RUNNER_SCREEN_MAX_PERCENT = 88;
 export const RACE_RUNNER_MAX_SPREAD_PERCENT = 64;
+export const RACE_RUNNER_VISUAL_START_PERCENT = 14;
+export const RACE_RUNNER_VISUAL_MAX_DISTANCE = 90;
 
 export const RACE_STAGE_OBSTACLE_INDICES: Record<Exclude<RaceTimelineStage, 'intro' | 'winner'>, number[]> = {
   warmup: [0],
@@ -68,28 +70,25 @@ export function getRaceWorldScreenAnchor(position: number, worldTravelPercent: n
   return `${(position * RACE_WORLD_TRACK_WIDTH_MULTIPLIER - worldTravelPercent * RACE_WORLD_TRACK_WIDTH_MULTIPLIER).toFixed(3)}%`;
 }
 
-export function getRaceRunnerScreenAnchors(positions: number[], worldTravelPercent: number) {
+export function getRaceRunnerScreenAnchors(positions: number[], startPositions: number[] = []) {
   if (!positions.length) return [];
 
-  const rawAnchors = positions.map((position) => (
-    position * RACE_WORLD_TRACK_WIDTH_MULTIPLIER - worldTravelPercent * RACE_WORLD_TRACK_WIDTH_MULTIPLIER
-  ));
-  const rawMin = Math.min(...rawAnchors);
-  const rawMax = Math.max(...rawAnchors);
-  const rawSpread = rawMax - rawMin;
-  const maxSpread = Math.min(
-    RACE_RUNNER_MAX_SPREAD_PERCENT,
-    RACE_RUNNER_SCREEN_MAX_PERCENT - RACE_RUNNER_SCREEN_MIN_PERCENT,
-  );
-  const scale = rawSpread > maxSpread ? maxSpread / rawSpread : 1;
-  const projectedSpread = rawSpread * scale;
-  const rawCenter = (rawMin + rawMax) / 2;
-  const projectedCenter = Math.max(
-    RACE_RUNNER_SCREEN_MIN_PERCENT + projectedSpread / 2,
-    Math.min(RACE_RUNNER_SCREEN_MAX_PERCENT - projectedSpread / 2, rawCenter),
-  );
-
-  return rawAnchors.map((anchor) => projectedCenter + (anchor - rawCenter) * scale);
+  // The camera can move backward relative to a runner's world position. Do
+  // not project that camera coordinate onto the racers: it makes the whole
+  // pack re-center and can make individual runners visibly reverse direction.
+  // Instead, map each runner's distance from their shared start onto one fixed
+  // visual track. This keeps the presentation monotonic while the simulation
+  // remains free to use its authored world positions.
+  const visualTravel = RACE_RUNNER_MAX_SPREAD_PERCENT;
+  return positions.map((position, index) => {
+    const startPosition = startPositions[index] ?? 0;
+    const distance = Math.max(0, Math.min(
+      RACE_RUNNER_VISUAL_MAX_DISTANCE,
+      position - startPosition,
+    ));
+    return RACE_RUNNER_VISUAL_START_PERCENT
+      + (distance / RACE_RUNNER_VISUAL_MAX_DISTANCE) * visualTravel;
+  });
 }
 
 function getRaceStageStartPosition(stage: RaceTimelineStage, lane: RaceTimelineLane) {

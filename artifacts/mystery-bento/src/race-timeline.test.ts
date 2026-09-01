@@ -12,6 +12,8 @@ import {
   RACE_RUNNER_MAX_SPREAD_PERCENT,
   RACE_RUNNER_SCREEN_MAX_PERCENT,
   RACE_RUNNER_SCREEN_MIN_PERCENT,
+  RACE_RUNNER_VISUAL_START_PERCENT,
+  RACE_RUNNER_VISUAL_MAX_DISTANCE,
   RACE_WORLD_TRACK_WIDTH_MULTIPLIER,
   RACE_STAGE_DURATIONS,
   RACE_WARMUP_WORLD_END_PERCENT,
@@ -115,7 +117,8 @@ assert.equal(
 );
 
 const parseAnchors = (anchors: number[]) => anchors.map((anchor) => Number(anchor.toFixed(3)));
-const boundedAnchors = parseAnchors(getRaceRunnerScreenAnchors([8, 60, 100], 0));
+const sharedStart = [8, 10, 7, 12];
+const boundedAnchors = parseAnchors(getRaceRunnerScreenAnchors([8, 60, 100, 95], sharedStart));
 assert.ok(
   boundedAnchors.every((anchor) => anchor >= RACE_RUNNER_SCREEN_MIN_PERCENT && anchor <= RACE_RUNNER_SCREEN_MAX_PERCENT),
   'oversized runners should stay within the visible race viewport',
@@ -125,14 +128,26 @@ assert.ok(
   'runner projection should cap the visible pack spread',
 );
 assert.deepEqual(
-  parseAnchors(getRaceRunnerScreenAnchors([50, 54, 58], 40)),
-  [40, 64, 88],
-  'a close pack should retain its relative spacing while remaining visible',
+  parseAnchors(getRaceRunnerScreenAnchors(sharedStart, sharedStart)),
+  [RACE_RUNNER_VISUAL_START_PERCENT, RACE_RUNNER_VISUAL_START_PERCENT, RACE_RUNNER_VISUAL_START_PERCENT, RACE_RUNNER_VISUAL_START_PERCENT],
+  'all contestants should share one visual starting position',
 );
 assert.deepEqual(
-  parseAnchors(getRaceRunnerScreenAnchors([8, 60, 100], 0)),
-  [24, 60.174, 88],
-  'a widely spread pack should be compressed around the viewport center',
+  parseAnchors(getRaceRunnerScreenAnchors(
+    sharedStart.map((position) => position + RACE_RUNNER_VISUAL_MAX_DISTANCE),
+    sharedStart,
+  )),
+  [RACE_RUNNER_VISUAL_START_PERCENT + RACE_RUNNER_MAX_SPREAD_PERCENT,
+    RACE_RUNNER_VISUAL_START_PERCENT + RACE_RUNNER_MAX_SPREAD_PERCENT,
+    RACE_RUNNER_VISUAL_START_PERCENT + RACE_RUNNER_MAX_SPREAD_PERCENT,
+    RACE_RUNNER_VISUAL_START_PERCENT + RACE_RUNNER_MAX_SPREAD_PERCENT],
+  'visual travel should stop at a bounded forward finish position',
+);
+const beforeAdvance = getRaceRunnerScreenAnchors([24, 27, 22, 30], sharedStart);
+const afterAdvance = getRaceRunnerScreenAnchors([31, 35, 29, 38], sharedStart);
+assert.ok(
+  afterAdvance.every((anchor, index) => anchor >= beforeAdvance[index]),
+  'visual runner anchors should never reverse as race progress advances',
 );
 
 assert.equal(getFirstRunnerObstacleHitOffset('warmup', obstacles[0], lineups[0], obstacles, true), 0);
