@@ -1254,8 +1254,12 @@ function MovementSprite({
 
   if (!spriteSheet) return <PersonaPortrait persona={persona} />;
 
-  const column = frameIndex % spriteSheet.columns;
-  const row = Math.floor(frameIndex / spriteSheet.columns);
+  // Action changes reuse this component, so the previous action may have a
+  // frame index beyond the new sheet's occupied range for one render. Normalize
+  // it before painting to prevent a transient blank cell on any racer.
+  const visibleFrameIndex = frameIndex % spriteSheet.frameCount;
+  const column = visibleFrameIndex % spriteSheet.columns;
+  const row = Math.floor(visibleFrameIndex / spriteSheet.columns);
   const backgroundPosition = `${spriteSheet.columns > 1 ? (column / (spriteSheet.columns - 1)) * 100 : 0}% ${spriteSheet.rows > 1 ? (row / (spriteSheet.rows - 1)) * 100 : 0}%`;
 
   return (
@@ -1264,7 +1268,7 @@ function MovementSprite({
       role="img"
       aria-label={`${persona.name} ${action} movement`}
       data-movement-action={action}
-      data-movement-frame={frameIndex}
+        data-movement-frame={visibleFrameIndex}
       data-movement-grid={`${spriteSheet.columns}x${spriteSheet.rows}`}
     >
       <span
