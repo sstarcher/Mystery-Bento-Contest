@@ -549,20 +549,20 @@ function getRaceRunnerReaction(obstacleKind: RaceObstacleKind, result: RaceEncou
 function buildAnnouncerSequence(contestants: Persona[], race: RaceSimulation, prefersReducedMotion = false): AnnouncerBeat[] {
   const raceStart = announcerClip('race-starts', 'race-start-quiet-kitchen', 'The race is underway');
   const rosterOpening = announcerClip('character-intros', 'contestants-are', 'Tonight’s contestants are');
+  const nameClips = contestants.map((persona) => announcerClip('character-names', persona.id, persona.name));
+  const rosterEndOffset = rosterOpening.durationMs
+    + NAME_ANNOUNCER_GAP_MS
+    + nameClips.reduce(
+      (total, clip, index) => total + clip.durationMs
+        + (index === nameClips.length - 1 ? LAST_CONTESTANT_PAUSE_MS : NAME_ANNOUNCER_GAP_MS),
+      0,
+    );
   const beats: AnnouncerBeat[] = [
-    {
-      id: 'race-start',
-      step: 'intro',
-      label: raceStart.label,
-      offset: 0,
-      deadlineOffset: contestDurations.intro,
-      clips: [raceStart],
-    },
     {
       id: 'intro-opening',
       step: 'intro',
       label: 'Tonight’s contestants are',
-      offset: raceStart.durationMs + MIN_ANNOUNCER_GAP_MS,
+      offset: 0,
       deadlineOffset: contestDurations.intro,
       // Names are individual clips, so a shorter handoff keeps the roster
       // sounding like one introduction instead of a series of pauses.
@@ -571,14 +571,22 @@ function buildAnnouncerSequence(contestants: Persona[], race: RaceSimulation, pr
       // race-start call begins.
       clipGapsAfterMs: [
         NAME_ANNOUNCER_GAP_MS,
-        ...contestants.map((_, index) => index === contestants.length - 1
+        ...nameClips.map((_, index) => index === nameClips.length - 1
           ? LAST_CONTESTANT_PAUSE_MS
           : NAME_ANNOUNCER_GAP_MS),
       ],
       clips: [
         rosterOpening,
-        ...contestants.map((persona) => announcerClip('character-names', persona.id, persona.name)),
+        ...nameClips,
       ],
+    },
+    {
+      id: 'race-start',
+      step: 'intro',
+      label: raceStart.label,
+      offset: rosterEndOffset,
+      deadlineOffset: contestDurations.intro,
+      clips: [raceStart],
     },
   ];
   let cleanLineAnnounced = false;
