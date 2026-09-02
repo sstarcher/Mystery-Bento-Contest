@@ -310,13 +310,15 @@
 .curio-info-kind, .curio-info-earned { position: relative; z-index: 1; color: #a34d43; font-size: 8px; text-transform: uppercase; letter-spacing: .1em; }
 .curio-info-description { position: relative; z-index: 1; color: #765752; font-family: var(--font-sans); font-size: 11px; line-height: 1.35; }
 .curio-hotspot:hover .curio-info-card, .curio-hotspot:focus .curio-info-card, .curio-hotspot:focus-visible .curio-info-card { visibility: visible; opacity: 1; transform: translate(-50%, 0); }
+.curio-art-box { width: 96px; height: 96px; display: grid; place-items: center; overflow: visible; }
+.curio-art-normalized { width: 96px; height: 96px; display: grid; place-items: center; transform: scale(var(--curio-art-scale, 1)); transform-origin: center; }
 .displayed-curio { position: absolute; display: grid; place-items: center; width: 86px; height: 80px; color: rgba(248,231,198,.9); isolation: isolate; }
-.displayed-curio .curio-glyph { transform: scale(1.08); margin: -2px 0; }
+.displayed-curio .curio-art-box { transform: scale(1.08); }
 .displayed-curio .curio-glyph-shine { display: none; }
 .displayed-curio .curio-place-label { display: none; }
 .restaurant-curio-shelf-grid { position: absolute; top: 177px; left: 60.5%; right: 4.5%; display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); grid-template-rows: repeat(2, minmax(0, 1fr)); height: 230px; align-items: center; justify-items: center; transform: translateX(10px); pointer-events: none; }
 .restaurant-curio-shelf-grid .displayed-curio { position: relative; inset: auto; width: 78px; height: 82px; transform: translate(-42px, 15px) scale(.7); transform-origin: center center; }
-.displayed-curio-hanging-tools .curio-glyph { transform: scale(1.2) rotate(5deg); }
+.displayed-curio-hanging-tools .curio-art-box { transform: scale(1.2) rotate(5deg); }
 .displayed-curio-hanging-tools .curio-info-card { top: calc(100% + 13px); bottom: auto; transform: translate(-50%, -8px); }
 .displayed-curio-hanging-tools .curio-info-card::after { top: -9px; bottom: auto; transform: translateX(-50%) rotate(225deg); }
 .displayed-curio-hanging-tools:hover .curio-info-card, .displayed-curio-hanging-tools:focus .curio-info-card, .displayed-curio-hanging-tools:focus-visible .curio-info-card { transform: translate(-50%, 0); }
@@ -598,20 +600,8 @@
 .curio-glyph-kettle::after { width: 27px; height: 15px; top: 23px; right: 7px; background: #b86f4b; border: 3px solid #30223c; border-left: 0; clip-path: polygon(0 35%, 68% 0, 100% 50%, 68% 100%, 0 65%); transform: rotate(-8deg); }
 .curio-glyph-kettle .curio-glyph-detail { width: 18px; height: 14px; top: 7px; left: 29px; border: 3px solid #30223c; border-bottom: 0; border-radius: 12px 12px 0 0; z-index: 2; box-shadow: -15px -8px 0 -5px #f3dfb4, -15px -8px 0 -2px #30223c; }
 .curio-glyph-shine { width: 7px; height: 4px; background: rgba(255,248,223,.72); transform: rotate(-25deg); z-index: 3; right: 18px; top: 15px; }
-.curio-glyph-image { overflow: visible; }
+.curio-glyph-image { width: 94px; height: 94px; overflow: visible; }
 .curio-glyph-image img { display: block; width: 100%; height: 100%; object-fit: contain; image-rendering: pixelated; image-rendering: crisp-edges; user-select: none; }
-.curio-glyph-image-pip-pocket-watch { width: 79.2px; height: 79.2px; }
-.curio-glyph-image-pip-rice-bowl { width: 90px; height: 73.8px; }
-.curio-glyph-image-pip-satchel-tag { width: 75.6px; height: 86.4px; }
-.curio-glyph-image-tilda-toolbox, .curio-glyph-image-tilda-wrench-set, .curio-glyph-image-tilda-safety-module { width: 94px; height: 94px; }
-.curio-glyph-image-sencha-leaf-bookmark, .curio-glyph-image-sencha-night-teapot, .curio-glyph-image-sencha-tea-ledger { width: 94px; height: 94px; }
-.curio-glyph-image-toro-captains-cap, .curio-glyph-image-toro-pocket-compass, .curio-glyph-image-toro-grill-spatula { width: 94px; height: 94px; }
-.curio-glyph-image-nori-plum-notebook, .curio-glyph-image-nori-brush-pen, .curio-glyph-image-nori-scarf-pin { width: 94px; height: 94px; }
-.curio-glyph-image-miso-soup-bowl, .curio-glyph-image-miso-walnut-ladle, .curio-glyph-image-miso-broth-jar { width: 94px; height: 94px; }
-.curio-glyph-image-uma-noodle-ribbon, .curio-glyph-image-uma-flour-sack, .curio-glyph-image-uma-rolling-pin { width: 94px; height: 94px; }
-.curio-glyph-image-panko-magnifying-glass, .curio-glyph-image-panko-detective-beret, .curio-glyph-image-panko-clue-notebook { width: 94px; height: 94px; }
-.curio-glyph-image-kiku-aged-copper-kettle, .curio-glyph-image-kiku-jade-brass-gear, .curio-glyph-image-kiku-sage-blueprint { width: 94px; height: 94px; }
-.curio-glyph-image-bibi-stacked-bento, .curio-glyph-image-bibi-food-tweezers, .curio-glyph-image-bibi-cloth-wrap { width: 94px; height: 94px; }
 .curio-room { position: relative; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 22px; min-height: 430px; padding: 32px 24px 28px; background: linear-gradient(180deg, #e9d09d, #f5e8c9 56%, #d8bd87); border: 3px solid #30223c; box-shadow: inset 0 0 0 8px rgba(255,255,255,.18), 6px 6px 0 rgba(48,34,60,.16); overflow: hidden; }
 .curio-room::before { content: ''; position: absolute; inset: 0; pointer-events: none; opacity: .42; background: repeating-linear-gradient(90deg, rgba(163,77,67,.12) 0 2px, transparent 2px 50px), repeating-linear-gradient(0deg, rgba(48,34,60,.08) 0 2px, transparent 2px 42px); }
 .curio-room::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 24px; background: #30223c; box-shadow: inset 0 7px #806a55; }
@@ -619,7 +609,7 @@
 .curio-display:nth-child(odd) { transform: rotate(-1deg); }
 .curio-display:nth-child(even) { transform: rotate(1deg); }
 .curio-display-art { flex: 0 0 102px; display: grid; place-items: center; min-height: 122px; background: rgba(216,189,135,.35); border: 2px solid #c6a86c; }
-.curio-display-art .curio-glyph { transform: scale(1.08); }
+.curio-display-art .curio-art-box { transform: scale(1.08); }
 .curio-display-label { min-width: 0; }
 .persona-tile { background: #f4dfb8; color: #30223c; border: 2px solid #15101b; box-shadow: 4px 4px 0 #15101b; }
 .persona-portrait { width: 104px; height: 104px; position: relative; margin: 0 auto 13px; border: 3px solid #30223c; border-radius: 18px; background: var(--persona-color); box-shadow: 4px 4px 0 rgba(48,34,60,.28); isolation: isolate; }
@@ -681,15 +671,12 @@
   .curio-wall-lamp { top: 76px; transform: scale(.8); }
   .curio-backshelf { left: 4%; right: 4%; padding-left: 3%; padding-right: 3%; }
   .backsplash-curio { min-width: 56px; max-width: 76px; font-size: 6px; }
-  .backsplash-curio .curio-glyph { transform: scale(.72); margin: -10px 0; }
+  .backsplash-curio .curio-art-box { transform: scale(.72); margin: -10px 0; }
   .curio-empty-shelf { width: 240px; text-align: center; font-size: 8px; }
   .curio-room { grid-template-columns: 1fr; min-height: 0; padding: 20px 14px 36px; gap: 15px; }
   .curio-display { min-height: 148px; padding: 12px; gap: 10px; }
   .curio-display-art { flex-basis: 82px; min-height: 100px; }
-  .curio-display-art .curio-glyph { transform: scale(.9); }
-  .curio-display-art .curio-glyph-image-pip-pocket-watch { transform: scale(.88); }
-  .curio-display-art .curio-glyph-image-pip-rice-bowl { transform: scale(.86); }
-  .curio-display-art .curio-glyph-image-pip-satchel-tag { transform: scale(.8); }
+  .curio-display-art .curio-art-box { transform: scale(.9); }
   .restaurant-window { top: 87px; width: 92px; height: 96px; }
   .restaurant-window-left { left: 3%; }
   .restaurant-window-right { right: 3%; }
@@ -719,11 +706,11 @@
   .compact-meter h2 { font-size: 9px; }
   .compact-meter > div:last-child span:first-child { max-width: 98px; }
   .displayed-curio { width: 54px; height: 58px; }
-  .displayed-curio .curio-glyph { transform: scale(.76); margin: -3px 0; }
+  .displayed-curio .curio-art-box { transform: scale(.76); margin: -3px 0; }
   .displayed-curio .curio-award-marker { top: 3px; right: 1px; }
   .restaurant-curio-shelf-grid { top: 119px; left: 75%; right: auto; width: 150%; height: 196px; }
   .restaurant-curio-shelf-grid .displayed-curio { width: 50px; height: 54px; }
-  .restaurant-curio-shelf-grid .curio-glyph { transform: scale(.76); margin: -3px 0; }
+  .restaurant-curio-shelf-grid .curio-art-box { transform: scale(.76); margin: -3px 0; }
   .background-shelf { width: 118px; height: 70px; gap: 3px; padding: 19px 6px 8px; border-width: 2px; }
   .background-shelf::before { top: 5px; left: 7px; right: 7px; }
   .background-shelf::after { right: -5px; bottom: -7px; left: -5px; height: 6px; border-width: 2px; }
