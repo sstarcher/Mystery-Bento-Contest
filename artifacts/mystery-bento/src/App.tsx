@@ -186,6 +186,7 @@ const BIBI_ANIMATION_SPRITE_SHEET_SRC = `${import.meta.env.BASE_URL}video/bibi-b
 const MIN_ANNOUNCER_GAP_MS = 520;
 const NAME_ANNOUNCER_GAP_MS = 80;
 const LAST_CONTESTANT_PAUSE_MS = 3000;
+const RACE_START_HANDOFF_BUFFER_MS = 180;
 /**
  * The course report and hazard strip are implemented spectator details.
  * Keep their data, narration, and styling available, but leave the lower race
@@ -556,7 +557,8 @@ function buildAnnouncerSequence(contestants: Persona[], race: RaceSimulation, pr
       (total, clip, index) => total + clip.durationMs
         + (index === nameClips.length - 1 ? LAST_CONTESTANT_PAUSE_MS : NAME_ANNOUNCER_GAP_MS),
       0,
-    );
+    )
+    + RACE_START_HANDOFF_BUFFER_MS;
   const beats: AnnouncerBeat[] = [
     {
       id: 'intro-opening',
@@ -1514,6 +1516,7 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
   const [announcedContestantCount, setAnnouncedContestantCount] = useState(0);
   const [announcementCardsVisible, setAnnouncementCardsVisible] = useState(false);
   const [announcementPhaseComplete, setAnnouncementPhaseComplete] = useState(false);
+  const [raceStartGraphicVisible, setRaceStartGraphicVisible] = useState(false);
   const [announcementStatus, setAnnouncementStatus] = useState('Tonight’s contestants are waiting behind the curtain.');
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(() => window.matchMedia('(prefers-reduced-motion: reduce)').matches);
   const [raceClockMs, setRaceClockMs] = useState(() => contestStartedAt ? Math.max(0, Date.now() - contestStartedAt) : 0);
@@ -1566,8 +1569,15 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
   announcementCompleteCallback.current = () => {
     setAnnouncementCardsVisible(false);
     setAnnouncementPhaseComplete(true);
-    setAnnouncementStatus('The roster is set. The race begins beneath the lanterns.');
-    setSpokenBeatLabel('The roster is set');
+    setAnnouncementStatus('The roster is set. The race is about to start.');
+    setSpokenBeatLabel('The race is about to start');
+  };
+  const raceStartGraphicCallback = useRef<() => void>(() => undefined);
+  raceStartGraphicCallback.current = () => {
+    setAnnouncementCardsVisible(false);
+    setRaceStartGraphicVisible(true);
+    setAnnouncementStatus('The roster is set. The race is about to start.');
+    setSpokenBeatLabel('The race is about to start');
   };
   const announcementTimeline = useMemo(() => {
     const introBeat = announcerSequence.find((beat) => beat.id === 'intro-opening');
@@ -1614,6 +1624,7 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
     setAnnouncedContestantCount(0);
     setAnnouncementCardsVisible(false);
     setAnnouncementPhaseComplete(false);
+    setRaceStartGraphicVisible(false);
     setAnnouncementStatus('Tonight’s contestants are waiting behind the curtain.');
     if (step !== 'intro' || !contestStartedAt || !contestants.length) return;
     const startedAt = contestStartedAt;
@@ -1635,12 +1646,15 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
       announcementTimeline.forEach(({ persona, offset }) => {
         schedule(() => contestantAnnouncedCallback.current(persona.id), startedAt + offset - Date.now());
       });
-      const finalReveal = announcementTimeline[announcementTimeline.length - 1];
-      if (finalReveal) {
-        const finalClip = announcerSequence.find((beat) => beat.id === 'intro-opening')?.clips[announcementTimeline.length];
+      const raceStartBeat = announcerSequence.find((beat) => beat.id === 'race-start');
+      if (raceStartBeat) {
+        schedule(
+          () => raceStartGraphicCallback.current(),
+          startedAt + raceStartBeat.offset - Date.now(),
+        );
         schedule(
           () => announcementCompleteCallback.current(),
-          startedAt + finalReveal.offset + (finalClip?.durationMs ?? 900) + LAST_CONTESTANT_PAUSE_MS - Date.now(),
+          startedAt + raceStartBeat.offset + raceStartBeat.clips[0].durationMs + MIN_ANNOUNCER_GAP_MS - Date.now(),
         );
       }
     }
@@ -1681,7 +1695,8 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
     if (step === 'intro' || step === 'winner' || reachedIndex < stageObstacleIndex) return -1;
     return reachedIndex;
   };
-  const isAnnouncementPhase = step === 'intro' && !finishCrossed && !announcementPhaseComplete;
+  const isAnnouncementPhase = step === 'intro' && !finishCrossed && (!announcementPhaseComplete || raceStartGraphicVisible);
+  const showRaceStartGraphic = isAnnouncementPhase && announcementPhaseComplete && raceStartGraphicVisible;
   const displayedContestants = isAnnouncementPhase && announcementCardsVisible
     ? contestants.slice(0, announcedContestantCount)
     : [];
@@ -1762,6 +1777,11 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
       announcedNameClips.add(clip.id);
       contestantAnnouncedCallback.current(clip.id.slice(prefix.length));
     };
+    const announceRaceStartClip = (clip: AnnouncerClip) => {
+      if (clip.id === 'race-starts/race-start-quiet-kitchen') {
+        raceStartGraphicCallback.current();
+      }
+    };
 
     const stopAudio = () => {
       if (announcerAudio.current) {
@@ -1831,6 +1851,7 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
         finishBeat(beat);
         return;
       }
+      announceRaceStartClip(clip);
       if (failedSources.has(clip.src) || !fitsBeforeDeadline(beat, clip, Date.now())) {
         announceNameClip(clip);
         skipClip(beat, clipIndex);
@@ -1858,7 +1879,7 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
         announcerAudio.current = null;
         const gapAfterClip = beat.clipGapsAfterMs?.[clipIndex] ?? beat.gapAfterMs ?? MIN_ANNOUNCER_GAP_MS;
         announcerAudioReadyAt.current = Date.now() + gapAfterClip;
-        if (beat.id === 'intro-opening' && clipIndex === beat.clips.length - 1) {
+        if (beat.id === 'race-start' && clipIndex === beat.clips.length - 1) {
           schedule(() => announcementCompleteCallback.current(), gapAfterClip);
         }
         schedule(() => skipClip(beat, clipIndex), gapAfterClip);
@@ -1944,6 +1965,15 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
           <button type="button" className="flex items-center gap-2 border border-[#806a85] px-3 py-2 text-xs font-bold text-[#f8e7c6] hover:bg-[#f5c968] hover:text-[#30223c]" onClick={onSkip} data-testid="button-skip-contest"><SkipForward className="h-4 w-4" aria-hidden="true" />Skip scene</button>
         </div>
         {isAnnouncementPhase ? (
+          showRaceStartGraphic ? (
+          <section className="contest-start-graphic" aria-labelledby="contest-start-title">
+            <div className="contest-start-graphic-lantern" aria-hidden="true">✦</div>
+            <span className="font-mono-ui text-[10px] uppercase tracking-[.24em] text-[#f5c968]">starting lantern</span>
+            <h3 id="contest-start-title" className="font-display text-6xl font-bold tracking-tight">Race is about to start</h3>
+            <p>{announcementStatus}</p>
+            <div className="contest-start-graphic-rule" aria-hidden="true"><span>READY</span><i /><span>SET</span><i /><span>GO</span></div>
+          </section>
+        ) : (
           <section className="contest-announcement" aria-labelledby="contest-announcement-title">
             <div className="contest-announcement-copy" role="status" aria-live="polite">
               <span className="font-mono-ui text-[10px] uppercase tracking-[.2em] text-[#f5c968]">line-up call</span>
@@ -1964,6 +1994,7 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
               ))}
             </div>
           </section>
+        )
         ) : (
         <div className={`contest-race contest-race-${step}`} data-finish-visible={finishLineVisible || undefined} data-finish-crossed={finishCrossed || undefined} aria-label="Animated contest race">
           <div className="race-track-label font-mono-ui text-[9px] uppercase tracking-[.16em] text-[#bca99b]"><span>start</span><span>finish</span></div>

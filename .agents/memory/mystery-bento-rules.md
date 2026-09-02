@@ -15,11 +15,11 @@ Contest results must be resolved once per contest session and reused by animatio
 
 **How to apply:** Resolve contestants, winner, event, and collectible choice before the visual sequence begins, then guard completion side effects against duplicate calls.
 
-The race stage timeline is authoritative; announcer playback must never gate stage transitions, while roster cards should reveal from each name clip’s playback start when audio is available.
+The race stage timeline is authoritative; announcer playback must never gate stage transitions, while roster cards reveal from each name clip and the pre-race graphic follows the full roster.
 
 **Why:** Audio can be delayed, missing, muted, or blocked by autoplay while the visual race still needs to communicate continuous progress.
 
-**How to apply:** Start the contest call immediately, serialize the roster clips after it, reveal each named contestant from the clip-start event, and retain a deterministic muted fallback. Schedule winner narration only after the visual finish has crossed.
+**How to apply:** Serialize the roster clips first, reveal each named contestant from its clip-start event, show the pre-race graphic and start call afterward, and retain a deterministic muted fallback. Schedule winner narration only after the visual finish has crossed.
 
 Jump movement sheets are one-shot reactions tied to an obstacle encounter; after one authored cycle the runner returns to its normal gait.
 

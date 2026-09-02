@@ -14,9 +14,8 @@ export type RaceTimelineCheckpoint = {
 };
 
 export const RACE_STAGE_DURATIONS: Record<RaceTimelineStage, number> = {
-  // The start call now plays before the roster is introduced. Leave enough
-  // room for that call, each name clip, and the final pause without cutting
-  // the announcement scene over to the race early.
+  // Leave enough room for the roster, the pre-race call, and the final handoff
+  // graphic without cutting the announcement scene over to the race early.
   intro: 15200,
   warmup: 7600,
   matchup: 9200,
