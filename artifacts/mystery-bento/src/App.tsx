@@ -39,6 +39,7 @@ import { RACE_BACKGROUND_SEQUENCE } from './race-backgrounds';
 import {
   getFirstRunnerObstacleHitOffset as getTimelineFirstRunnerObstacleHitOffset,
   getRaceFinishCrossingOffset,
+  getRaceAnnouncementRevealOffsets,
   getRaceLaneProgressAtTime as getTimelineLaneProgressAtTime,
   getRaceRunnerScreenAnchors,
   getRaceWorldTravelPercentAtTime,
@@ -1515,13 +1516,12 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
   const announcementTimeline = useMemo(() => {
     const introBeat = announcerSequence.find((beat) => beat.id === 'intro-opening');
     const nameClips = introBeat?.clips.slice(1, contestants.length + 1) ?? [];
-    let offset = (introBeat?.clips[0]?.durationMs ?? 0) + (introBeat?.gapAfterMs ?? NAME_ANNOUNCER_GAP_MS);
-    return contestants.map((persona, index) => {
-      const clip = nameClips[index];
-      const reveal = { persona, offset };
-      offset += (clip?.durationMs ?? 900) + (introBeat?.gapAfterMs ?? NAME_ANNOUNCER_GAP_MS);
-      return reveal;
-    });
+    const offsets = getRaceAnnouncementRevealOffsets(
+      introBeat?.clips[0]?.durationMs ?? 0,
+      nameClips.map((clip) => clip?.durationMs ?? 900),
+      introBeat?.gapAfterMs ?? NAME_ANNOUNCER_GAP_MS,
+    );
+    return contestants.map((persona, index) => ({ persona, offset: offsets[index] ?? 0 }));
   }, [announcerSequence, contestants]);
   const currentObstacleIndex = step === 'intro' ? -1 : Math.min(race.obstacles.length - 1, raceStepProgress[step] - 1);
   const currentObstacle = currentObstacleIndex >= 0 ? race.obstacles[currentObstacleIndex] : null;
@@ -1571,18 +1571,9 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
 
     announcementTimeline.forEach(({ persona, offset }, index) => {
       const revealContestant = () => {
-        const priorAudio = announcerAudio.current;
-        const pending = pendingAudio.current;
-        const priorClipIsStillPlaying = voiceEnabled
-          && priorAudio
-          && !priorAudio.paused
-          && !priorAudio.ended
-          && pending?.beat.id === 'intro-opening'
-          && pending.clipIndex === index;
-        if (priorClipIsStillPlaying) {
-          schedule(revealContestant, 40);
-          return;
-        }
+        // The visual beat is authoritative. Audio is best-effort and can be
+        // muted, missing, delayed by metadata, or waiting for a gesture; none
+        // of those states should make a card appear after its name call.
         setAnnouncedContestantCount(index + 1);
         setAnnouncementCardsVisible(true);
         setAnnouncementStatus(`${persona.name} is taking a place beneath the lanterns.`);
@@ -1595,27 +1586,14 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
     const finalReveal = announcementTimeline[announcementTimeline.length - 1];
     if (finalReveal) {
       const finalClip = announcerSequence.find((beat) => beat.id === 'intro-opening')?.clips[announcementTimeline.length];
-      const completeAnnouncement = () => {
-        const finalNameAudio = announcerAudio.current;
-        const pending = pendingAudio.current;
-        const finalNameIsStillPlaying = voiceEnabled
-          && finalNameAudio
-          && !finalNameAudio.paused
-          && !finalNameAudio.ended
-          && pending?.beat.id === 'intro-opening'
-          && pending.clipIndex === announcementTimeline.length;
-        if (finalNameIsStillPlaying) {
-          schedule(completeAnnouncement, 40);
-          return;
-        }
-        schedule(() => {
-          setAnnouncementCardsVisible(false);
-          setAnnouncementPhaseComplete(true);
-          setAnnouncementStatus('The roster is set. The race begins beneath the lanterns.');
-          setSpokenBeatLabel('The roster is set');
-        }, LAST_CONTESTANT_PAUSE_MS);
-      };
-      schedule(completeAnnouncement, startedAt + finalReveal.offset + (finalClip?.durationMs ?? 900) - Date.now());
+      // Keep the final pause on the planned visual timeline rather than
+      // waiting for a potentially stalled optional audio element.
+      schedule(() => {
+        setAnnouncementCardsVisible(false);
+        setAnnouncementPhaseComplete(true);
+        setAnnouncementStatus('The roster is set. The race begins beneath the lanterns.');
+        setSpokenBeatLabel('The roster is set');
+      }, startedAt + finalReveal.offset + (finalClip?.durationMs ?? 900) + LAST_CONTESTANT_PAUSE_MS - Date.now());
     }
 
     return () => timers.forEach((timer) => window.clearTimeout(timer));

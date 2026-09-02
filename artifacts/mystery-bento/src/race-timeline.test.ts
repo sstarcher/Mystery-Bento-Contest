@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import {
   getFirstRunnerObstacleHitOffset,
   getRaceFinishCrossingOffset,
+  getRaceAnnouncementRevealOffsets,
   getRaceLaneProgressAtTime,
   getRaceRunnerScreenAnchors,
   getRaceStageObstacleMilestones,
@@ -17,6 +18,8 @@ import {
   RACE_WORLD_TRACK_WIDTH_MULTIPLIER,
   RACE_STAGE_DURATIONS,
   RACE_WARMUP_WORLD_END_PERCENT,
+  RACE_RUNNER_LANE_HEIGHT_PX,
+  RACE_RUNNER_PRESENTATION_TOP_PX,
   type RaceTimelineLane,
   type RaceTimelineObstacle,
   type RaceTimelineStage,
@@ -74,6 +77,16 @@ assert.equal(getRaceWorldTravelPercentAtTime('matchup', 0, false), RACE_WARMUP_W
 assert.equal(getRaceWorldTravelPercentAtTime('finale', 0, false), RACE_MATCHUP_WORLD_END_PERCENT);
 assert.equal(getRaceFinishCrossingOffset(false), RACE_STAGE_DURATIONS.finale);
 assert.equal(getRaceFinishCrossingOffset(true), 0);
+assert.deepEqual(
+  getRaceAnnouncementRevealOffsets(640, [700, 820, 910], 80),
+  [720, 1500, 2400],
+  'each card reveal should begin at its name clip start, not after the clip ends',
+);
+assert.ok(RACE_RUNNER_PRESENTATION_TOP_PX >= 380 + 30, 'runner presentation should move down by about 30px');
+assert.ok(
+  RACE_RUNNER_PRESENTATION_TOP_PX + (4 - 1) * RACE_RUNNER_LANE_HEIGHT_PX - 64 + 216 <= 800,
+  'the lowest supported lane should remain inside the fixed race canvas',
+);
 
 const checkpointLane: RaceTimelineLane = {
   positions: { intro: 10, warmup: 30, matchup: 52, finale: 90, winner: 94 },

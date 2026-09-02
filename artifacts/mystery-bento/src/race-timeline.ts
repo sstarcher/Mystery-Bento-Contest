@@ -31,6 +31,8 @@ export const RACE_RUNNER_SCREEN_MAX_PERCENT = 88;
 export const RACE_RUNNER_MAX_SPREAD_PERCENT = 64;
 export const RACE_RUNNER_VISUAL_START_PERCENT = 14;
 export const RACE_RUNNER_VISUAL_MAX_DISTANCE = 90;
+export const RACE_RUNNER_PRESENTATION_TOP_PX = 410;
+export const RACE_RUNNER_LANE_HEIGHT_PX = 78;
 
 export const RACE_STAGE_OBSTACLE_INDICES: Record<Exclude<RaceTimelineStage, 'intro' | 'winner'>, number[]> = {
   warmup: [0],
@@ -88,6 +90,19 @@ export function getRaceRunnerScreenAnchors(positions: number[], startPositions: 
     ));
     return RACE_RUNNER_VISUAL_START_PERCENT
       + (distance / RACE_RUNNER_VISUAL_MAX_DISTANCE) * visualTravel;
+  });
+}
+
+export function getRaceAnnouncementRevealOffsets(
+  openingDurationMs: number,
+  nameDurationsMs: number[],
+  gapAfterNameMs: number,
+) {
+  let offset = openingDurationMs + gapAfterNameMs;
+  return nameDurationsMs.map((durationMs) => {
+    const revealOffset = offset;
+    offset += durationMs + gapAfterNameMs;
+    return revealOffset;
   });
 }
 

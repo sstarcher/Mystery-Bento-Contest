@@ -1,0 +1,1 @@
+export type MovementAction = 'idle' | 'walk' | 'run' | 'jump';

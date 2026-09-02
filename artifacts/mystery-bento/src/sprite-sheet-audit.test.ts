@@ -1,6 +1,13 @@
 import { strict as assert } from 'node:assert';
 import { execFileSync } from 'node:child_process';
+import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
+import type { MovementAction } from './movement-sprite-actions';
+import { movementSpriteNormalization } from './movement-sprite-normalization';
+import {
+  RACE_RUNNER_LANE_HEIGHT_PX,
+  RACE_RUNNER_PRESENTATION_TOP_PX,
+} from './race-timeline';
 
 type SpriteSheetAudit = {
   file: string;
@@ -77,6 +84,7 @@ const movementSpriteSheets: SpriteSheetAudit[] = [
 
 const runtimeAssetPath = (file: string) => fileURLToPath(new URL(`../public/video/${file}`, import.meta.url));
 const movementRuntimeAssetPath = (file: string) => fileURLToPath(new URL(`./assets/contestants/movement/${file}`, import.meta.url));
+const normalizedMovementMetrics = new Map<string, { height: number; baseline: number }[]>();
 
 for (const sheet of [...spriteSheets, ...movementSpriteSheets]) {
   const file = movementSpriteSheets.includes(sheet)
@@ -101,6 +109,55 @@ for (const sheet of [...spriteSheets, ...movementSpriteSheets]) {
   assert.ok(alphaMeans[Math.floor(sheet.occupiedFrames / 2)] > 0.0001, `${sheet.file}: middle occupied frame is blank`);
   assert.ok(alphaMeans[sheet.occupiedFrames - 1] > 0.0001, `${sheet.file}: last occupied frame is blank`);
   assert.ok(alphaMeans.slice(sheet.occupiedFrames).every((mean) => mean <= 0.0001), `${sheet.file}: padded frame is not transparent`);
+
+  if (movementSpriteSheets.includes(sheet)) {
+    const [personaId, action] = sheet.file.replace(/\.png$/, '').split('-') as [string, MovementAction];
+    const normalization = movementSpriteNormalization[personaId]?.[action];
+    assert.ok(normalization, `${sheet.file}: missing per-character normalization metadata`);
+    const boxes = execFileSync(
+      'convert',
+      [file, '-alpha', 'extract', '-threshold', '0', '-crop', `${frameSize}x${frameSize}`, '-format', '%@\\n', 'info:'],
+      { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] },
+    )
+      .trim()
+      .split(/\s+/)
+      .slice(0, sheet.occupiedFrames)
+      .map((geometry) => {
+        const match = geometry.match(/^(\d+)x(\d+)\+(-?\d+)\+(-?\d+)$/);
+        assert.ok(match, `${sheet.file}: malformed alpha bounds`);
+        return match!.slice(1).map(Number);
+      });
+    const median = (values: number[]) => values.slice().sort((a, b) => a - b)[Math.floor(values.length / 2)];
+    assert.ok(
+      boxes.every(([width, height, x, y]) => x > 0 && y > 0 && x + width < frameSize && y + height < frameSize),
+      `${sheet.file}: silhouette reaches a frame boundary`,
+    );
+    const normalizedHeight = median(boxes.map(([, height]) => height * normalization!.scale));
+    const normalizedBaseline = median(boxes.map(([, height, , y]) => (
+      216 + ((y + height) / frameSize * 216 - 216) * normalization!.scale + normalization!.baselineOffset
+    )));
+    const personaMetrics = normalizedMovementMetrics.get(personaId) ?? [];
+    personaMetrics.push({ height: normalizedHeight, baseline: normalizedBaseline });
+    normalizedMovementMetrics.set(personaId, personaMetrics);
+    assert.ok(normalizedHeight > 120, `${sheet.file}: normalized silhouette is unexpectedly small`);
+    assert.ok(normalizedBaseline > 140 && normalizedBaseline < 220, `${sheet.file}: normalized baseline is outside the runner frame`);
+  }
 }
 
+for (const [personaId, metrics] of normalizedMovementMetrics) {
+  const heights = metrics.map(({ height }) => height);
+  const baselines = metrics.map(({ baseline }) => baseline);
+  assert.ok(
+    Math.max(...heights) - Math.min(...heights) <= 8,
+    `${personaId}: normalized action scale drifted by more than 8 rendered pixels`,
+  );
+  assert.ok(
+    Math.max(...baselines) - Math.min(...baselines) <= 3,
+    `${personaId}: normalized action baseline drifted by more than 3 rendered pixels`,
+  );
+}
+
+const raceCss = readFileSync(fileURLToPath(new URL('./index.css', import.meta.url)), 'utf8');
+assert.match(raceCss, new RegExp(`\\.race-course-road, \\.race-runner-overlay \\{ padding-top: ${RACE_RUNNER_PRESENTATION_TOP_PX}px; \\}`));
+assert.match(raceCss, new RegExp(`\\.race-lane, \\.race-runner-lane \\{ height: ${RACE_RUNNER_LANE_HEIGHT_PX}px;`));
 console.log(`Sprite-sheet audit passed for ${spriteSheets.length + movementSpriteSheets.length} runtime sheets.`);

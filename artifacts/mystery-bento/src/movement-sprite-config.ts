@@ -46,8 +46,10 @@ import senchaIdle from './assets/contestants/movement/sencha-idle.png';
 import senchaJump from './assets/contestants/movement/sencha-jump.png';
 import senchaRun from './assets/contestants/movement/sencha-run.png';
 import senchaWalk from './assets/contestants/movement/sencha-walk.png';
+import { movementSpriteNormalization, type MovementSpriteNormalization } from './movement-sprite-normalization';
+import type { MovementAction } from './movement-sprite-actions';
 
-export type MovementAction = 'idle' | 'walk' | 'run' | 'jump';
+export type { MovementAction } from './movement-sprite-actions';
 
 export type MovementSpriteSheet = {
   src: string;
@@ -55,11 +57,14 @@ export type MovementSpriteSheet = {
   rows: number;
   frameCount: number;
   frameDurationMs: number;
+  normalization: MovementSpriteNormalization;
 };
 
 const MOVEMENT_FRAME_DURATION_MS = 1000 / 12;
 
 function sheet(
+  personaId: string,
+  action: MovementAction,
   src: string,
   columns: number,
   rows: number,
@@ -71,6 +76,7 @@ function sheet(
     rows,
     frameCount,
     frameDurationMs: MOVEMENT_FRAME_DURATION_MS,
+    normalization: movementSpriteNormalization[personaId][action],
   };
 }
 
@@ -81,76 +87,76 @@ type MovementSet = Partial<Record<MovementAction, MovementSpriteSheet>>;
 // never cycles into a padded transparent cell or exposes a neighbor.
 export const movementSpriteSheets: Record<string, MovementSet> = {
   bibi: {
-    idle: sheet(bibiIdle, 8, 4, 28),
-    walk: sheet(bibiWalk, 8, 6, 42),
-    run: sheet(bibiRun, 8, 4, 31),
-    jump: sheet(bibiJump, 8, 4, 31),
+    idle: sheet('bibi', 'idle', bibiIdle, 8, 4, 28),
+    walk: sheet('bibi', 'walk', bibiWalk, 8, 6, 42),
+    run: sheet('bibi', 'run', bibiRun, 8, 4, 31),
+    jump: sheet('bibi', 'jump', bibiJump, 8, 4, 31),
   },
   toro: {
-    idle: sheet(toroIdle, 7, 7, 48),
-    walk: sheet(toroWalk, 8, 6, 43),
-    run: sheet(toroRun, 7, 7, 48),
-    jump: sheet(toroJump, 7, 4, 27),
+    idle: sheet('toro', 'idle', toroIdle, 7, 7, 48),
+    walk: sheet('toro', 'walk', toroWalk, 8, 6, 43),
+    run: sheet('toro', 'run', toroRun, 7, 7, 48),
+    jump: sheet('toro', 'jump', toroJump, 7, 4, 27),
   },
   kiku: {
-    idle: sheet(kikuIdle, 8, 4, 29),
-    walk: sheet(kikuWalk, 8, 6, 47),
-    run: sheet(kikuRun, 8, 7, 54),
-    jump: sheet(kikuJump, 8, 4, 28),
+    idle: sheet('kiku', 'idle', kikuIdle, 8, 4, 29),
+    walk: sheet('kiku', 'walk', kikuWalk, 8, 6, 47),
+    run: sheet('kiku', 'run', kikuRun, 8, 7, 54),
+    jump: sheet('kiku', 'jump', kikuJump, 8, 4, 28),
   },
   miso: {
-    idle: sheet(misoIdle, 8, 7, 53),
-    walk: sheet(misoWalk, 8, 7, 49),
-    run: sheet(misoRun, 8, 7, 50),
-    jump: sheet(misoJump, 8, 5, 33),
+    idle: sheet('miso', 'idle', misoIdle, 8, 7, 53),
+    walk: sheet('miso', 'walk', misoWalk, 8, 7, 49),
+    run: sheet('miso', 'run', misoRun, 8, 7, 50),
+    jump: sheet('miso', 'jump', misoJump, 8, 5, 33),
   },
   nori: {
-    idle: sheet(noriIdle, 8, 4, 30),
-    walk: sheet(noriWalk, 8, 7, 49),
-    run: sheet(noriRun, 8, 5, 33),
-    jump: sheet(noriJump, 8, 5, 40),
+    idle: sheet('nori', 'idle', noriIdle, 8, 4, 30),
+    walk: sheet('nori', 'walk', noriWalk, 8, 7, 49),
+    run: sheet('nori', 'run', noriRun, 8, 5, 33),
+    jump: sheet('nori', 'jump', noriJump, 8, 5, 40),
   },
   panko: {
-    idle: sheet(pankoIdle, 8, 5, 34),
-    walk: sheet(pankoWalk, 8, 7, 49),
-    run: sheet(pankoRun, 7, 7, 48),
-    jump: sheet(pankoJump, 8, 5, 33),
+    idle: sheet('panko', 'idle', pankoIdle, 8, 5, 34),
+    walk: sheet('panko', 'walk', pankoWalk, 8, 7, 49),
+    run: sheet('panko', 'run', pankoRun, 7, 7, 48),
+    jump: sheet('panko', 'jump', pankoJump, 8, 5, 33),
   },
   pip: {
-    idle: sheet(pipIdle, 8, 7, 52),
-    walk: sheet(pipWalk, 8, 6, 48),
-    run: sheet(pipRun, 8, 7, 50),
-    jump: sheet(pipJump, 8, 4, 32),
+    idle: sheet('pip', 'idle', pipIdle, 8, 7, 52),
+    walk: sheet('pip', 'walk', pipWalk, 8, 6, 48),
+    run: sheet('pip', 'run', pipRun, 8, 7, 50),
+    jump: sheet('pip', 'jump', pipJump, 8, 4, 32),
   },
   rollo: {
-    idle: sheet(rolloIdle, 8, 6, 46),
-    walk: sheet(rolloWalk, 8, 6, 46),
-    run: sheet(rolloRun, 8, 5, 37),
-    jump: sheet(rolloJump, 8, 5, 34),
+    idle: sheet('rollo', 'idle', rolloIdle, 8, 6, 46),
+    walk: sheet('rollo', 'walk', rolloWalk, 8, 6, 46),
+    run: sheet('rollo', 'run', rolloRun, 8, 5, 37),
+    jump: sheet('rollo', 'jump', rolloJump, 8, 5, 34),
   },
   saffy: {
-    idle: sheet(saffyIdle, 8, 5, 33),
-    walk: sheet(saffyWalk, 8, 5, 34),
-    run: sheet(saffyRun, 8, 6, 47),
-    jump: sheet(saffyJump, 8, 4, 32),
+    idle: sheet('saffy', 'idle', saffyIdle, 8, 5, 33),
+    walk: sheet('saffy', 'walk', saffyWalk, 8, 5, 34),
+    run: sheet('saffy', 'run', saffyRun, 8, 6, 47),
+    jump: sheet('saffy', 'jump', saffyJump, 8, 4, 32),
   },
   tilda: {
-    idle: sheet(tildaIdle, 8, 5, 37),
-    walk: sheet(tildaWalk, 8, 6, 42),
-    run: sheet(tildaRun, 8, 6, 42),
-    jump: sheet(tildaJump, 8, 5, 36),
+    idle: sheet('tilda', 'idle', tildaIdle, 8, 5, 37),
+    walk: sheet('tilda', 'walk', tildaWalk, 8, 6, 42),
+    run: sheet('tilda', 'run', tildaRun, 8, 6, 42),
+    jump: sheet('tilda', 'jump', tildaJump, 8, 5, 36),
   },
   uma: {
-    idle: sheet(umaIdle, 8, 4, 31),
-    walk: sheet(umaWalk, 8, 7, 51),
-    run: sheet(umaRun, 8, 4, 32),
-    jump: sheet(umaJump, 8, 5, 35),
+    idle: sheet('uma', 'idle', umaIdle, 8, 4, 31),
+    walk: sheet('uma', 'walk', umaWalk, 8, 7, 51),
+    run: sheet('uma', 'run', umaRun, 8, 4, 32),
+    jump: sheet('uma', 'jump', umaJump, 8, 5, 35),
   },
   sencha: {
-    idle: sheet(senchaIdle, 8, 7, 50),
-    walk: sheet(senchaWalk, 8, 7, 51),
-    run: sheet(senchaRun, 8, 6, 42),
-    jump: sheet(senchaJump, 8, 4, 32),
+    idle: sheet('sencha', 'idle', senchaIdle, 8, 7, 50),
+    walk: sheet('sencha', 'walk', senchaWalk, 8, 7, 51),
+    run: sheet('sencha', 'run', senchaRun, 8, 6, 42),
+    jump: sheet('sencha', 'jump', senchaJump, 8, 4, 32),
   },
 };
 
