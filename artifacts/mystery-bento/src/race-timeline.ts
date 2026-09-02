@@ -14,8 +14,8 @@ export type RaceTimelineCheckpoint = {
 };
 
 export const RACE_STAGE_DURATIONS: Record<RaceTimelineStage, number> = {
-  // Leave enough room for the roster, the pre-race call, and the final handoff
-  // graphic without cutting the announcement scene over to the race early.
+  // Intro is the maximum pre-race announcement budget. The actual race clock
+  // begins from the race-start handoff after the announcement finishes.
   intro: 15200,
   warmup: 7600,
   matchup: 9200,

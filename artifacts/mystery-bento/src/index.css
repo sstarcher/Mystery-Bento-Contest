@@ -864,18 +864,20 @@
 }
 .contest-start-graphic {
   position: absolute;
-  inset: 0;
+  inset: 178px 210px 236px;
   z-index: 4;
   display: grid;
   place-content: center;
   justify-items: center;
   gap: 16px;
-  padding: 144px 32px 32px;
+  padding: 28px 32px;
   color: #f8e7c6;
   text-align: center;
   background:
     radial-gradient(circle at 50% 38%, rgba(245,201,104,.24), transparent 18rem),
-    linear-gradient(180deg, #30223c 0%, #17121e 100%);
+    linear-gradient(180deg, rgba(48,34,60,.96) 0%, rgba(23,18,30,.96) 100%);
+  border: 3px solid #f5c968;
+  box-shadow: 8px 8px 0 rgba(23,18,30,.72), 0 0 42px rgba(245,201,104,.18);
   animation: contest-start-graphic-in .4s ease-out both;
 }
 .contest-start-graphic h3 {
