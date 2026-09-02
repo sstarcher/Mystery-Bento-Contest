@@ -7,6 +7,33 @@ import { TooltipProvider } from '@/components/ui/tooltip';
 import NotFound from '@/pages/not-found';
 import { Route, Router as WouterRouter, Switch, useLocation } from 'wouter';
 import { contestantDesigns, contestantFoodAnimationAspectRatios, contestantFoodAnimationFrames, contestantFoodSprites, contestantPortraits } from './contestant-design-config';
+import tildaSafetyModule from './assets/curios/tilda-safety-module.png';
+import tildaToolbox from './assets/curios/tilda-toolbox.png';
+import tildaWrenchSet from './assets/curios/tilda-wrench-set.png';
+import senchaLeafBookmark from './assets/curios/sencha-leaf-bookmark.png';
+import senchaNightTeapot from './assets/curios/sencha-night-teapot.png';
+import senchaTeaLedger from './assets/curios/sencha-tea-ledger.png';
+import toroCaptainsCap from './assets/curios/toro-captains-cap.png';
+import toroGrillSpatula from './assets/curios/toro-grill-spatula.png';
+import toroPocketCompass from './assets/curios/toro-pocket-compass.png';
+import noriBrushPen from './assets/curios/nori-brush-pen.png';
+import noriPlumNotebook from './assets/curios/nori-plum-notebook.png';
+import noriScarfPin from './assets/curios/nori-scarf-pin.png';
+import misoBrothJar from './assets/curios/miso-broth-jar.png';
+import misoSoupBowl from './assets/curios/miso-soup-bowl.png';
+import misoWalnutLadle from './assets/curios/miso-walnut-ladle.png';
+import umaFlourSack from './assets/curios/uma-flour-sack.png';
+import umaNoodleRibbon from './assets/curios/uma-noodle-ribbon.png';
+import umaRollingPin from './assets/curios/uma-rolling-pin.png';
+import pankoClueNotebook from './assets/curios/panko-clue-notebook.png';
+import pankoDetectiveBeret from './assets/curios/panko-detective-beret.png';
+import pankoMagnifyingGlass from './assets/curios/panko-magnifying-glass.png';
+import kikuAgedCopperKettle from './assets/curios/kiku-aged-copper-kettle.png';
+import kikuJadeBrassGear from './assets/curios/kiku-jade-brass-gear.png';
+import kikuSageBlueprint from './assets/curios/kiku-sage-blueprint.png';
+import bibiClothWrap from './assets/curios/bibi-cloth-wrap.png';
+import bibiFoodTweezers from './assets/curios/bibi-food-tweezers.png';
+import bibiStackedBento from './assets/curios/bibi-stacked-bento.png';
 import { getMovementSpriteSheet, type MovementAction } from './movement-sprite-config';
 import { RACE_BACKGROUND_SEQUENCE } from './race-backgrounds';
 import {
@@ -65,7 +92,7 @@ type Collectible = {
   earnedBy: string;
   earnedAt: string;
   imageSrc?: string;
-  artVariant?: 'pip-pocket-watch' | 'pip-rice-bowl' | 'pip-satchel-tag';
+  artVariant?: 'pip-pocket-watch' | 'pip-rice-bowl' | 'pip-satchel-tag' | 'tilda-toolbox' | 'tilda-wrench-set' | 'tilda-safety-module' | 'sencha-leaf-bookmark' | 'sencha-night-teapot' | 'sencha-tea-ledger' | 'toro-captains-cap' | 'toro-pocket-compass' | 'toro-grill-spatula' | 'nori-plum-notebook' | 'nori-brush-pen' | 'nori-scarf-pin' | 'miso-soup-bowl' | 'miso-walnut-ladle' | 'miso-broth-jar' | 'uma-noodle-ribbon' | 'uma-flour-sack' | 'uma-rolling-pin' | 'panko-magnifying-glass' | 'panko-detective-beret' | 'panko-clue-notebook' | 'kiku-aged-copper-kettle' | 'kiku-jade-brass-gear' | 'kiku-sage-blueprint' | 'bibi-stacked-bento' | 'bibi-food-tweezers' | 'bibi-cloth-wrap';
 };
 type FoodItem = { id: string; name: string; note: string; imageSrc: string };
 type RaceTrait = keyof Persona['traits'];
@@ -679,6 +706,33 @@ const collectiblePool = [
   { id: 'chef-ladle-champion', kind: 'chef sticker', title: 'Ladle Champion', description: 'A shiny sticker for a chef who made one enormous spoon look graceful.', earnedBy: 'nori' },
   { id: 'chef-ladle-night-shift', kind: 'chef sticker', title: 'Night-Shift Ladle Patch', description: 'A stitched patch for the cook who kept the late service perfectly stirred.', earnedBy: 'nori' },
   { id: 'wrench-do-not-relocate', kind: 'pantry tool', title: 'The Do-Not-Relocate Wrench', description: 'A perfectly labeled wrench from Tilda’s chair-and-tool maintenance system.', earnedBy: 'tilda' },
+  { id: 'tilda-toolbox', kind: 'Tilda keepsake', title: 'The Perfectly Packed Toolbox', description: 'A small ivory tool box with a lavender latch. A practical workshop keepsake from a pantry engineer.', earnedBy: 'tilda', imageSrc: tildaToolbox, artVariant: 'tilda-toolbox' as const },
+  { id: 'tilda-wrench-set', kind: 'Tilda keepsake', title: 'The Crossed-Tool Set', description: 'A silver wrench crossed with a tiny copper gear. A practical workshop keepsake from a pantry engineer.', earnedBy: 'tilda', imageSrc: tildaWrenchSet, artVariant: 'tilda-wrench-set' as const },
+  { id: 'tilda-safety-module', kind: 'Tilda keepsake', title: 'The Safety Module', description: 'A cube-shaped mechanism core with a dim jade indicator light. A practical workshop keepsake from a pantry engineer.', earnedBy: 'tilda', imageSrc: tildaSafetyModule, artVariant: 'tilda-safety-module' as const },
+  { id: 'sencha-leaf-bookmark', kind: 'Sencha keepsake', title: 'The Jade-and-Gold Tea Leaf Charm', description: 'A jade-and-gold tea leaf charm. A serene keepsake from a precise tea spirit.', earnedBy: 'sencha', imageSrc: senchaLeafBookmark, artVariant: 'sencha-leaf-bookmark' as const },
+  { id: 'sencha-night-teapot', kind: 'Sencha keepsake', title: 'The Night-Steep Teapot', description: 'A tiny charcoal ceramic teapot with a delicate amber steam curl. A serene keepsake from a precise tea spirit.', earnedBy: 'sencha', imageSrc: senchaNightTeapot, artVariant: 'sencha-night-teapot' as const },
+  { id: 'sencha-tea-ledger', kind: 'Sencha keepsake', title: 'The Folded Moss-Green Tea Cloth', description: 'A folded moss-green tea cloth tied with a muted-gold cord. A serene keepsake from a precise tea spirit.', earnedBy: 'sencha', imageSrc: senchaTeaLedger, artVariant: 'sencha-tea-ledger' as const },
+  { id: 'toro-captains-cap', kind: 'Toro keepsake', title: 'The Captain’s Night Cap', description: 'A miniature navy captain cap with a generic brass emblem. A proud nautical keepsake from a retired sailor-grillmaster.', earnedBy: 'toro', imageSrc: toroCaptainsCap, artVariant: 'toro-captains-cap' as const },
+  { id: 'toro-pocket-compass', kind: 'Toro keepsake', title: 'The Steady-Hand Compass', description: 'A weathered copper compass with a coral needle. A proud nautical keepsake from a retired sailor-grillmaster.', earnedBy: 'toro', imageSrc: toroPocketCompass, artVariant: 'toro-pocket-compass' as const },
+  { id: 'toro-grill-spatula', kind: 'Toro keepsake', title: 'The Red-Handle Grill Spatula', description: 'A tiny polished grilling spatula wrapped in crimson cloth. A proud nautical keepsake from a retired sailor-grillmaster.', earnedBy: 'toro', imageSrc: toroGrillSpatula, artVariant: 'toro-grill-spatula' as const },
+  { id: 'nori-plum-notebook', kind: 'Nori keepsake', title: 'The Plum Notebook', description: 'A tiny plum notebook with a seafoam bookmark ribbon. A dreamy keepsake from a midnight food poet.', earnedBy: 'nori', imageSrc: noriPlumNotebook, artVariant: 'nori-plum-notebook' as const },
+  { id: 'nori-brush-pen', kind: 'Nori keepsake', title: 'The Ink-Drop Brush Pen', description: 'A brush pen with a dark ink droplet charm. A dreamy keepsake from a midnight food poet.', earnedBy: 'nori', imageSrc: noriBrushPen, artVariant: 'nori-brush-pen' as const },
+  { id: 'nori-scarf-pin', kind: 'Nori keepsake', title: 'The Crescent Wave Scarf Pin', description: 'A folded charcoal scarf pin shaped like an abstract crescent wave. A dreamy keepsake from a midnight food poet.', earnedBy: 'nori', imageSrc: noriScarfPin, artVariant: 'nori-scarf-pin' as const },
+  { id: 'miso-soup-bowl', kind: 'Miso keepsake', title: 'The Amber-Steam Soup Bowl', description: 'A round dark earthenware soup bowl with three amber steam pixels. A gentle comfort-food keepsake from a fox soup host.', earnedBy: 'miso', imageSrc: misoSoupBowl, artVariant: 'miso-soup-bowl' as const },
+  { id: 'miso-walnut-ladle', kind: 'Miso keepsake', title: 'The Wrapped Walnut Ladle', description: 'A small walnut ladle with a cream handle wrap. A gentle comfort-food keepsake from a fox soup host.', earnedBy: 'miso', imageSrc: misoWalnutLadle, artVariant: 'miso-walnut-ladle' as const },
+  { id: 'miso-broth-jar', kind: 'Miso keepsake', title: 'The Emergency Broth Jar', description: 'A moss-green emergency broth jar with a tiny fox-tail charm. A gentle comfort-food keepsake from a fox soup host.', earnedBy: 'miso', imageSrc: misoBrothJar, artVariant: 'miso-broth-jar' as const },
+  { id: 'uma-noodle-ribbon', kind: 'Uma keepsake', title: 'The Cobalt Noodle Ribbon', description: 'A coiled cream noodle ribbon tied with a cobalt band. A strong, practical keepsake from a noodle maker.', earnedBy: 'uma', imageSrc: umaNoodleRibbon, artVariant: 'uma-noodle-ribbon' as const },
+  { id: 'uma-flour-sack', kind: 'Uma keepsake', title: 'The Stamped Flour Sack', description: 'A small flour sack with a muted red stamp-like mark. A strong, practical keepsake from a noodle maker.', earnedBy: 'uma', imageSrc: umaFlourSack, artVariant: 'uma-flour-sack' as const },
+  { id: 'uma-rolling-pin', kind: 'Uma keepsake', title: 'The Red-Sashed Rolling Pin', description: 'A sturdy wooden rolling pin wrapped with a red sash. A strong, practical keepsake from a noodle maker.', earnedBy: 'uma', imageSrc: umaRollingPin, artVariant: 'uma-rolling-pin' as const },
+  { id: 'panko-magnifying-glass', kind: 'Panko keepsake', title: 'The Sesame-Sparkle Magnifier', description: 'A small brass magnifying glass with a sesame-seed sparkle inside. A curious keepsake from a crumb detective.', earnedBy: 'panko', imageSrc: pankoMagnifyingGlass, artVariant: 'panko-magnifying-glass' as const },
+  { id: 'panko-detective-beret', kind: 'Panko keepsake', title: 'The Crumb Detective Beret', description: 'A crumb-speckled cream detective beret. A curious keepsake from a crumb detective.', earnedBy: 'panko', imageSrc: pankoDetectiveBeret, artVariant: 'panko-detective-beret' as const },
+  { id: 'panko-clue-notebook', kind: 'Panko keepsake', title: 'The Wheat-Ribbon Clue Notebook', description: 'A tiny brown clue notebook sealed with a wheat-colored ribbon. A curious keepsake from a crumb detective.', earnedBy: 'panko', imageSrc: pankoClueNotebook, artVariant: 'panko-clue-notebook' as const },
+  { id: 'kiku-aged-copper-kettle', kind: 'Kiku keepsake', title: 'The Weather-Reading Kettle', description: 'A small aged-copper kettle with a single steam puff. A charmingly experimental keepsake from a weather-reading inventor.', earnedBy: 'kiku', imageSrc: kikuAgedCopperKettle, artVariant: 'kiku-aged-copper-kettle' as const },
+  { id: 'kiku-jade-brass-gear', kind: 'Kiku keepsake', title: 'The Jade-Center Gear', description: 'An unusual brass gear with a jade center. A charmingly experimental keepsake from a weather-reading inventor.', earnedBy: 'kiku', imageSrc: kikuJadeBrassGear, artVariant: 'kiku-jade-brass-gear' as const },
+  { id: 'kiku-sage-blueprint', kind: 'Kiku keepsake', title: 'The Sage Blueprint Roll', description: 'A rolled sage-green blueprint tied with charcoal thread. A charmingly experimental keepsake from a weather-reading inventor.', earnedBy: 'kiku', imageSrc: kikuSageBlueprint, artVariant: 'kiku-sage-blueprint' as const },
+  { id: 'bibi-stacked-bento', kind: 'Bibi keepsake', title: 'The Patterned Bento Stack', description: 'A tiny stacked bento box with muted blue and ochre patterns. A carefully curated keepsake from a traveling lunch arranger.', earnedBy: 'bibi', imageSrc: bibiStackedBento, artVariant: 'bibi-stacked-bento' as const },
+  { id: 'bibi-food-tweezers', kind: 'Bibi keepsake', title: 'The Sheathed Plating Tweezers', description: 'Precise silver food tweezers in a cream sheath. A carefully curated keepsake from a traveling lunch arranger.', earnedBy: 'bibi', imageSrc: bibiFoodTweezers, artVariant: 'bibi-food-tweezers' as const },
+  { id: 'bibi-cloth-wrap', kind: 'Bibi keepsake', title: 'The Amber-Charmed Cloth Wrap', description: 'A folded pale-blue cloth wrap tied with a small amber charm. A carefully curated keepsake from a traveling lunch arranger.', earnedBy: 'bibi', imageSrc: bibiClothWrap, artVariant: 'bibi-cloth-wrap' as const },
   { id: 'plate-moon-checker', kind: 'plate pattern', title: 'Moonlit Checker', description: 'A ceramic plate pattern in the exact colors of a late-night shortcut.', earnedBy: 'bibi' },
   { id: 'plate-rainbow-rim', kind: 'plate pattern', title: 'Rainbow Rim Test Tile', description: 'A test tile with a rim that catches every color of the market sign.', earnedBy: 'saffy' },
   { id: 'pip-pocket-watch', kind: 'Pip keepsake', title: 'The Brass Sunrise Pocket Watch', description: 'A tiny brass pocket watch with an apricot face, kept ticking for the first warm light of morning.', earnedBy: 'pip', imageSrc: PIP_POCKET_WATCH_SRC, artVariant: 'pip-pocket-watch' as const },
@@ -704,6 +758,33 @@ function getCurioDisplayZone(item: Collectible): CurioDisplayZone {
   if (item.id.includes('pip-pocket-watch')) return 'house-keeps';
   if (item.id.includes('pip-rice-bowl')) return 'house-keeps';
   if (item.id.includes('pip-satchel-tag')) return 'little-finds';
+  if (item.id.includes('tilda-toolbox')) return 'house-keeps';
+  if (item.id.includes('tilda-wrench-set')) return 'hanging-tools';
+  if (item.id.includes('tilda-safety-module')) return 'little-finds';
+  if (item.id.includes('sencha-leaf-bookmark')) return 'tea-tools';
+  if (item.id.includes('sencha-night-teapot')) return 'little-finds';
+  if (item.id.includes('sencha-tea-ledger')) return 'house-keeps';
+  if (item.id.includes('toro-captains-cap')) return 'house-keeps';
+  if (item.id.includes('toro-pocket-compass')) return 'little-finds';
+  if (item.id.includes('toro-grill-spatula')) return 'hanging-tools';
+  if (item.id.includes('nori-plum-notebook')) return 'house-keeps';
+  if (item.id.includes('nori-brush-pen')) return 'little-finds';
+  if (item.id.includes('nori-scarf-pin')) return 'hanging-tools';
+  if (item.id.includes('miso-soup-bowl')) return 'house-keeps';
+  if (item.id.includes('miso-walnut-ladle')) return 'hanging-tools';
+  if (item.id.includes('miso-broth-jar')) return 'little-finds';
+  if (item.id.includes('uma-noodle-ribbon')) return 'house-keeps';
+  if (item.id.includes('uma-flour-sack')) return 'little-finds';
+  if (item.id.includes('uma-rolling-pin')) return 'hanging-tools';
+  if (item.id.includes('panko-magnifying-glass')) return 'little-finds';
+  if (item.id.includes('panko-detective-beret')) return 'house-keeps';
+  if (item.id.includes('panko-clue-notebook')) return 'hanging-tools';
+  if (item.id.includes('kiku-aged-copper-kettle')) return 'house-keeps';
+  if (item.id.includes('kiku-jade-brass-gear')) return 'hanging-tools';
+  if (item.id.includes('kiku-sage-blueprint')) return 'little-finds';
+  if (item.id.includes('bibi-stacked-bento')) return 'house-keeps';
+  if (item.id.includes('bibi-food-tweezers')) return 'hanging-tools';
+  if (item.id.includes('bibi-cloth-wrap')) return 'little-finds';
   if (item.id.includes('chef-ladle-champion')) return 'hanging-tools';
   if (item.id.includes('chef-ladle-night-shift')) return 'hanging-tools';
   if (item.id.includes('wrench-do-not-relocate')) return 'hanging-tools';

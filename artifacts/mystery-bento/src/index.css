@@ -603,6 +603,15 @@
 .curio-glyph-image-pip-pocket-watch { width: 79.2px; height: 79.2px; }
 .curio-glyph-image-pip-rice-bowl { width: 90px; height: 73.8px; }
 .curio-glyph-image-pip-satchel-tag { width: 75.6px; height: 86.4px; }
+.curio-glyph-image-tilda-toolbox, .curio-glyph-image-tilda-wrench-set, .curio-glyph-image-tilda-safety-module { width: 94px; height: 94px; }
+.curio-glyph-image-sencha-leaf-bookmark, .curio-glyph-image-sencha-night-teapot, .curio-glyph-image-sencha-tea-ledger { width: 94px; height: 94px; }
+.curio-glyph-image-toro-captains-cap, .curio-glyph-image-toro-pocket-compass, .curio-glyph-image-toro-grill-spatula { width: 94px; height: 94px; }
+.curio-glyph-image-nori-plum-notebook, .curio-glyph-image-nori-brush-pen, .curio-glyph-image-nori-scarf-pin { width: 94px; height: 94px; }
+.curio-glyph-image-miso-soup-bowl, .curio-glyph-image-miso-walnut-ladle, .curio-glyph-image-miso-broth-jar { width: 94px; height: 94px; }
+.curio-glyph-image-uma-noodle-ribbon, .curio-glyph-image-uma-flour-sack, .curio-glyph-image-uma-rolling-pin { width: 94px; height: 94px; }
+.curio-glyph-image-panko-magnifying-glass, .curio-glyph-image-panko-detective-beret, .curio-glyph-image-panko-clue-notebook { width: 94px; height: 94px; }
+.curio-glyph-image-kiku-aged-copper-kettle, .curio-glyph-image-kiku-jade-brass-gear, .curio-glyph-image-kiku-sage-blueprint { width: 94px; height: 94px; }
+.curio-glyph-image-bibi-stacked-bento, .curio-glyph-image-bibi-food-tweezers, .curio-glyph-image-bibi-cloth-wrap { width: 94px; height: 94px; }
 .curio-room { position: relative; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 22px; min-height: 430px; padding: 32px 24px 28px; background: linear-gradient(180deg, #e9d09d, #f5e8c9 56%, #d8bd87); border: 3px solid #30223c; box-shadow: inset 0 0 0 8px rgba(255,255,255,.18), 6px 6px 0 rgba(48,34,60,.16); overflow: hidden; }
 .curio-room::before { content: ''; position: absolute; inset: 0; pointer-events: none; opacity: .42; background: repeating-linear-gradient(90deg, rgba(163,77,67,.12) 0 2px, transparent 2px 50px), repeating-linear-gradient(0deg, rgba(48,34,60,.08) 0 2px, transparent 2px 42px); }
 .curio-room::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 24px; background: #30223c; box-shadow: inset 0 7px #806a55; }

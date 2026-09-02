@@ -14,3 +14,9 @@ Race scenes should preload every action sheet before the first movement stage an
 **Why:** Lazy-loading a jump or run sheet at the moment an obstacle appears can look like a blink, while resetting to frame zero makes otherwise continuous movement visibly snap.
 
 **How to apply:** Preload idle, walk, run, and jump sources during the race overlay setup, then map the current frame proportionally to the next sheet's frame count instead of restarting the animation.
+
+Multi-object reference sheets should become independent transparent square derivatives when each object is meant to be a separate collectible.
+
+**Why:** The Curio Shelf earns, labels, positions, and previews items individually; keeping a composite sheet would make the collection state and shelf placement ambiguous.
+
+**How to apply:** Preserve the uploaded sheet as reference material, crop each object tightly, remove only the connected exterior background, and register each derivative as its own image-backed collectible.
