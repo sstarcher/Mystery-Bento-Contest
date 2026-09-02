@@ -9,7 +9,7 @@
     "serve": "vite preview --config vite.config.ts --host 0.0.0.0",
     "verify:race": "tsx src/race-timeline.test.ts && tsx src/race-momentum.test.ts",
     "verify:sprites": "tsx src/sprite-sheet-audit.test.ts",
-    "verify:curios": "tsx src/curio-art-sizing.test.ts",
+    "verify:curios": "tsx src/curio-art-sizing.test.ts && tsx src/curio-footprint-audit.test.ts",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "devDependencies": {
