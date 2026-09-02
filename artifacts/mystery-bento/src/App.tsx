@@ -547,12 +547,22 @@ function getRaceRunnerReaction(obstacleKind: RaceObstacleKind, result: RaceEncou
   return raceJumpObstacleKinds.has(obstacleKind) ? 'jump' : 'dodge';
 }
 function buildAnnouncerSequence(contestants: Persona[], race: RaceSimulation, prefersReducedMotion = false): AnnouncerBeat[] {
+  const raceStart = announcerClip('race-starts', 'race-start-quiet-kitchen', 'The race is underway');
+  const rosterOpening = announcerClip('character-intros', 'contestants-are', 'Tonight’s contestants are');
   const beats: AnnouncerBeat[] = [
+    {
+      id: 'race-start',
+      step: 'intro',
+      label: raceStart.label,
+      offset: 0,
+      deadlineOffset: contestDurations.intro,
+      clips: [raceStart],
+    },
     {
       id: 'intro-opening',
       step: 'intro',
       label: 'Tonight’s contestants are',
-      offset: 0,
+      offset: raceStart.durationMs + MIN_ANNOUNCER_GAP_MS,
       deadlineOffset: contestDurations.intro,
       // Names are individual clips, so a shorter handoff keeps the roster
       // sounding like one introduction instead of a series of pauses.
@@ -566,9 +576,8 @@ function buildAnnouncerSequence(contestants: Persona[], race: RaceSimulation, pr
           : NAME_ANNOUNCER_GAP_MS),
       ],
       clips: [
-        announcerClip('character-intros', 'contestants-are', 'Tonight’s contestants are'),
+        rosterOpening,
         ...contestants.map((persona) => announcerClip('character-names', persona.id, persona.name)),
-        announcerClip('race-starts', 'race-start-quiet-kitchen', 'The race is underway'),
       ],
     },
   ];
@@ -1337,15 +1346,27 @@ function MovementSprite({
   persona,
   action,
   prefersReducedMotion,
+  animationKey,
 }: {
   persona: Persona;
   action: MovementAction;
   prefersReducedMotion: boolean;
+  animationKey?: string;
 }) {
-  const spriteSheet = getMovementSpriteSheet(persona.id, action);
+  const [displayAction, setDisplayAction] = useState<MovementAction>(action);
   const [frameIndex, setFrameIndex] = useState(0);
+  const [completedJumpKey, setCompletedJumpKey] = useState<string | null>(null);
+  const jumpKey = animationKey ?? 'jump';
+  const effectiveAction = action === 'jump' && completedJumpKey === jumpKey ? 'run' : displayAction;
+  const spriteSheet = getMovementSpriteSheet(persona.id, effectiveAction);
   const previousSpriteSource = useRef<string | null>(null);
   const previousFrameCount = useRef(1);
+
+  useEffect(() => {
+    setCompletedJumpKey(null);
+    setDisplayAction(action);
+    if (action === 'jump') setFrameIndex(0);
+  }, [action, animationKey]);
 
   useEffect(() => {
     const priorSource = previousSpriteSource.current;
@@ -1354,18 +1375,27 @@ function MovementSprite({
     previousFrameCount.current = spriteSheet?.frameCount ?? 1;
     setFrameIndex((current) => {
       if (!spriteSheet) return 0;
+      if (effectiveAction === 'jump' && priorSource !== spriteSheet.src) return 0;
       if (!priorSource || priorSource === spriteSheet.src) return current % spriteSheet.frameCount;
       return Math.floor((current / priorFrameCount) * spriteSheet.frameCount) % spriteSheet.frameCount;
     });
-  }, [spriteSheet]);
+  }, [effectiveAction, spriteSheet]);
 
   useEffect(() => {
     if (!spriteSheet || prefersReducedMotion || spriteSheet.frameCount < 2) return;
+    const isOneShot = action === 'jump' && effectiveAction === 'jump';
     const timer = window.setInterval(() => {
-      setFrameIndex((current) => (current + 1) % spriteSheet.frameCount);
+      setFrameIndex((current) => isOneShot
+        ? Math.min(current + 1, spriteSheet.frameCount - 1)
+        : (current + 1) % spriteSheet.frameCount);
     }, spriteSheet.frameDurationMs);
     return () => window.clearInterval(timer);
-  }, [prefersReducedMotion, spriteSheet]);
+  }, [action, effectiveAction, prefersReducedMotion, spriteSheet]);
+
+  useEffect(() => {
+    if (!spriteSheet || action !== 'jump' || effectiveAction !== 'jump' || frameIndex < spriteSheet.frameCount - 1) return;
+    setCompletedJumpKey(jumpKey);
+  }, [action, effectiveAction, frameIndex, jumpKey, spriteSheet]);
 
   if (!spriteSheet) return <PersonaPortrait persona={persona} />;
 
@@ -1513,6 +1543,24 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
   const announcerSequence = useMemo(() => buildAnnouncerSequence(contestants, race, prefersReducedMotion), [contestants, race, prefersReducedMotion]);
   const announcerBeatCallback = useRef(onAnnouncerBeat);
   announcerBeatCallback.current = onAnnouncerBeat;
+  const contestantAnnouncedCallback = useRef<(personaId: string) => void>(() => undefined);
+  contestantAnnouncedCallback.current = (personaId) => {
+    const index = contestants.findIndex((persona) => persona.id === personaId);
+    const persona = contestants[index];
+    if (!persona) return;
+    setAnnouncedContestantCount((current) => Math.max(current, index + 1));
+    setAnnouncementCardsVisible(true);
+    setAnnouncementStatus(`${persona.name} is taking a place beneath the lanterns.`);
+    setSpokenBeatLabel(persona.name);
+    announcerBeatCallback.current(persona.name);
+  };
+  const announcementCompleteCallback = useRef<() => void>(() => undefined);
+  announcementCompleteCallback.current = () => {
+    setAnnouncementCardsVisible(false);
+    setAnnouncementPhaseComplete(true);
+    setAnnouncementStatus('The roster is set. The race begins beneath the lanterns.');
+    setSpokenBeatLabel('The roster is set');
+  };
   const announcementTimeline = useMemo(() => {
     const introBeat = announcerSequence.find((beat) => beat.id === 'intro-opening');
     const nameClips = introBeat?.clips.slice(1, contestants.length + 1) ?? [];
@@ -1521,7 +1569,10 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
       nameClips.map((clip) => clip?.durationMs ?? 900),
       introBeat?.gapAfterMs ?? NAME_ANNOUNCER_GAP_MS,
     );
-    return contestants.map((persona, index) => ({ persona, offset: offsets[index] ?? 0 }));
+    return contestants.map((persona, index) => ({
+      persona,
+      offset: (introBeat?.offset ?? 0) + (offsets[index] ?? 0),
+    }));
   }, [announcerSequence, contestants]);
   const currentObstacleIndex = step === 'intro' ? -1 : Math.min(race.obstacles.length - 1, raceStepProgress[step] - 1);
   const currentObstacle = currentObstacleIndex >= 0 ? race.obstacles[currentObstacleIndex] : null;
@@ -1569,35 +1620,25 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
       setSpokenBeatLabel('Tonight’s contestants are');
     }, 0);
 
-    announcementTimeline.forEach(({ persona, offset }, index) => {
-      const revealContestant = () => {
-        // The visual beat is authoritative. Audio is best-effort and can be
-        // muted, missing, delayed by metadata, or waiting for a gesture; none
-        // of those states should make a card appear after its name call.
-        setAnnouncedContestantCount(index + 1);
-        setAnnouncementCardsVisible(true);
-        setAnnouncementStatus(`${persona.name} is taking a place beneath the lanterns.`);
-        setSpokenBeatLabel(persona.name);
-        announcerBeatCallback.current(persona.name);
-      };
-      schedule(revealContestant, startedAt + offset - Date.now());
-    });
-
-    const finalReveal = announcementTimeline[announcementTimeline.length - 1];
-    if (finalReveal) {
-      const finalClip = announcerSequence.find((beat) => beat.id === 'intro-opening')?.clips[announcementTimeline.length];
-      // Keep the final pause on the planned visual timeline rather than
-      // waiting for a potentially stalled optional audio element.
-      schedule(() => {
-        setAnnouncementCardsVisible(false);
-        setAnnouncementPhaseComplete(true);
-        setAnnouncementStatus('The roster is set. The race begins beneath the lanterns.');
-        setSpokenBeatLabel('The roster is set');
-      }, startedAt + finalReveal.offset + (finalClip?.durationMs ?? 900) + LAST_CONTESTANT_PAUSE_MS - Date.now());
+    // With voice enabled, the announcer effect below reveals each card from
+    // the name clip's actual playback start. A muted contest has no playback
+    // event, so retain a deterministic visual fallback for that mode.
+    if (!voiceEnabled) {
+      announcementTimeline.forEach(({ persona, offset }) => {
+        schedule(() => contestantAnnouncedCallback.current(persona.id), startedAt + offset - Date.now());
+      });
+      const finalReveal = announcementTimeline[announcementTimeline.length - 1];
+      if (finalReveal) {
+        const finalClip = announcerSequence.find((beat) => beat.id === 'intro-opening')?.clips[announcementTimeline.length];
+        schedule(
+          () => announcementCompleteCallback.current(),
+          startedAt + finalReveal.offset + (finalClip?.durationMs ?? 900) + LAST_CONTESTANT_PAUSE_MS - Date.now(),
+        );
+      }
     }
 
     return () => timers.forEach((timer) => window.clearTimeout(timer));
-  }, [announcementTimeline, announcerSequence, contestStartedAt, contestants.length, step]);
+  }, [announcementTimeline, announcerSequence, contestStartedAt, contestants.length, step, voiceEnabled]);
   const getLaneProgress = (lane: RaceLaneSimulation | undefined) => lane
     ? getTimelineLaneProgressAtTime(step, lane, race.obstacles, raceClockMs - contestStepOffsets[step], prefersReducedMotion)
     : 0;
@@ -1705,6 +1746,14 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
     const metadataAudio = new Map<string, HTMLAudioElement>();
     const metadataDurations = new Map<string, number>();
     const failedSources = new Set<string>();
+    const announcedNameClips = new Set<string>();
+
+    const announceNameClip = (clip: AnnouncerClip) => {
+      const prefix = 'character-names/';
+      if (!clip.id.startsWith(prefix) || announcedNameClips.has(clip.id)) return;
+      announcedNameClips.add(clip.id);
+      contestantAnnouncedCallback.current(clip.id.slice(prefix.length));
+    };
 
     const stopAudio = () => {
       if (announcerAudio.current) {
@@ -1775,6 +1824,7 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
         return;
       }
       if (failedSources.has(clip.src) || !fitsBeforeDeadline(beat, clip, Date.now())) {
+        announceNameClip(clip);
         skipClip(beat, clipIndex);
         return;
       }
@@ -1800,10 +1850,16 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
         announcerAudio.current = null;
         const gapAfterClip = beat.clipGapsAfterMs?.[clipIndex] ?? beat.gapAfterMs ?? MIN_ANNOUNCER_GAP_MS;
         announcerAudioReadyAt.current = Date.now() + gapAfterClip;
+        if (beat.id === 'intro-opening' && clipIndex === beat.clips.length - 1) {
+          schedule(() => announcementCompleteCallback.current(), gapAfterClip);
+        }
         schedule(() => skipClip(beat, clipIndex), gapAfterClip);
       };
       audio.addEventListener('ended', continueBeat, { once: true });
-      audio.addEventListener('error', continueBeat, { once: true });
+      audio.addEventListener('error', () => {
+        announceNameClip(clip);
+        continueBeat();
+      }, { once: true });
       pendingAudio.current = {
         audio,
         beat,
@@ -1816,10 +1872,16 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
           if (!cancelled) {
             setAudioNeedsGesture(false);
             spokenBeatIds.current.add(beat.id);
+             announceNameClip(clip);
           }
         })
         .catch(() => {
-          if (!cancelled && !audio.error && audio.readyState > 0) setAudioNeedsGesture(true);
+           if (cancelled) return;
+           announceNameClip(clip);
+           if (!audio.error && audio.readyState > 0) setAudioNeedsGesture(true);
+           // A blocked autoplay attempt must not stall the roster. Treat the
+           // clip as unavailable and continue to the next name.
+           continueBeat();
         });
     }
 
@@ -1957,6 +2019,16 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
                 const laneCurrentObstacle = laneCurrentObstacleIndex >= 0 ? race.obstacles[laneCurrentObstacleIndex] : null;
                 const encounter = laneCurrentObstacle ? lane?.encounters[laneCurrentObstacle.id] : undefined;
                 const runnerReaction = laneCurrentObstacle && encounter ? getRaceRunnerReaction(laneCurrentObstacle.kind, encounter.result) : 'ready';
+                 const runnerAction: MovementAction = runnerReaction === 'jump'
+                   ? 'jump'
+                   : step === 'intro'
+                     ? 'idle'
+                     : step === 'warmup'
+                       ? 'walk'
+                       : 'run';
+                 const movementAnimationKey = runnerReaction === 'jump'
+                   ? `${step}-${laneCurrentObstacle?.id ?? 'jump'}`
+                   : step;
                 const isWinner = (winner?.id ?? race.winnerId) === persona.id;
                  const finishCrossingActive = isWinner && step === 'finale' && finishLineVisible && !finishCrossed;
                  const finishCrossingDuration = Math.max(
@@ -1985,7 +2057,8 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
                         ) : (
                           <MovementSprite
                             persona={persona}
-                            action={runnerReaction === 'jump' ? 'jump' : step === 'intro' ? 'idle' : step === 'warmup' ? 'walk' : 'run'}
+                            action={runnerAction}
+                            animationKey={movementAnimationKey}
                             prefersReducedMotion={prefersReducedMotion}
                           />
                         )}
