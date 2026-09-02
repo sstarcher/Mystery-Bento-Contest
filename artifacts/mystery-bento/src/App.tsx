@@ -36,6 +36,7 @@ import bibiFoodTweezers from './assets/curios/bibi-food-tweezers.png';
 import bibiStackedBento from './assets/curios/bibi-stacked-bento.png';
 import { getMovementSpriteSheet, type MovementAction } from './movement-sprite-config';
 import { RACE_BACKGROUND_SEQUENCE } from './race-backgrounds';
+import { CURIO_ART_FIT_SCALE, getCurioArtProfile, type CurioArtProfile } from './curio-art-sizing';
 import {
   getFirstRunnerObstacleHitOffset as getTimelineFirstRunnerObstacleHitOffset,
   getRaceFinishCrossingOffset,
@@ -1065,39 +1066,10 @@ function FoodSelectionSplash({ item }: { item: FoodItem }) {
   );
 }
 
-type CurioArtProfile = { scale: number };
-
-// Curio art is authored on different transparent canvases and the legacy
-// glyphs have different silhouettes. Normalize the visible maximum dimension
-// here, while keeping each artwork's aspect ratio intact.
-const CURIO_ART_PROFILES: Record<string, CurioArtProfile> = {
-  'image-default': { scale: 0.84 },
-  'pip-pocket-watch': { scale: 1 },
-  'pip-rice-bowl': { scale: 1 },
-  'pip-satchel-tag': { scale: 1 },
-  'glyph-default': { scale: 1 },
-  'glyph-recipe': { scale: 1.14 },
-  'glyph-note': { scale: 1.08 },
-  'glyph-cup': { scale: 1.2 },
-  'glyph-lantern': { scale: 1.45 },
-  'glyph-ticket': { scale: 1.15 },
-  'glyph-ladle': { scale: 1.1 },
-  'glyph-patch': { scale: 1.08 },
-  'glyph-wrench': { scale: 1.25 },
-  'glyph-checker': { scale: 1.05 },
-  'glyph-tile': { scale: 1.15 },
-  'glyph-snapshot': { scale: 1.08 },
-  'glyph-tray': { scale: 1.02 },
-  'glyph-pin': { scale: 1.15 },
-  'glyph-medal': { scale: 1.18 },
-  'glyph-kettle': { scale: 1.15 },
-  'glyph-radish': { scale: 1.25 },
-};
-
 function CurioArtFrame({ profile, children }: { profile: CurioArtProfile; children: ReactNode }) {
   return (
     <div className="curio-art-box">
-      <div className="curio-art-normalized" style={{ '--curio-art-scale': profile.scale } as CSSProperties}>
+      <div className="curio-art-normalized" style={{ '--curio-art-scale': profile.scale * CURIO_ART_FIT_SCALE } as CSSProperties}>
         {children}
       </div>
     </div>
@@ -1108,7 +1080,7 @@ function CurioGlyph({ item }: { item: Collectible }) {
   if (item.imageSrc) {
     const artVariant = item.artVariant;
     return (
-      <CurioArtFrame profile={artVariant ? (CURIO_ART_PROFILES[artVariant] ?? CURIO_ART_PROFILES['image-default']) : CURIO_ART_PROFILES['image-default']}>
+      <CurioArtFrame profile={getCurioArtProfile({ artVariant })}>
         <div className={`curio-glyph curio-glyph-image${artVariant ? ` curio-glyph-image-${artVariant}` : ''}`} aria-hidden="true">
           <img src={item.imageSrc} alt="" draggable="false" />
         </div>
@@ -1147,7 +1119,7 @@ function CurioGlyph({ item }: { item: Collectible }) {
           ? 'kettle'
             : 'radish';
   return (
-    <CurioArtFrame profile={CURIO_ART_PROFILES[`glyph-${glyphClass}`] ?? CURIO_ART_PROFILES['glyph-default']}>
+    <CurioArtFrame profile={getCurioArtProfile({ glyphClass })}>
       <div className={`curio-glyph curio-glyph-${glyphClass}`} aria-hidden="true">
         <span className="curio-glyph-detail" />
         <span className="curio-glyph-shine" />
