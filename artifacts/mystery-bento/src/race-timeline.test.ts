@@ -3,12 +3,15 @@ import {
   getFirstRunnerObstacleHitOffset,
   getRaceFinishCrossingOffset,
   getRaceAnnouncementRevealOffsets,
+  getRaceAnnouncementCompletionDelay,
   getRaceLaneProgressAtTime,
   getRaceRunnerScreenAnchors,
+  getRaceStartHandoffTiming,
   getRaceStageObstacleMilestones,
   getRaceWorldScreenAnchor,
   getRaceWorldTravelPercentAtTime,
   RACE_FINALE_WORLD_END_PERCENT,
+  RACE_LAST_CONTESTANT_PAUSE_MS,
   RACE_MATCHUP_WORLD_END_PERCENT,
   RACE_RUNNER_MAX_SPREAD_PERCENT,
   RACE_RUNNER_SCREEN_MAX_PERCENT,
@@ -81,6 +84,65 @@ assert.deepEqual(
   getRaceAnnouncementRevealOffsets(640, [700, 820, 910], 80),
   [720, 1500, 2400],
   'each card reveal should begin at its name clip start, not after the clip ends',
+);
+const raceStartHandoff = getRaceStartHandoffTiming(
+  1330,
+  [850, 900, 800, 800],
+  80,
+  6350,
+  520,
+);
+assert.deepEqual(
+  raceStartHandoff.nameRevealOffsets,
+  [1410, 2340, 3320, 4200],
+  'roster cards should reveal from the start of each name clip',
+);
+assert.equal(
+  raceStartHandoff.raceStartOffset - raceStartHandoff.finalNameEndOffset,
+  RACE_LAST_CONTESTANT_PAUSE_MS,
+  'the final name should hold for the one-second handoff pause',
+);
+assert.equal(
+  raceStartHandoff.announcementEndOffset,
+  raceStartHandoff.raceStartOffset + 6350,
+  'the start announcement should have its own visible duration',
+);
+assert.equal(
+  raceStartHandoff.movementStartOffset,
+  raceStartHandoff.announcementEndOffset + 520,
+  'the race clock should begin only after the start announcement and its audio gap',
+);
+assert.ok(
+  raceStartHandoff.movementStartOffset < RACE_STAGE_DURATIONS.intro,
+  'the complete roster-to-race handoff should fit inside the intro budget',
+);
+const handoffLane = lineups[0][0];
+assert.equal(
+  getRaceWorldTravelPercentAtTime('intro', raceStartHandoff.raceStartOffset, false),
+  0,
+  'the race course should remain at its visible starting view during the announcement',
+);
+assert.equal(
+  getRaceLaneProgressAtTime('intro', handoffLane, obstacles, raceStartHandoff.announcementEndOffset, false),
+  handoffLane.positions.intro,
+  'runners should remain at the starting line until the announcement completes',
+);
+assert.equal(
+  getRaceLaneProgressAtTime('warmup', handoffLane, obstacles, 0, false),
+  handoffLane.positions.intro,
+  'movement should begin at the race clock zero boundary',
+);
+assert.ok(
+  getRaceLaneProgressAtTime('warmup', handoffLane, obstacles, 1, false) > handoffLane.positions.intro,
+  'movement should advance after the race clock starts',
+);
+const fallbackDelay = getRaceAnnouncementCompletionDelay(6350, 520);
+const mutedFallbackCompletion = raceStartHandoff.raceStartOffset + fallbackDelay;
+const unavailableFallbackCompletion = raceStartHandoff.raceStartOffset + fallbackDelay;
+assert.equal(
+  unavailableFallbackCompletion,
+  mutedFallbackCompletion,
+  'unavailable audio should use the same deterministic timing fallback as muted audio',
 );
 assert.ok(RACE_RUNNER_PRESENTATION_TOP_PX >= 380 + 30, 'runner presentation should move down by about 30px');
 assert.ok(

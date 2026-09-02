@@ -40,11 +40,14 @@ import {
   getFirstRunnerObstacleHitOffset as getTimelineFirstRunnerObstacleHitOffset,
   getRaceFinishCrossingOffset,
   getRaceAnnouncementRevealOffsets,
+  getRaceAnnouncementCompletionDelay,
+  getRaceStartHandoffTiming,
   getRaceLaneProgressAtTime as getTimelineLaneProgressAtTime,
   getRaceRunnerScreenAnchors,
   getRaceWorldTravelPercentAtTime,
   RACE_FINALE_WORLD_END_PERCENT,
   RACE_FINALE_WORLD_START_PERCENT,
+  RACE_LAST_CONTESTANT_PAUSE_MS,
   RACE_MATCHUP_WORLD_END_PERCENT,
   RACE_STAGE_DURATIONS,
   RACE_WARMUP_WORLD_END_PERCENT,
@@ -185,7 +188,6 @@ const PANKO_ANIMATION_SPRITE_SHEET_SRC = `${import.meta.env.BASE_URL}video/panko
 const BIBI_ANIMATION_SPRITE_SHEET_SRC = `${import.meta.env.BASE_URL}video/bibi-bento-cooking-sprite-sheet.png`;
 const MIN_ANNOUNCER_GAP_MS = 520;
 const NAME_ANNOUNCER_GAP_MS = 80;
-const LAST_CONTESTANT_PAUSE_MS = 1000;
 /**
  * The course report and hazard strip are implemented spectator details.
  * Keep their data, narration, and styling available, but leave the lower race
@@ -550,13 +552,13 @@ function buildAnnouncerSequence(contestants: Persona[], race: RaceSimulation, pr
   const raceStart = announcerClip('race-starts', 'race-start-quiet-kitchen', 'The race is underway');
   const rosterOpening = announcerClip('character-intros', 'contestants-are', 'Tonight’s contestants are');
   const nameClips = contestants.map((persona) => announcerClip('character-names', persona.id, persona.name));
-  const rosterEndOffset = rosterOpening.durationMs
-    + NAME_ANNOUNCER_GAP_MS
-    + nameClips.reduce(
-      (total, clip, index) => total + clip.durationMs
-        + (index === nameClips.length - 1 ? LAST_CONTESTANT_PAUSE_MS : NAME_ANNOUNCER_GAP_MS),
-      0,
-    );
+  const handoffTiming = getRaceStartHandoffTiming(
+    rosterOpening.durationMs,
+    nameClips.map((clip) => clip.durationMs),
+    NAME_ANNOUNCER_GAP_MS,
+    raceStart.durationMs,
+    MIN_ANNOUNCER_GAP_MS,
+  );
   const beats: AnnouncerBeat[] = [
     {
       id: 'intro-opening',
@@ -572,7 +574,7 @@ function buildAnnouncerSequence(contestants: Persona[], race: RaceSimulation, pr
       clipGapsAfterMs: [
         NAME_ANNOUNCER_GAP_MS,
         ...nameClips.map((_, index) => index === nameClips.length - 1
-          ? LAST_CONTESTANT_PAUSE_MS
+          ? RACE_LAST_CONTESTANT_PAUSE_MS
           : NAME_ANNOUNCER_GAP_MS),
       ],
       clips: [
@@ -584,7 +586,7 @@ function buildAnnouncerSequence(contestants: Persona[], race: RaceSimulation, pr
       id: 'race-start',
       step: 'intro',
       label: raceStart.label,
-      offset: rosterEndOffset,
+      offset: handoffTiming.raceStartOffset,
       deadlineOffset: contestDurations.intro,
       clips: [raceStart],
     },
@@ -1896,7 +1898,10 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
       announceRaceStartClip(clip);
       if (failedSources.has(clip.src) || !fitsBeforeDeadline(beat, clip, Date.now())) {
         if (beat.id === 'race-start') {
-          schedule(() => announcementCompleteCallback.current(), MIN_ANNOUNCER_GAP_MS);
+          schedule(
+            () => announcementCompleteCallback.current(),
+            getRaceAnnouncementCompletionDelay(clip.durationMs, MIN_ANNOUNCER_GAP_MS),
+          );
         }
         announceNameClip(clip);
         skipClip(beat, clipIndex);
@@ -1918,20 +1923,29 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
       announcerAudio.current = audio;
       setSpokenBeatLabel(clip.label);
       announcerBeatCallback.current(clip.label);
-      const continueBeat = () => {
+      const continueBeat = (
+        gapAfterClip = beat.clipGapsAfterMs?.[clipIndex] ?? beat.gapAfterMs ?? MIN_ANNOUNCER_GAP_MS,
+        announcementCompletionDelay = gapAfterClip,
+      ) => {
         if (cancelled || announcerAudio.current !== audio) return;
         pendingAudio.current = null;
         announcerAudio.current = null;
-        const gapAfterClip = beat.clipGapsAfterMs?.[clipIndex] ?? beat.gapAfterMs ?? MIN_ANNOUNCER_GAP_MS;
         announcerAudioReadyAt.current = Date.now() + gapAfterClip;
         if (beat.id === 'race-start' && clipIndex === beat.clips.length - 1) {
-          schedule(() => announcementCompleteCallback.current(), gapAfterClip);
+          schedule(() => announcementCompleteCallback.current(), announcementCompletionDelay);
         }
         schedule(() => skipClip(beat, clipIndex), gapAfterClip);
       };
-      audio.addEventListener('ended', continueBeat, { once: true });
+      audio.addEventListener('ended', () => continueBeat(), { once: true });
       audio.addEventListener('error', () => {
         announceNameClip(clip);
+        if (beat.id === 'race-start') {
+          continueBeat(
+            MIN_ANNOUNCER_GAP_MS,
+            getRaceAnnouncementCompletionDelay(clip.durationMs, MIN_ANNOUNCER_GAP_MS),
+          );
+          return;
+        }
         continueBeat();
       }, { once: true });
       pendingAudio.current = {
@@ -1954,8 +1968,16 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
            announceNameClip(clip);
            if (!audio.error && audio.readyState > 0) setAudioNeedsGesture(true);
            // A blocked autoplay attempt must not stall the roster. Treat the
-           // clip as unavailable and continue to the next name.
-           continueBeat();
+           // clip as unavailable and use the same deterministic fallback as
+           // muted mode for the race-start handoff.
+           if (beat.id === 'race-start') {
+             continueBeat(
+               MIN_ANNOUNCER_GAP_MS,
+               getRaceAnnouncementCompletionDelay(clip.durationMs, MIN_ANNOUNCER_GAP_MS),
+             );
+           } else {
+             continueBeat();
+           }
         });
     }
 
@@ -1973,7 +1995,13 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
         }
         if (beat.id === 'race-start') {
           raceStartGraphicCallback.current();
-          schedule(() => announcementCompleteCallback.current(), 0);
+          schedule(
+            () => announcementCompleteCallback.current(),
+            getRaceAnnouncementCompletionDelay(
+              beat.clips[0]?.durationMs ?? 0,
+              MIN_ANNOUNCER_GAP_MS,
+            ),
+          );
         }
         pendingBeatIds.delete(beat.id);
         return;

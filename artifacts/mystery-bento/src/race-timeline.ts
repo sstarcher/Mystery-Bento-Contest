@@ -23,6 +23,8 @@ export const RACE_STAGE_DURATIONS: Record<RaceTimelineStage, number> = {
   winner: 16500,
 };
 
+export const RACE_LAST_CONTESTANT_PAUSE_MS = 1000;
+
 export const RACE_WORLD_TRACK_WIDTH_MULTIPLIER = 6;
 export const RACE_WARMUP_WORLD_END_PERCENT = 20;
 export const RACE_MATCHUP_WORLD_END_PERCENT = 40;
@@ -106,6 +108,51 @@ export function getRaceAnnouncementRevealOffsets(
     offset += durationMs + gapAfterNameMs;
     return revealOffset;
   });
+}
+
+export type RaceStartHandoffTiming = {
+  nameRevealOffsets: number[];
+  finalNameEndOffset: number;
+  raceStartOffset: number;
+  announcementEndOffset: number;
+  movementStartOffset: number;
+};
+
+export function getRaceStartHandoffTiming(
+  openingDurationMs: number,
+  nameDurationsMs: number[],
+  nameGapMs: number,
+  raceStartDurationMs: number,
+  postAnnouncementGapMs: number,
+  finalNamePauseMs = RACE_LAST_CONTESTANT_PAUSE_MS,
+): RaceStartHandoffTiming {
+  const nameRevealOffsets = getRaceAnnouncementRevealOffsets(
+    openingDurationMs,
+    nameDurationsMs,
+    nameGapMs,
+  );
+  const lastNameIndex = nameDurationsMs.length - 1;
+  const finalNameEndOffset = lastNameIndex >= 0
+    ? nameRevealOffsets[lastNameIndex] + nameDurationsMs[lastNameIndex]
+    : openingDurationMs;
+  const raceStartOffset = finalNameEndOffset
+    + (lastNameIndex >= 0 ? finalNamePauseMs : 0);
+  const announcementEndOffset = raceStartOffset + raceStartDurationMs;
+
+  return {
+    nameRevealOffsets,
+    finalNameEndOffset,
+    raceStartOffset,
+    announcementEndOffset,
+    movementStartOffset: announcementEndOffset + postAnnouncementGapMs,
+  };
+}
+
+export function getRaceAnnouncementCompletionDelay(
+  announcementDurationMs: number,
+  postAnnouncementGapMs: number,
+) {
+  return announcementDurationMs + postAnnouncementGapMs;
 }
 
 function getRaceStageStartPosition(stage: RaceTimelineStage, lane: RaceTimelineLane) {

@@ -57,6 +57,12 @@ Contest audio should follow one absolute contest clock, while visual stage trans
 
 **How to apply:** Schedule beats from the contest start timestamp, keep the queue serialized with the minimum gap, and reset only the audio session when Skip Scene jumps directly to the finish.
 
+The race-start handoff must use the same duration-plus-gap fallback when audio is muted, missing, or blocked.
+
+**Why:** Different fallback lengths make the visible starting-lantern state and the race clock depend on browser audio availability.
+
+**How to apply:** Keep the final-name pause, start-announcement duration, and post-announcement gap in shared timeline helpers, and test the fallback paths against the same completion boundary.
+
 Chef videos should preserve their native aspect ratio and use a proportion-matched fallback poster; uploaded MP4s may contain an opaque transparency-checkerboard background.
 
 **Why:** Stretching a tall still into a landscape video box makes the chef look distorted, while a checkerboard baked into the source will become a visible scene rectangle during playback.
