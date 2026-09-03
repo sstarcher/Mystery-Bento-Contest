@@ -129,6 +129,7 @@ type RaceObstacle = {
   shortLabel: string;
   description: string;
   icon: string;
+  imageSrc: string;
   position: number;
   sourcePersonaId: string;
 };
@@ -169,6 +170,7 @@ const VOICE_ANNOUNCER_KEY = 'mystery-bento-voice-announcer';
 const ANNOUNCER_AUDIO_BASE = `${import.meta.env.BASE_URL}runtime/audio/announcer`;
 
 const RACE_BACKGROUND_BASE = `${import.meta.env.BASE_URL}runtime/images/race-backgrounds`;
+const RACE_OBSTACLE_IMAGE_BASE = `${import.meta.env.BASE_URL}runtime/images/obstacles`;
 const PIP_ANIMATION_SPRITE_SHEET_SRC = `${import.meta.env.BASE_URL}runtime/video/cooking/pip-making-food-sprite-sheet.png`;
 
 const PIP_POCKET_WATCH_SRC = `${import.meta.env.BASE_URL}runtime/images/keepsakes/pip-pocket-watch.png`;
@@ -508,21 +510,22 @@ const raceObstacleCatalog: Record<RaceObstacleKind, {
   shortLabel: string;
   description: string;
   icon: string;
+  imageSrc: string;
   primaryTrait: RaceTrait;
   secondaryTrait: RaceTrait;
 }> = {
-  'napkin-gust': { label: 'Napkin gust', shortLabel: 'napkin gust', description: 'a loose napkin gust turns the straightaway into a paper storm', icon: '≈', primaryTrait: 'speed', secondaryTrait: 'focus' },
-  'tea-puddle': { label: 'Tea puddle', shortLabel: 'tea puddle', description: 'a perfect tea puddle demands a very exact step', icon: '◌', primaryTrait: 'focus', secondaryTrait: 'balance' },
-  'wobble-stack': { label: 'Wobble stack', shortLabel: 'wobble stack', description: 'a tower of bowls sways across the narrow lane', icon: '≋', primaryTrait: 'balance', secondaryTrait: 'focus' },
-  'shortcut-reflection': { label: 'Moon reflection', shortLabel: 'moon reflection', description: 'a puddle reflection appears to reveal a suspicious shortcut', icon: '✦', primaryTrait: 'luck', secondaryTrait: 'focus' },
-  'broken-cart': { label: 'Broken cart', shortLabel: 'broken cart', description: 'a pantry cart has parked itself directly across the course', icon: '□', primaryTrait: 'focus', secondaryTrait: 'chaos' },
-  'ribbon-tunnel': { label: 'Ribbon tunnel', shortLabel: 'ribbon tunnel', description: 'celebration ribbons knot together into a fast-moving tunnel', icon: '∿', primaryTrait: 'chaos', secondaryTrait: 'luck' },
-  'cushion-pile': { label: 'Cushion pile', shortLabel: 'cushion pile', description: 'a polite stack of cushions blocks the safest-looking route', icon: '⌂', primaryTrait: 'balance', secondaryTrait: 'chaos' },
-  'flour-sacks': { label: 'Flour sacks', shortLabel: 'flour sacks', description: 'fresh flour sacks tumble into the lane from the side door', icon: '▦', primaryTrait: 'speed', secondaryTrait: 'balance' },
-  'crumb-trail': { label: 'Crumb trail', shortLabel: 'crumb trail', description: 'one bright crumb trail winds behind a tempting stack of crates', icon: '·', primaryTrait: 'luck', secondaryTrait: 'focus' },
-  'garnish-gate': { label: 'Garnish gate', shortLabel: 'a garnish gate', description: 'two precise garnish poles leave one elegant line through', icon: '╫', primaryTrait: 'focus', secondaryTrait: 'balance' },
-  'steam-gadget': { label: 'Steam gadget', shortLabel: 'steam gadget', description: 'a little kettle device fills the lane with expressive steam', icon: '☼', primaryTrait: 'luck', secondaryTrait: 'focus' },
-  'bento-stack': { label: 'Bento stack', shortLabel: 'bento stack', description: 'a stack of empty bento boxes makes the finish lane narrow', icon: '▤', primaryTrait: 'balance', secondaryTrait: 'speed' },
+  'napkin-gust': { label: 'Napkin gust', shortLabel: 'napkin gust', description: 'a sideways swirl of loose cream napkins briefly blankets the track', icon: '≈', imageSrc: `${RACE_OBSTACLE_IMAGE_BASE}/napkin-gust.png`, primaryTrait: 'focus', secondaryTrait: 'chaos' },
+  'tea-puddle': { label: 'Tea puddle', shortLabel: 'tea puddle', description: 'a shallow amber spill with a slick edge and rippling tea leaf', icon: '◌', imageSrc: `${RACE_OBSTACLE_IMAGE_BASE}/tea-puddle-moon-reflection.png`, primaryTrait: 'balance', secondaryTrait: 'focus' },
+  'wobble-stack': { label: 'Wobble stack', shortLabel: 'wobble stack', description: 'leaning mismatched bowls sway above a narrow safe route', icon: '≋', imageSrc: `${RACE_OBSTACLE_IMAGE_BASE}/wobble-stack.png`, primaryTrait: 'balance', secondaryTrait: 'focus' },
+  'shortcut-reflection': { label: 'Moon reflection', shortLabel: 'moon reflection', description: 'an indigo puddle shows a tempting moonlit shortcut that may be real', icon: '✦', imageSrc: `${RACE_OBSTACLE_IMAGE_BASE}/tea-puddle-moon-reflection.png`, primaryTrait: 'luck', secondaryTrait: 'focus' },
+  'broken-cart': { label: 'Broken cart', shortLabel: 'broken cart', description: 'a sideways pantry cart with a loose wheel blocks part of the lane', icon: '□', imageSrc: `${RACE_OBSTACLE_IMAGE_BASE}/broken-cart.png`, primaryTrait: 'focus', secondaryTrait: 'chaos' },
+  'ribbon-tunnel': { label: 'Ribbon tunnel', shortLabel: 'ribbon tunnel', description: 'soft festival ribbons loop and flutter between two low poles', icon: '∿', imageSrc: `${RACE_OBSTACLE_IMAGE_BASE}/ribbon-tunnel.png`, primaryTrait: 'speed', secondaryTrait: 'chaos' },
+  'cushion-pile': { label: 'Cushion pile', shortLabel: 'cushion pile', description: 'a puffy heap of mismatched floor cushions blocks the most direct line', icon: '⌂', imageSrc: `${RACE_OBSTACLE_IMAGE_BASE}/cushion-pile.png`, primaryTrait: 'balance', secondaryTrait: 'luck' },
+  'flour-sacks': { label: 'Flour sacks', shortLabel: 'flour sacks', description: 'small sacks tumble together, kicking up a low dust puff', icon: '▦', imageSrc: `${RACE_OBSTACLE_IMAGE_BASE}/flour-sacks.png`, primaryTrait: 'balance', secondaryTrait: 'speed' },
+  'crumb-trail': { label: 'Crumb trail', shortLabel: 'crumb trail', description: 'sesame, rice grains, and golden crumbs curve toward an uncertain side route', icon: '·', imageSrc: `${RACE_OBSTACLE_IMAGE_BASE}/crumb-trail.png`, primaryTrait: 'luck', secondaryTrait: 'focus' },
+  'garnish-gate': { label: 'Garnish gate', shortLabel: 'garnish gate', description: 'herb sprigs and radish curls leave one narrow elegant passage', icon: '╫', imageSrc: `${RACE_OBSTACLE_IMAGE_BASE}/garnish-gate.png`, primaryTrait: 'focus', secondaryTrait: 'balance' },
+  'steam-gadget': { label: 'Steam gadget', shortLabel: 'steam gadget', description: 'a squat copper kettle releases a harmless cloud of warm steam', icon: '☼', imageSrc: `${RACE_OBSTACLE_IMAGE_BASE}/steam-gadget.png`, primaryTrait: 'focus', secondaryTrait: 'luck' },
+  'bento-stack': { label: 'Bento stack', shortLabel: 'bento stack', description: 'empty patterned bento boxes lean into the narrow finish approach', icon: '▤', imageSrc: `${RACE_OBSTACLE_IMAGE_BASE}/bento-stack.png`, primaryTrait: 'balance', secondaryTrait: 'focus' },
 };
 
 const personaObstacleKinds: Record<string, RaceObstacleKind> = {
@@ -851,6 +854,7 @@ function buildRaceSimulation(contestants: Persona[], rng: () => number): RaceSim
       shortLabel: catalog.shortLabel,
       description: `${sourcePersona.name}'s signature hazard: ${catalog.description}. Their quirk — ${sourcePersona.quirk.toLowerCase()} — makes this one personal.`,
       icon: catalog.icon,
+      imageSrc: catalog.imageSrc,
       position: obstaclePositions[index] ?? 83,
       sourcePersonaId: sourcePersona.id,
     };
@@ -2042,7 +2046,9 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
                             title={obstacle.label}
                             aria-hidden="true"
                           >
-                            <b>{obstacle.icon}</b>
+                            <span className="race-obstacle-art">
+                              <img src={obstacle.imageSrc} alt="" draggable="false" />
+                            </span>
                             <small>{obstacle.shortLabel}</small>
                           </span>
                         );

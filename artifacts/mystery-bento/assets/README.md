@@ -22,6 +22,10 @@ folder.
 - `asset_mqEP...` is the final moonlit-pavilion destination used for the finish
   crossing and winner state.
 
+`source/images/obstacles/` contains the 11 uploaded obstacle illustrations used
+by the race catalog. The tea-puddle and moon-reflection behaviors share one
+combined source image.
+
 The extracted and optimized image files used by the app live in
 `src/assets/derived/contestants/`, grouped by role and named by contestant.
 
@@ -36,8 +40,8 @@ later in the pipeline.
 
 ## Image audit status
 
-- 7 source images are preserved here: one character sheet and six race
-  backgrounds.
+- 18 source images are preserved here: one character sheet, six race
+  backgrounds, and 11 obstacle illustrations.
 - The app currently has 12 portraits, 12 food stills, 48 movement sheets, 12
   public cooking sheets, six
   race-background WebPs, six sushi plates, three Pip keepsakes, and 36 active
@@ -47,6 +51,8 @@ later in the pipeline.
   PNGs. None are wired into the current counter renderer.
 - The Rollo and Saffy curio sets use three independent transparent PNG
   derivatives each, all wired into the active collectible pool.
+- `public/runtime/images/obstacles/` contains 11 transparent runtime derivatives
+  for the 12 obstacle behaviors.
 - No active image import or runtime image URL is currently missing.
 - Run `pnpm --filter @workspace/mystery-bento run verify:assets` from the
   workspace root to repeat the import, runtime URL, folder, review-queue, and
