@@ -34,6 +34,9 @@ import kikuSageBlueprint from './assets/curios/kiku-sage-blueprint.png';
 import bibiClothWrap from './assets/curios/bibi-cloth-wrap.png';
 import bibiFoodTweezers from './assets/curios/bibi-food-tweezers.png';
 import bibiStackedBento from './assets/curios/bibi-stacked-bento.png';
+import rolloCeramicBowl from './assets/curios/rollo-ceramic-bowl.png';
+import rolloRadishMedal from './assets/curios/rollo-radish-medal.png';
+import rolloRibbonBell from './assets/curios/rollo-ribbon-bell.png';
 import saffyGarnishPlate from './assets/curios/saffy-garnish-plate.png';
 import saffyPlatingTweezers from './assets/curios/saffy-plating-tweezers.png';
 import saffyPresentationFan from './assets/curios/saffy-presentation-fan.png';
@@ -100,7 +103,7 @@ type Collectible = {
   earnedBy: string;
   earnedAt: string;
   imageSrc?: string;
-  artVariant?: 'pip-pocket-watch' | 'pip-rice-bowl' | 'pip-satchel-tag' | 'tilda-toolbox' | 'tilda-wrench-set' | 'tilda-safety-module' | 'sencha-leaf-bookmark' | 'sencha-night-teapot' | 'sencha-tea-ledger' | 'toro-captains-cap' | 'toro-pocket-compass' | 'toro-grill-spatula' | 'nori-plum-notebook' | 'nori-brush-pen' | 'nori-scarf-pin' | 'miso-soup-bowl' | 'miso-walnut-ladle' | 'miso-broth-jar' | 'uma-noodle-ribbon' | 'uma-flour-sack' | 'uma-rolling-pin' | 'panko-magnifying-glass' | 'panko-detective-beret' | 'panko-clue-notebook' | 'kiku-aged-copper-kettle' | 'kiku-jade-brass-gear' | 'kiku-sage-blueprint' | 'bibi-stacked-bento' | 'bibi-food-tweezers' | 'bibi-cloth-wrap' | 'saffy-garnish-plate' | 'saffy-plating-tweezers' | 'saffy-presentation-fan';
+  artVariant?: 'pip-pocket-watch' | 'pip-rice-bowl' | 'pip-satchel-tag' | 'tilda-toolbox' | 'tilda-wrench-set' | 'tilda-safety-module' | 'sencha-leaf-bookmark' | 'sencha-night-teapot' | 'sencha-tea-ledger' | 'toro-captains-cap' | 'toro-pocket-compass' | 'toro-grill-spatula' | 'nori-plum-notebook' | 'nori-brush-pen' | 'nori-scarf-pin' | 'miso-soup-bowl' | 'miso-walnut-ladle' | 'miso-broth-jar' | 'uma-noodle-ribbon' | 'uma-flour-sack' | 'uma-rolling-pin' | 'panko-magnifying-glass' | 'panko-detective-beret' | 'panko-clue-notebook' | 'kiku-aged-copper-kettle' | 'kiku-jade-brass-gear' | 'kiku-sage-blueprint' | 'bibi-stacked-bento' | 'bibi-food-tweezers' | 'bibi-cloth-wrap' | 'rollo-radish-medal' | 'rollo-ceramic-bowl' | 'rollo-ribbon-bell' | 'saffy-garnish-plate' | 'saffy-plating-tweezers' | 'saffy-presentation-fan';
 };
 type FoodItem = { id: string; name: string; note: string; imageSrc: string };
 type RaceTrait = keyof Persona['traits'];
@@ -749,6 +752,9 @@ const collectiblePool = [
   { id: 'bibi-stacked-bento', kind: 'Bibi keepsake', title: 'The Patterned Bento Stack', description: 'A tiny stacked bento box with muted blue and ochre patterns. A carefully curated keepsake from a traveling lunch arranger.', earnedBy: 'bibi', imageSrc: bibiStackedBento, artVariant: 'bibi-stacked-bento' as const },
   { id: 'bibi-food-tweezers', kind: 'Bibi keepsake', title: 'The Sheathed Plating Tweezers', description: 'Precise silver food tweezers in a cream sheath. A carefully curated keepsake from a traveling lunch arranger.', earnedBy: 'bibi', imageSrc: bibiFoodTweezers, artVariant: 'bibi-food-tweezers' as const },
   { id: 'bibi-cloth-wrap', kind: 'Bibi keepsake', title: 'The Amber-Charmed Cloth Wrap', description: 'A folded pale-blue cloth wrap tied with a small amber charm. A carefully curated keepsake from a traveling lunch arranger.', earnedBy: 'bibi', imageSrc: bibiClothWrap, artVariant: 'bibi-cloth-wrap' as const },
+  { id: 'rollo-radish-medal', kind: 'Rollo keepsake', title: 'The Radish Shortcut Medal', description: 'A radish-shaped medal with trailing ribbons, awarded for taking the most unexpected route home.', earnedBy: 'rollo', imageSrc: rolloRadishMedal, artVariant: 'rollo-radish-medal' as const },
+  { id: 'rollo-ceramic-bowl', kind: 'Rollo keepsake', title: 'The Midnight Radish Bowl', description: 'A dark ceramic bowl with a few bright radish flecks, ready for a late-night shortcut snack.', earnedBy: 'rollo', imageSrc: rolloCeramicBowl, artVariant: 'rollo-ceramic-bowl' as const },
+  { id: 'rollo-ribbon-bell', kind: 'Rollo keepsake', title: 'The Shortcut Bell', description: 'A warm brass bell tied with a coral ribbon, rung whenever the quick way turns into an adventure.', earnedBy: 'rollo', imageSrc: rolloRibbonBell, artVariant: 'rollo-ribbon-bell' as const },
   { id: 'saffy-garnish-plate', kind: 'Saffy keepsake', title: 'The Garnish Plate', description: 'A pale ceramic plating dish carrying one perfectly placed garnish. A precise keepsake from Saffy’s dramatic finishing station.', earnedBy: 'saffy', imageSrc: saffyGarnishPlate, artVariant: 'saffy-garnish-plate' as const },
   { id: 'saffy-plating-tweezers', kind: 'Saffy keepsake', title: 'The Ribbon Plating Tweezers', description: 'Silver plating tweezers tied with a coral ribbon. A precise keepsake from Saffy’s dramatic finishing station.', earnedBy: 'saffy', imageSrc: saffyPlatingTweezers, artVariant: 'saffy-plating-tweezers' as const },
   { id: 'saffy-presentation-fan', kind: 'Saffy keepsake', title: 'The Presentation Fan', description: 'A navy-and-coral folding fan reserved for the final flourish. A precise keepsake from Saffy’s dramatic finishing station.', earnedBy: 'saffy', imageSrc: saffyPresentationFan, artVariant: 'saffy-presentation-fan' as const },
@@ -796,6 +802,12 @@ function getCurioDisplayZone(item: Collectible): CurioDisplayZone {
   if (item.id.includes('bibi-stacked-bento')) return 'house-keeps';
   if (item.id.includes('bibi-food-tweezers')) return 'hanging-tools';
   if (item.id.includes('bibi-cloth-wrap')) return 'little-finds';
+  if (item.id.includes('rollo-radish-medal')) return 'house-keeps';
+  if (item.id.includes('rollo-ceramic-bowl')) return 'spare-plates';
+  if (item.id.includes('rollo-ribbon-bell')) return 'hanging-tools';
+  if (item.id.includes('saffy-garnish-plate')) return 'spare-plates';
+  if (item.id.includes('saffy-plating-tweezers')) return 'hanging-tools';
+  if (item.id.includes('saffy-presentation-fan')) return 'little-finds';
   return 'house-keeps';
 }
 

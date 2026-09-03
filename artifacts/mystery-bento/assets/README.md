@@ -47,10 +47,11 @@ later in the pipeline.
   backgrounds.
 - The app currently has 12 portraits, 12 food stills, 48 movement sheets, 12
   public cooking sheets, six race-background WebPs, six sushi plates, three Pip
-  keepsakes, and 30 active image-backed curios.
+  keepsakes, and 36 active image-backed curios.
 - `src/assets/contestants/` also retains six aggregate cooking-frame sheets and
   six Toro frame PNGs that are not wired into the current counter renderer.
-- Three Saffy curio PNGs are retained but not in the active collectible pool.
+- The Rollo and Saffy curio sets use three independent transparent PNG
+  derivatives each, all wired into the active collectible pool.
 - The public directory retains 36 superseded Pip frame exports and two unused
   restaurant interior alternates. They are preserved for provenance rather than
   deleted.

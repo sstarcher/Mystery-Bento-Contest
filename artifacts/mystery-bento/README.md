@@ -105,9 +105,9 @@ still, and four movement actions: idle, walk, run, and jump.
 | Kiku Kettle | Invention | Yes | Public sprite sheet | 3 |
 | Bibi Bento | Preparation | Yes | Public sprite sheet | 3 |
 
-The current collection has 30 image-backed curios: three public Pip keepsakes
-plus 27 files in `src/assets/curios/`. Rollo and Saffy currently have no active
-curio set; Saffy's three image files are retained as unwired source material.
+The current collection has 36 image-backed curios: three public Pip keepsakes
+plus 33 files in `src/assets/curios/`. Every contestant with a curio set has
+three active keepsakes, including the newly added Rollo and Saffy sets.
 
 ## Image asset map
 
@@ -119,7 +119,7 @@ and browser-delivered runtime assets separate.
 | `assets/source-images/` | 14 | Eight original character sheets and six original race-background uploads | Source archive |
 | `src/assets/contestants/` | 66 | Portraits, food stills, extracted cooking frames, and aggregate frame sheets | Imported source/derived assets |
 | `src/assets/contestants/movement/` | 48 | 12 contestants × 4 transparent movement sheets | Active; all imported by `movement-sprite-config.ts` |
-| `src/assets/curios/` | 30 | 10 potential three-item curio sets | 27 active; 3 Saffy files currently unwired |
+| `src/assets/curios/` | 36 | 12 potential three-item curio sets | 33 active; all imported by the collectible pool |
 | `public/` image files | 67 | Browser-delivered cooking sheets, race backgrounds, plates, keepsakes, restaurant art, Pip exports, and favicon | 29 active; 38 retained alternates/exports |
 | `public/audio/` | 86 MP3s | 85 runtime announcer clips plus one Pip listening preview | Active audio library |
 
@@ -157,7 +157,6 @@ provenance or may be useful for future art work:
   imported by the current counter renderer.
 - Toro's six extracted cooking frames and aggregate sheet are superseded by the
   public Toro cooking sprite sheet.
-- Saffy's three curio PNGs are present but not in the active collectible pool.
 - `public/video/pip-frames/` contains 36 individual Pip frame exports that are
   superseded by `pip-making-food-sprite-sheet.png`.
 - `public/restaurant-interior-attached.png` and
@@ -212,6 +211,6 @@ pnpm --filter @workspace/mystery-bento run verify:sprites
 pnpm --filter @workspace/mystery-bento run build
 ```
 
-`verify:curios` checks all 30 image-backed variants, shared sizing, and the
+`verify:curios` checks all 36 image-backed variants, shared sizing, and the
 absence of legacy glyph paths. `verify:sprites` checks 60 runtime sheets for
 valid grids, occupied frames, transparent padding, and frame-boundary safety.
