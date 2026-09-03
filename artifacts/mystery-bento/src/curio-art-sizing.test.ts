@@ -32,6 +32,9 @@ const imageVariants = [
   'bibi-stacked-bento',
   'bibi-food-tweezers',
   'bibi-cloth-wrap',
+  'saffy-garnish-plate',
+  'saffy-plating-tweezers',
+  'saffy-presentation-fan',
 ];
 
 assert.ok(CURIO_ART_FIT_SCALE > 0 && CURIO_ART_FIT_SCALE < 1, 'shared fit scale must reduce the art');

@@ -34,6 +34,9 @@ import kikuSageBlueprint from './assets/curios/kiku-sage-blueprint.png';
 import bibiClothWrap from './assets/curios/bibi-cloth-wrap.png';
 import bibiFoodTweezers from './assets/curios/bibi-food-tweezers.png';
 import bibiStackedBento from './assets/curios/bibi-stacked-bento.png';
+import saffyGarnishPlate from './assets/curios/saffy-garnish-plate.png';
+import saffyPlatingTweezers from './assets/curios/saffy-plating-tweezers.png';
+import saffyPresentationFan from './assets/curios/saffy-presentation-fan.png';
 import { getMovementSpriteSheet, type MovementAction } from './movement-sprite-config';
 import { RACE_BACKGROUND_SEQUENCE } from './race-backgrounds';
 import { CURIO_ART_FIT_SCALE, getCurioArtProfile, type CurioArtProfile } from './curio-art-sizing';
@@ -97,7 +100,7 @@ type Collectible = {
   earnedBy: string;
   earnedAt: string;
   imageSrc?: string;
-  artVariant?: 'pip-pocket-watch' | 'pip-rice-bowl' | 'pip-satchel-tag' | 'tilda-toolbox' | 'tilda-wrench-set' | 'tilda-safety-module' | 'sencha-leaf-bookmark' | 'sencha-night-teapot' | 'sencha-tea-ledger' | 'toro-captains-cap' | 'toro-pocket-compass' | 'toro-grill-spatula' | 'nori-plum-notebook' | 'nori-brush-pen' | 'nori-scarf-pin' | 'miso-soup-bowl' | 'miso-walnut-ladle' | 'miso-broth-jar' | 'uma-noodle-ribbon' | 'uma-flour-sack' | 'uma-rolling-pin' | 'panko-magnifying-glass' | 'panko-detective-beret' | 'panko-clue-notebook' | 'kiku-aged-copper-kettle' | 'kiku-jade-brass-gear' | 'kiku-sage-blueprint' | 'bibi-stacked-bento' | 'bibi-food-tweezers' | 'bibi-cloth-wrap';
+  artVariant?: 'pip-pocket-watch' | 'pip-rice-bowl' | 'pip-satchel-tag' | 'tilda-toolbox' | 'tilda-wrench-set' | 'tilda-safety-module' | 'sencha-leaf-bookmark' | 'sencha-night-teapot' | 'sencha-tea-ledger' | 'toro-captains-cap' | 'toro-pocket-compass' | 'toro-grill-spatula' | 'nori-plum-notebook' | 'nori-brush-pen' | 'nori-scarf-pin' | 'miso-soup-bowl' | 'miso-walnut-ladle' | 'miso-broth-jar' | 'uma-noodle-ribbon' | 'uma-flour-sack' | 'uma-rolling-pin' | 'panko-magnifying-glass' | 'panko-detective-beret' | 'panko-clue-notebook' | 'kiku-aged-copper-kettle' | 'kiku-jade-brass-gear' | 'kiku-sage-blueprint' | 'bibi-stacked-bento' | 'bibi-food-tweezers' | 'bibi-cloth-wrap' | 'saffy-garnish-plate' | 'saffy-plating-tweezers' | 'saffy-presentation-fan';
 };
 type FoodItem = { id: string; name: string; note: string; imageSrc: string };
 type RaceTrait = keyof Persona['traits'];
@@ -746,6 +749,9 @@ const collectiblePool = [
   { id: 'bibi-stacked-bento', kind: 'Bibi keepsake', title: 'The Patterned Bento Stack', description: 'A tiny stacked bento box with muted blue and ochre patterns. A carefully curated keepsake from a traveling lunch arranger.', earnedBy: 'bibi', imageSrc: bibiStackedBento, artVariant: 'bibi-stacked-bento' as const },
   { id: 'bibi-food-tweezers', kind: 'Bibi keepsake', title: 'The Sheathed Plating Tweezers', description: 'Precise silver food tweezers in a cream sheath. A carefully curated keepsake from a traveling lunch arranger.', earnedBy: 'bibi', imageSrc: bibiFoodTweezers, artVariant: 'bibi-food-tweezers' as const },
   { id: 'bibi-cloth-wrap', kind: 'Bibi keepsake', title: 'The Amber-Charmed Cloth Wrap', description: 'A folded pale-blue cloth wrap tied with a small amber charm. A carefully curated keepsake from a traveling lunch arranger.', earnedBy: 'bibi', imageSrc: bibiClothWrap, artVariant: 'bibi-cloth-wrap' as const },
+  { id: 'saffy-garnish-plate', kind: 'Saffy keepsake', title: 'The Garnish Plate', description: 'A pale ceramic plating dish carrying one perfectly placed garnish. A precise keepsake from Saffy’s dramatic finishing station.', earnedBy: 'saffy', imageSrc: saffyGarnishPlate, artVariant: 'saffy-garnish-plate' as const },
+  { id: 'saffy-plating-tweezers', kind: 'Saffy keepsake', title: 'The Ribbon Plating Tweezers', description: 'Silver plating tweezers tied with a coral ribbon. A precise keepsake from Saffy’s dramatic finishing station.', earnedBy: 'saffy', imageSrc: saffyPlatingTweezers, artVariant: 'saffy-plating-tweezers' as const },
+  { id: 'saffy-presentation-fan', kind: 'Saffy keepsake', title: 'The Presentation Fan', description: 'A navy-and-coral folding fan reserved for the final flourish. A precise keepsake from Saffy’s dramatic finishing station.', earnedBy: 'saffy', imageSrc: saffyPresentationFan, artVariant: 'saffy-presentation-fan' as const },
   { id: 'pip-pocket-watch', kind: 'Pip keepsake', title: 'The Brass Sunrise Pocket Watch', description: 'A tiny brass pocket watch with an apricot face, kept ticking for the first warm light of morning.', earnedBy: 'pip', imageSrc: PIP_POCKET_WATCH_SRC, artVariant: 'pip-pocket-watch' as const },
   { id: 'pip-rice-bowl', kind: 'Pip keepsake', title: 'The Teal-Ribbon Rice Bowl', description: 'A little rice bowl tied with a teal ribbon, saved for meals that deserve a gentle beginning.', earnedBy: 'pip', imageSrc: PIP_RICE_BOWL_SRC, artVariant: 'pip-rice-bowl' as const },
   { id: 'pip-satchel-tag', kind: 'Pip keepsake', title: 'The Apricot Satchel Tag', description: 'An apricot luggage tag with a tiny rice charm, ready for one more shortcut home.', earnedBy: 'pip', imageSrc: PIP_SATCHEL_TAG_SRC, artVariant: 'pip-satchel-tag' as const },
