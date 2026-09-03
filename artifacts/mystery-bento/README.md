@@ -97,11 +97,11 @@ still, and four movement actions: idle, walk, run, and jump.
 | Captain Toro | Balance | Yes | Public sprite sheet | 3 |
 | Nori Nib | Patience | Yes | Public sprite sheet | 3 |
 | Tilda Tofu | Repair | Yes | Public sprite sheet | 3 |
-| Rollo Radish | Shortcut luck | Yes | Public sprite sheet | — |
+| Rollo Radish | Shortcut luck | Yes | Public sprite sheet | 3 |
 | Miso Mallow | Calm | Yes | Public sprite sheet | 3 |
 | Uma Udon | Strength | Yes | Public sprite sheet | 3 |
 | Panko Puff | Investigation | Yes | Public sprite sheet | 3 |
-| Saffy Sashimi | Precision | Yes | Public sprite sheet | — |
+| Saffy Sashimi | Precision | Yes | Public sprite sheet | 3 |
 | Kiku Kettle | Invention | Yes | Public sprite sheet | 3 |
 | Bibi Bento | Preparation | Yes | Public sprite sheet | 3 |
 
@@ -125,7 +125,6 @@ and browser-delivered runtime assets separate.
 | `public/runtime/images/` | 16 | Race backgrounds, plates, keepsakes, and restaurant art | Active browser assets |
 | `public/runtime/video/cooking/` | 12 | Winner cooking sprite sheets | Active browser assets |
 | `public/runtime/audio/` | 69 | 68 selected announcer clips plus one Pip listening preview | Active browser assets |
-| `assets/archive/` | 38 | Restaurant alternates and superseded Pip frame exports | Preserved provenance |
 | `assets/review/unused/` | 60 | Confirmed unused cooking/audio candidates awaiting review | Not shipped |
 
 ### Runtime image families
@@ -149,8 +148,8 @@ and browser-delivered runtime assets separate.
 
 All browser-delivered media is now under `public/runtime/`. Imported,
 build-time derivatives live under `src/assets/derived/`. Original uploads live
-under `assets/source/`; known superseded material lives under `assets/archive/`;
-and confirmed unused candidates live under `assets/review/unused/`.
+under `assets/source/`; and confirmed unused candidates live under
+`assets/review/unused/`.
 
 ### Asset review queue
 
@@ -162,10 +161,6 @@ folders:
 - 12 contestant profile clips and 5 contest-title clips not selected by the
   current contest sequence.
 - 1 unlabeled source recording awaiting a phrase label.
-
-The archive keeps the 36 individual Pip frame exports and two restaurant
-alternates because they preserve an earlier export path. See
-`assets/review/README.md` for the review rule.
 
 The active asset audit found no missing file among imports, public runtime URLs,
 race-background mappings, or collectible assets. Do not treat workspace-level

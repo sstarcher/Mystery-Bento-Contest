@@ -47,9 +47,6 @@ later in the pipeline.
   PNGs. None are wired into the current counter renderer.
 - The Rollo and Saffy curio sets use three independent transparent PNG
   derivatives each, all wired into the active collectible pool.
-- `assets/archive/` retains 36 superseded Pip frame exports and two unused
-  restaurant interior alternates. They are preserved for provenance rather than
-  deleted.
 - No active image import or runtime image URL is currently missing.
 
 ## Source audio

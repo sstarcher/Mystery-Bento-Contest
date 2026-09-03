@@ -15,7 +15,3 @@ source, derived, or runtime family.
   the current contest sequence.
 - `unused/audio/announcer/unlabeled/` — one uploaded recording without a
   confirmed phrase label.
-
-The `assets/archive/` folder is separate: it holds known superseded or alternate
-material that is intentionally retained for provenance, such as the restaurant
-alternates and the individual Pip frame exports.

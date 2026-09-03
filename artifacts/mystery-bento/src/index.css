@@ -315,7 +315,7 @@
 .displayed-curio { position: absolute; display: grid; place-items: center; width: 86px; height: 80px; color: rgba(248,231,198,.9); isolation: isolate; }
 .displayed-curio .curio-art-box { transform: scale(1.08); }
 .displayed-curio .curio-place-label { display: none; }
-.restaurant-curio-shelf-grid { position: absolute; top: 177px; left: 60.5%; right: 4.5%; display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); grid-template-rows: repeat(2, minmax(0, 1fr)); height: 230px; align-items: center; justify-items: center; transform: translateX(10px); pointer-events: none; }
+.restaurant-curio-shelf-grid { position: absolute; top: 177px; left: 60.5%; right: 4.5%; display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); grid-template-rows: repeat(2, minmax(0, 1fr)); height: 230px; align-items: center; justify-items: center; transform: translateX(5px); pointer-events: none; }
 .restaurant-curio-shelf-grid .displayed-curio { position: relative; inset: auto; width: 78px; height: 82px; transform: translate(-42px, 10px) scale(.7); transform-origin: center center; }
 .displayed-curio-hanging-tools .curio-art-box { transform: scale(1.2) rotate(5deg); }
 .displayed-curio-hanging-tools .curio-info-card { top: calc(100% + 13px); bottom: auto; transform: translate(-50%, -8px); }
