@@ -1,8 +1,8 @@
 # Mystery Bento asset library
 
-This folder contains the original uploaded source material. Runtime assets are
-kept separately so source sheets can be revisited without affecting the
-optimized files used by the app.
+This folder contains original uploaded source material and preserved review
+material. Runtime assets are kept separately so source sheets can be revisited
+without affecting the optimized files used by the app.
 
 The complete product-facing asset map is in `../README.md`. This file documents
 the source/runtime boundary and provenance details that are specific to this
@@ -10,18 +10,11 @@ folder.
 
 ## Source images
 
-`source-images/character-sheets/` contains eight flattened source sheets:
+`source/images/character-sheets/` currently contains one flattened source sheet:
 
 - `character-portraits-sheet.png` — portrait sheet for the 12 mascots
-- `character-food-stations-sheet.png` — food and cooking-station sheet
-- `pip-porridge-animation-sheet.png`
-- `sencha-tea-animation-sheet.png`
-- `toro-grill-animation-sheet.png`
-- `nori-nib-animation-sheet.png`
-- `tilda-tofu-animation-sheet.png`
-- `rollo-radish-animation-sheet.png`
 
-`source-images/race-backgrounds/`
+`source/images/race-backgrounds/`
 
 - The six original high-resolution race scenes are preserved here in the
   deterministic course order: `asset_Jg8...`, `asset_HZMG...`, `asset_5ja...`,
@@ -30,10 +23,10 @@ folder.
   crossing and winner state.
 
 The extracted and optimized image files used by the app live in
-`src/assets/contestants/`, grouped by contestant and named by role.
+`src/assets/derived/contestants/`, grouped by role and named by contestant.
 
 The race uses reduced, pixel-crisp WebP derivatives from
-`public/race-backgrounds/`; the six source PNG uploads remain available above
+`public/runtime/images/race-backgrounds/`; the six source PNG uploads remain available above
 for future editing and are not shipped to the browser.
 
 The six source panoramas are `6048 × 2592` opaque PNGs. Their active runtime
@@ -43,23 +36,25 @@ later in the pipeline.
 
 ## Image audit status
 
-- 14 source images are preserved here: eight character sheets and six race
+- 7 source images are preserved here: one character sheet and six race
   backgrounds.
-- The app currently has 12 portraits, 12 food stills, 48 movement sheets, 12
-  public cooking sheets, six race-background WebPs, six sushi plates, three Pip
-  keepsakes, and 36 active image-backed curios.
-- `src/assets/contestants/` also retains six aggregate cooking-frame sheets and
-  six Toro frame PNGs that are not wired into the current counter renderer.
+- The app currently has 12 portraits, 12 food stills, 30 active extracted
+  cooking frames, 48 movement sheets, 12 public cooking sheets, six
+  race-background WebPs, six sushi plates, three Pip keepsakes, and 36 active
+  image-backed curios.
+- `assets/review/unused/derived/contestants/cooking/` contains six aggregate
+  cooking-frame sheets and six Toro frame PNGs that are not wired into the
+  current counter renderer.
 - The Rollo and Saffy curio sets use three independent transparent PNG
   derivatives each, all wired into the active collectible pool.
-- The public directory retains 36 superseded Pip frame exports and two unused
+- `assets/archive/` retains 36 superseded Pip frame exports and two unused
   restaurant interior alternates. They are preserved for provenance rather than
   deleted.
 - No active image import or runtime image URL is currently missing.
 
 ## Source audio
 
-`source-audio/announcer/`
+`source/audio/announcer/`
 
 - `race-starts/` — reusable opening variants, including the primary and
   quiet-kitchen recordings
@@ -75,28 +70,27 @@ later in the pipeline.
 - `reactions/` — reusable physical reaction clips
 - `pace-lead-changes/` — reusable pack and lead-change announcements
 - `stage-transitions/` — reusable course-section transition announcements
-- `unlabeled/` — uploaded recordings awaiting phrase labels
+- Unlabeled recordings awaiting phrase labels are in
+  `../assets/review/unused/audio/announcer/unlabeled/`.
 
 ## Runtime audio
 
-- `public/audio/announcer/` — bundled reusable announcer clips
-- `public/audio/announcer/race-starts/` — race-start variants
-- `public/audio/announcer/character-intros/` — character-introduction lead-ins
-- `public/audio/announcer/character-names/` — name-only clips by mascot
-- `public/audio/announcer/character-blurbs/` — name-free contestant profile clips
-- `public/audio/announcer/contest-names/` — current contest-title clips
-- `public/audio/announcer/finish-results/` — finish-result clips
-- `public/audio/announcer/obstacles/` — obstacle callout clips
-- `public/audio/announcer/result-fragments/` — contestant result clips
-- `public/audio/announcer/reactions/` — physical reaction clips
-- `public/audio/announcer/pace-lead-changes/` — pace and lead-change clips
-- `public/audio/announcer/stage-transitions/` — course-section transitions
-- `public/audio/previews/` — assembled listening previews, including
+- `public/runtime/audio/announcer/` — bundled selected announcer clips
+- `public/runtime/audio/announcer/race-starts/` — race-start variants
+- `public/runtime/audio/announcer/character-intros/` — character-introduction lead-ins
+- `public/runtime/audio/announcer/character-names/` — name-only clips by mascot
+- `public/runtime/audio/announcer/finish-results/` — finish-result clips
+- `public/runtime/audio/announcer/obstacles/` — obstacle callout clips
+- `public/runtime/audio/announcer/result-fragments/` — contestant result clips
+- `public/runtime/audio/announcer/reactions/` — physical reaction clips
+- `public/runtime/audio/announcer/pace-lead-changes/` — pace and lead-change clips
+- `public/runtime/audio/announcer/stage-transitions/` — course-section transitions
+- `public/runtime/audio/previews/` — assembled listening previews, including
   `pip-takes-the-win.mp3`
 
 The runtime announcer selects one of the three race-start variants
 deterministically for each contest, then composes contestant names, course
 beats, reactions, and the winner result from the folders above. Contest-title
-and contestant-blurb clips are bundled for future narration but are not selected
-by the current contest sequence. Missing clips are skipped without blocking the
-visual race.
+and contestant-blurb clips are preserved in the review queue because they are
+not selected by the current contest sequence. Missing clips are skipped without
+blocking the visual race.

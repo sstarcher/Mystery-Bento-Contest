@@ -18,7 +18,7 @@ export type AnnouncerClip = {
   label: string;
 };
 
-const AUDIO_BASE = `${import.meta.env.BASE_URL}audio/announcer`;
+const AUDIO_BASE = `${import.meta.env.BASE_URL}runtime/audio/announcer`;
 
 const clip = (id: string, path: string, label: string): AnnouncerClip => ({
   id,
@@ -35,12 +35,6 @@ export const announcerAudio = {
   contestantsAre: clip('contestants-are', 'character-intros/contestants-are.mp3', 'tonight’s contestants'),
   characterName: (personaId: string, name: string) => (
     clip(`character-name-${personaId}`, `character-names/${personaId}.mp3`, name)
-  ),
-  characterBlurb: (personaId: string, name: string) => (
-    clip(`character-blurb-${personaId}`, `character-blurbs/${personaId}.mp3`, `${name} profile`)
-  ),
-  contestName: (contestId: string, name: string) => (
-    clip(`contest-name-${contestId}`, `contest-names/${contestId}.mp3`, name)
   ),
   obstacles: {
     'napkin-gust': {

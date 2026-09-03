@@ -60,7 +60,7 @@ manifest beside the files later with the exact text, voice name, and duration.
   to hold the race until the audio `ended` event.
 
 ```text
-public/audio/announcer/race-starts/race-start-primary.mp3
+public/runtime/audio/announcer/race-starts/race-start-primary.mp3
 ```
 
 Source text:
@@ -72,14 +72,14 @@ Source text:
 Source asset:
 
 ```text
-assets/source-audio/announcer/race-starts/race-start-primary.mp3
+assets/source/audio/announcer/race-starts/race-start-primary.mp3
 ```
 
 - [x] Winner-result fragment — wired as the reusable second half of the winner
   call; verify end-to-end in the live race.
 
 ```text
-public/audio/announcer/finish-results/takes-the-win.mp3
+public/runtime/audio/announcer/finish-results/takes-the-win.mp3
 ```
 
 Source text:
@@ -99,7 +99,7 @@ separate winner sentence for each character.
   end-to-end in the live race.
 
 ```text
-public/audio/announcer/character-names/pip.mp3
+public/runtime/audio/announcer/character-names/pip.mp3
 ```
 
 Source text:
@@ -109,7 +109,7 @@ Source text:
 - [x] Pip + “takes the win” listening preview — generated and playable.
 
 ```text
-public/audio/previews/pip-takes-the-win.mp3
+public/runtime/audio/previews/pip-takes-the-win.mp3
 ```
 
 It combines `character-names/pip` immediately followed by
@@ -138,6 +138,10 @@ These are interchangeable opening clips. They contain no names.
 Use only when the contest title is important. The title should be a separate
 clip from the opening call.
 
+The five generated title clips are preserved in
+`assets/review/unused/audio/announcer/contest-names/`; they are not shipped in
+the current runtime because the contest title is currently rendered as text.
+
 - [ ] Tonight’s contest is the [CONTEST NAME].
 - [ ] The [CONTEST NAME] is ready for its first move.
 
@@ -156,7 +160,7 @@ The reusable lead-in for the name clips is wired into the shared intro
 sequence:
 
 - [x] Tonight’s contestants are — wired; verify in the live race
-  (`public/audio/announcer/character-intros/contestants-are.mp3`)
+  (`public/runtime/audio/announcer/character-intros/contestants-are.mp3`)
 
 Generate one clip per character. Keep every name clip short and end with a
 small natural pause.
@@ -178,6 +182,10 @@ small natural pause.
 
 Read one of these after each name clip. Generate the blurb as a separate,
 name-free clip so the assembly stays reusable:
+
+The 12 generated blurb clips are preserved in
+`assets/review/unused/audio/announcer/character-blurbs/`; they are not selected
+by the current contest sequence.
 
 ```text
 character-name + contestant-blurb
@@ -206,8 +214,8 @@ Optional shorter name-only versions are useful when the UI already supplies
 the action phrase:
 
 - All 12 name-only assets are now present under
-  `public/audio/announcer/character-names/` and
-  `assets/source-audio/announcer/character-names/`. They are mapped into the
+  `public/runtime/audio/announcer/character-names/` and
+  `assets/source/audio/announcer/character-names/`. They are mapped into the
   runtime sequence; the checklist below still tracks live browser playback
   verification.
 
@@ -230,66 +238,66 @@ Generate one reusable callout per obstacle. These are independent of the
 character who caused or reaches the obstacle.
 
 - [x] Napkin gust ahead! — wired; verify in the live race
-  (`public/audio/announcer/obstacles/napkin-gust-ahead.mp3`)
+  (`public/runtime/audio/announcer/obstacles/napkin-gust-ahead.mp3`)
 - [x] Tea puddle ahead! — wired; verify in the live race
-  (`public/audio/announcer/obstacles/tea-puddle-ahead.mp3`)
+  (`public/runtime/audio/announcer/obstacles/tea-puddle-ahead.mp3`)
 - [x] Wobble stack ahead! — wired; verify in the live race
-  (`public/audio/announcer/obstacles/wobble-stack-ahead.mp3`)
+  (`public/runtime/audio/announcer/obstacles/wobble-stack-ahead.mp3`)
 - [x] Moon reflection ahead! — wired; verify in the live race
-  (`public/audio/announcer/obstacles/moon-reflection-ahead.mp3`)
+  (`public/runtime/audio/announcer/obstacles/moon-reflection-ahead.mp3`)
 - [x] Broken cart across the course! — wired; verify in the live race
-  (`public/audio/announcer/obstacles/broken-cart-across-the-course.mp3`)
+  (`public/runtime/audio/announcer/obstacles/broken-cart-across-the-course.mp3`)
 - [x] Ribbon tunnel ahead! — wired; verify in the live race
-  (`public/audio/announcer/obstacles/ribbon-tunnel-ahead.mp3`)
+  (`public/runtime/audio/announcer/obstacles/ribbon-tunnel-ahead.mp3`)
 - [x] Cushion pile ahead! — wired; verify in the live race
-  (`public/audio/announcer/obstacles/cushion-pile-ahead.mp3`)
+  (`public/runtime/audio/announcer/obstacles/cushion-pile-ahead.mp3`)
 - [x] Flour sacks coming into the lane! — wired; verify in the live race
-  (`public/audio/announcer/obstacles/flour-sacks-coming-into-the-lane.mp3`)
+  (`public/runtime/audio/announcer/obstacles/flour-sacks-coming-into-the-lane.mp3`)
 - [x] Crumb trail ahead! — wired; verify in the live race
-  (`public/audio/announcer/obstacles/crumb-trail-ahead.mp3`)
+  (`public/runtime/audio/announcer/obstacles/crumb-trail-ahead.mp3`)
 - [x] Garnish gate ahead! — wired; verify in the live race
-  (`public/audio/announcer/obstacles/garnish-gate-ahead.mp3`)
+  (`public/runtime/audio/announcer/obstacles/garnish-gate-ahead.mp3`)
 - [x] Steam gadget ahead! — wired; verify in the live race
-  (`public/audio/announcer/obstacles/steam-gadget-ahead.mp3`)
+  (`public/runtime/audio/announcer/obstacles/steam-gadget-ahead.mp3`)
 - [x] Bento stack at the finish! — wired; verify in the live race
-  (`public/audio/announcer/obstacles/bento-stack-at-the-finish.mp3`)
+  (`public/runtime/audio/announcer/obstacles/bento-stack-at-the-finish.mp3`)
 
 Longer alternate versions can be used when the race needs more drama:
 
 - [ ] The napkin gust is sweeping across the straightaway! — asset received;
   live playback pending
-  (`public/audio/announcer/obstacles/napkin-gust-sweeping-straightaway.mp3`)
+  (`public/runtime/audio/announcer/obstacles/napkin-gust-sweeping-straightaway.mp3`)
 - [ ] A tea puddle demands a very careful step! — asset received; live playback
-  pending (`public/audio/announcer/obstacles/tea-puddle-careful-step.mp3`)
+  pending (`public/runtime/audio/announcer/obstacles/tea-puddle-careful-step.mp3`)
 - [ ] The wobble stack is swaying across the lane! — asset received; live
   playback pending
-  (`public/audio/announcer/obstacles/wobble-stack-swaying-across-lane.mp3`)
+  (`public/runtime/audio/announcer/obstacles/wobble-stack-swaying-across-lane.mp3`)
 - [ ] That moon reflection may be hiding a shortcut! — asset received; live
   playback pending
-  (`public/audio/announcer/obstacles/moon-reflection-hiding-shortcut.mp3`)
+  (`public/runtime/audio/announcer/obstacles/moon-reflection-hiding-shortcut.mp3`)
 - [ ] There’s a broken cart blocking the course! — asset received; live playback
-  pending (`public/audio/announcer/obstacles/broken-cart-blocking-course.mp3`)
+  pending (`public/runtime/audio/announcer/obstacles/broken-cart-blocking-course.mp3`)
 - [ ] The ribbon tunnel is moving faster than expected! — asset received; live
   playback pending
-  (`public/audio/announcer/obstacles/ribbon-tunnel-moving-faster.mp3`)
+  (`public/runtime/audio/announcer/obstacles/ribbon-tunnel-moving-faster.mp3`)
 - [ ] A cushion pile is blocking the safest-looking route! — asset received;
   live playback pending
-  (`public/audio/announcer/obstacles/cushion-pile-blocking-safest-route.mp3`)
+  (`public/runtime/audio/announcer/obstacles/cushion-pile-blocking-safest-route.mp3`)
 - [ ] Flour sacks are tumbling in from the side door! — asset received; live
   playback pending
-  (`public/audio/announcer/obstacles/flour-sacks-tumbling-side-door.mp3`)
+  (`public/runtime/audio/announcer/obstacles/flour-sacks-tumbling-side-door.mp3`)
 - [ ] A tempting crumb trail winds behind the crates! — asset received; live
   playback pending
-  (`public/audio/announcer/obstacles/crumb-trail-behind-crates.mp3`)
+  (`public/runtime/audio/announcer/obstacles/crumb-trail-behind-crates.mp3`)
 - [ ] The garnish gate leaves only one elegant line through! — asset received;
   live playback pending
-  (`public/audio/announcer/obstacles/garnish-gate-one-elegant-line.mp3`)
+  (`public/runtime/audio/announcer/obstacles/garnish-gate-one-elegant-line.mp3`)
 - [ ] The steam gadget has filled the lane with fog! — asset received; live
   playback pending
-  (`public/audio/announcer/obstacles/steam-gadget-filled-lane-with-fog.mp3`)
+  (`public/runtime/audio/announcer/obstacles/steam-gadget-filled-lane-with-fog.mp3`)
 - [ ] The bento stack has narrowed the final lane! — asset received; live
   playback pending
-  (`public/audio/announcer/obstacles/bento-stack-narrowed-final-lane.mp3`)
+  (`public/runtime/audio/announcer/obstacles/bento-stack-narrowed-final-lane.mp3`)
 
 ### 5. Universal contestant result clips
 
@@ -298,45 +306,45 @@ These are intentionally name-free. Compose them as
 
 - [x] Clean line! — wired as the first clear-result callout only; later clear
   results use varied physical reactions
-  (`public/audio/announcer/result-fragments/clean-line.mp3`)
+  (`public/runtime/audio/announcer/result-fragments/clean-line.mp3`)
 - [x] Slowed down! — wired; verify in the live race
-  (`public/audio/announcer/result-fragments/slowed-down.mp3`)
+  (`public/runtime/audio/announcer/result-fragments/slowed-down.mp3`)
 - [ ] Found a break! — asset received; live playback pending
-  (`public/audio/announcer/result-fragments/found-a-break.mp3`)
+  (`public/runtime/audio/announcer/result-fragments/found-a-break.mp3`)
 - [x] Rerouted! — wired; verify in the live race
-  (`public/audio/announcer/result-fragments/rerouted.mp3`)
+  (`public/runtime/audio/announcer/result-fragments/rerouted.mp3`)
 
 Named sentence templates, to be rendered once per current character only if
 the separate name-plus-result delivery does not sound natural:
 
 - [ ] [NAME] finds a clean line. — asset received; live playback pending
-  (`public/audio/announcer/result-fragments/finds-a-clean-line.mp3`)
+  (`public/runtime/audio/announcer/result-fragments/finds-a-clean-line.mp3`)
 - [ ] [NAME] loses a few steps. — asset received; live playback pending
-  (`public/audio/announcer/result-fragments/loses-a-few-steps.mp3`)
+  (`public/runtime/audio/announcer/result-fragments/loses-a-few-steps.mp3`)
 - [x] [NAME] finds an unexpected opening. — wired; verify in the live race
-  (`public/audio/announcer/result-fragments/finds-an-unexpected-opening.mp3`)
+  (`public/runtime/audio/announcer/result-fragments/finds-an-unexpected-opening.mp3`)
 - [ ] [NAME] takes the strange line around it. — asset available; not selected
   by the current result-fragment mapping
-  (`public/audio/announcer/result-fragments/takes-the-strange-line-around-it.mp3`)
+  (`public/runtime/audio/announcer/result-fragments/takes-the-strange-line-around-it.mp3`)
 
 ### 6. Physical reactions
 
 These should stay short and reusable across obstacles.
 
 - [x] Jumps over it and keeps moving! — wired; verify in the live race
-  (`public/audio/announcer/reactions/jumps-over-it-and-keeps-moving.mp3`)
+  (`public/runtime/audio/announcer/reactions/jumps-over-it-and-keeps-moving.mp3`)
 - [x] Sidesteps it and holds the line! — wired; verify in the live race
-  (`public/audio/announcer/reactions/sidesteps-it-and-holds-the-line.mp3`)
+  (`public/runtime/audio/announcer/reactions/sidesteps-it-and-holds-the-line.mp3`)
 - [x] Slides around it and recovers! — wired; verify in the live race
-  (`public/audio/announcer/reactions/slides-around-it-and-recovers.mp3`)
+  (`public/runtime/audio/announcer/reactions/slides-around-it-and-recovers.mp3`)
 - [x] Ducks beneath it and keeps moving! — wired; verify in the live race
-  (`public/audio/announcer/reactions/ducks-beneath-it-and-keeps-moving.mp3`)
+  (`public/runtime/audio/announcer/reactions/ducks-beneath-it-and-keeps-moving.mp3`)
 - [x] Stumbles, steadies, and carries on! — wired; verify in the live race
-  (`public/audio/announcer/reactions/stumbles-steadies-and-carries-on.mp3`)
+  (`public/runtime/audio/announcer/reactions/stumbles-steadies-and-carries-on.mp3`)
 - [x] Weaves through and finds a stranger line! — wired; verify in the live race
-  (`public/audio/announcer/reactions/weaves-through-and-finds-a-stranger-line.mp3`)
+  (`public/runtime/audio/announcer/reactions/weaves-through-and-finds-a-stranger-line.mp3`)
 - [x] Surges through the opening! — wired; verify in the live race
-  (`public/audio/announcer/reactions/surges-through-the-opening.mp3`)
+  (`public/runtime/audio/announcer/reactions/surges-through-the-opening.mp3`)
 
 Recommended composition:
 
@@ -350,19 +358,19 @@ These clips give the announcer a way to bridge the visual race without
 describing every frame.
 
 - [x] The pack is still together! — wired; verify in the live race
-  (`public/audio/announcer/pace-lead-changes/pack-still-together.mp3`)
+  (`public/runtime/audio/announcer/pace-lead-changes/pack-still-together.mp3`)
 - [x] The field is beginning to stretch! — wired; verify in the live race
-  (`public/audio/announcer/pace-lead-changes/field-beginning-to-stretch.mp3`)
+  (`public/runtime/audio/announcer/pace-lead-changes/field-beginning-to-stretch.mp3`)
 - [x] There’s a new leader on the lantern route! — wired; verify in the live race
-  (`public/audio/announcer/pace-lead-changes/new-leader-lantern-route.mp3`)
+  (`public/runtime/audio/announcer/pace-lead-changes/new-leader-lantern-route.mp3`)
 - [x] The lead has changed hands! — wired; verify in the live race
-  (`public/audio/announcer/pace-lead-changes/lead-changed-hands.mp3`)
+  (`public/runtime/audio/announcer/pace-lead-changes/lead-changed-hands.mp3`)
 - [ ] That gap is closing quickly! — asset received; live playback pending
-  (`public/audio/announcer/pace-lead-changes/gap-closing-quickly.mp3`)
+  (`public/runtime/audio/announcer/pace-lead-changes/gap-closing-quickly.mp3`)
 - [x] One contender is finding another gear! — wired; verify in the live race
-  (`public/audio/announcer/pace-lead-changes/one-contender-finding-another-gear.mp3`)
+  (`public/runtime/audio/announcer/pace-lead-changes/one-contender-finding-another-gear.mp3`)
 - [ ] The back marker is not giving up! — asset received; live playback pending
-  (`public/audio/announcer/pace-lead-changes/back-marker-not-giving-up.mp3`)
+  (`public/runtime/audio/announcer/pace-lead-changes/back-marker-not-giving-up.mp3`)
 
 ### 8. Stage transitions
 
@@ -370,16 +378,16 @@ Use one transition between each course section. They do not name an obstacle,
 so they work with any generated course.
 
 - [x] The warm-up is underway. — wired; verify in the live race
-  (`public/audio/announcer/stage-transitions/warm-up-underway.mp3`)
+  (`public/runtime/audio/announcer/stage-transitions/warm-up-underway.mp3`)
 - [ ] The first hazard is coming into view. — asset received; live playback
   pending
-  (`public/audio/announcer/stage-transitions/first-hazard-coming-into-view.mp3`)
+  (`public/runtime/audio/announcer/stage-transitions/first-hazard-coming-into-view.mp3`)
 - [x] They’re around the bend and into the matchup. — wired; verify in the live race
-  (`public/audio/announcer/stage-transitions/around-bend-into-matchup.mp3`)
+  (`public/runtime/audio/announcer/stage-transitions/around-bend-into-matchup.mp3`)
 - [ ] The final lane is approaching. — asset received; live playback pending
-  (`public/audio/announcer/stage-transitions/final-lane-approaching.mp3`)
+  (`public/runtime/audio/announcer/stage-transitions/final-lane-approaching.mp3`)
 - [x] The finish is in sight! — wired; verify in the live race
-  (`public/audio/announcer/stage-transitions/finish-in-sight.mp3`)
+  (`public/runtime/audio/announcer/stage-transitions/finish-in-sight.mp3`)
 
 ### 9. Finish and winner reveal
 

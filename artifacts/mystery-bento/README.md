@@ -16,11 +16,11 @@ Run these commands from the workspace root:
 # Development preview on the managed artifact workflow
 pnpm --filter @workspace/mystery-bento run dev
 
-# Production build
-pnpm --filter @workspace/mystery-bento run build
+# Production build (the managed workflow supplies these automatically)
+PORT=24283 BASE_PATH=/ pnpm --filter @workspace/mystery-bento run build
 
 # Optional static preview of the production build
-pnpm --filter @workspace/mystery-bento run serve
+PORT=24283 BASE_PATH=/ pnpm --filter @workspace/mystery-bento run serve
 ```
 
 The managed web service uses port `24283`, serves the artifact at `/`, and
@@ -106,8 +106,8 @@ still, and four movement actions: idle, walk, run, and jump.
 | Bibi Bento | Preparation | Yes | Public sprite sheet | 3 |
 
 The current collection has 36 image-backed curios: three public Pip keepsakes
-plus 33 files in `src/assets/curios/`. Every contestant with a curio set has
-three active keepsakes, including the newly added Rollo and Saffy sets.
+plus 33 imported curio derivatives. Every contestant has a complete three-item
+set, including Rollo and Saffy.
 
 ## Image asset map
 
@@ -116,19 +116,29 @@ and browser-delivered runtime assets separate.
 
 | Location | Count | Purpose | Status |
 | --- | ---: | --- | --- |
-| `assets/source-images/` | 14 | Eight original character sheets and six original race-background uploads | Source archive |
-| `src/assets/contestants/` | 66 | Portraits, food stills, extracted cooking frames, and aggregate frame sheets | Imported source/derived assets |
-| `src/assets/contestants/movement/` | 48 | 12 contestants × 4 transparent movement sheets | Active; all imported by `movement-sprite-config.ts` |
-| `src/assets/curios/` | 36 | 12 potential three-item curio sets | 33 active; all imported by the collectible pool |
-| `public/` image files | 67 | Browser-delivered cooking sheets, race backgrounds, plates, keepsakes, restaurant art, Pip exports, and favicon | 29 active; 38 retained alternates/exports |
-| `public/audio/` | 86 MP3s | 85 runtime announcer clips plus one Pip listening preview | Active audio library |
+| `assets/source/images/` | 7 | One character sheet and six original race-background uploads | Source archive |
+| `assets/source/audio/` | 85 | Original announcer recordings for active runtime families | Source archive |
+| `src/assets/derived/contestants/portraits/` | 12 | Opaque contestant portraits | Active imports |
+| `src/assets/derived/contestants/food/` | 12 | Transparent food stills | Active imports |
+| `src/assets/derived/contestants/cooking/` | 30 | Six extracted counter frames for five contestants | Active imports |
+| `src/assets/derived/contestants/movement/` | 48 | 12 contestants × 4 transparent movement sheets | Active imports |
+| `src/assets/derived/curios/` | 33 | Three independent curio derivatives for 11 non-Pip contestants | Active imports |
+| `public/runtime/images/` | 16 | Race backgrounds, plates, keepsakes, and restaurant art | Active browser assets |
+| `public/runtime/video/cooking/` | 12 | Winner cooking sprite sheets | Active browser assets |
+| `public/runtime/audio/` | 69 | 68 selected announcer clips plus one Pip listening preview | Active browser assets |
+| `assets/archive/` | 38 | Restaurant alternates and superseded Pip frame exports | Preserved provenance |
+| `assets/review/unused/` | 30 | Confirmed unused derived/audio candidates awaiting review | Not shipped |
 
 ### Runtime image families
 
-- **12 portraits**: opaque `320 × 292` PNGs, one per contestant.
+- **12 portraits**: opaque `320 × 292` PNGs, one per contestant, in
+  `src/assets/derived/contestants/portraits/`.
 - **12 food stills**: transparent PNG cutouts used around the restaurant.
-- **48 movement sheets**: transparent square-cell grids with explicit rows,
-  columns, occupied-frame counts, and per-persona normalization.
+- **30 extracted cooking frames**: six transparent counter frames for Pip,
+  Sencha, Toro, Nori, Tilda, and Rollo.
+- **48 movement sheets**: transparent square-cell grids in
+  `src/assets/derived/contestants/movement/`, with explicit rows, columns,
+  occupied-frame counts, and per-persona normalization.
 - **12 cooking sheets**: transparent public sprite sheets used for winner
   cooking reveals. The sprite audit covers all 12 cooking sheets and all 48
   movement sheets.
@@ -137,61 +147,52 @@ and browser-delivered runtime assets separate.
   lantern gate market, garden market, night alley, lantern crossing, central
   stall, and moonlit pavilion destination.
 - **6 sushi plates** and **3 Pip keepsakes**: transparent `2048 × 2048` and
-  `160 × 160` PNGs respectively.
-- **Restaurant backdrop**: the active choice is
-  `public/restaurant-background-attached.png`. The two
-  `restaurant-interior*` files are alternate exports and are not referenced.
+  `160 × 160` PNGs respectively, under `public/runtime/images/`.
+- **Restaurant backdrop**: `public/runtime/images/restaurant/background.png`.
 
-Cooking has two different source paths. Five contestants
-(Pip, Sencha, Nori, Tilda, and Rollo) retain six extracted transparent frames
-in `src/assets/contestants/` for the counter presentation. The runtime winner
-reveal uses one public sprite sheet for each of all 12 contestants, including
-Toro, Kiku, Saffy, Miso, Uma, Panko, and Bibi.
+All browser-delivered media is now under `public/runtime/`. Imported,
+build-time derivatives live under `src/assets/derived/`. Original uploads live
+under `assets/source/`; known superseded material lives under `assets/archive/`;
+and confirmed unused candidates live under `assets/review/unused/`.
 
-### Preserved but unwired image exports
+### Asset review queue
 
-These files are intentionally not deleted because they preserve source
-provenance or may be useful for future art work:
+The review queue is intentionally separate from active source and runtime
+folders:
 
-- Six aggregate extracted cooking sheets in `src/assets/contestants/` are not
-  imported by the current counter renderer.
-- Toro's six extracted cooking frames and aggregate sheet are superseded by the
-  public Toro cooking sprite sheet.
-- `public/video/pip-frames/` contains 36 individual Pip frame exports that are
-  superseded by `pip-making-food-sprite-sheet.png`.
-- `public/restaurant-interior-attached.png` and
-  `public/restaurant-interior.webp` are unused alternate restaurant exports.
+- 6 aggregate cooking sheets and 6 Toro frame exports that are superseded by
+  the public cooking sheets.
+- 12 contestant profile clips and 5 contest-title clips not selected by the
+  current contest sequence.
+- 1 unlabeled source recording awaiting a phrase label.
 
-The image audit found no missing file among active imports, public runtime
-URLs, race-background mappings, or collectible assets. Source character sheets
-are opaque flattened archives while the cutout, movement, cooking, curio, and
-plate derivatives use transparency; that difference is expected.
+The archive keeps the 36 individual Pip frame exports and two restaurant
+alternates because they preserve an earlier export path. See
+`assets/review/README.md` for the review rule.
 
-The workspace-level `attached_assets/` staging area contains 108 additional
-uploaded image files (95 PNG and 13 WebP). Those uploads are not browser
-runtime dependencies and are not treated as canonical after the corresponding
-source or derived asset has been copied into this artifact.
+The active asset audit found no missing file among imports, public runtime URLs,
+race-background mappings, or collectible assets. Do not treat workspace-level
+`attached_assets/` uploads as canonical once a source or derived asset has been
+copied into this artifact.
 
 ## Announcer audio
 
-Runtime audio lives under `public/audio/announcer/` and is composed from reusable
+Runtime audio lives under `public/runtime/audio/announcer/` and is composed from reusable
 families:
 
 - Three race-start variants.
 - One contestant-intro lead-in.
-- 12 contestant names and 12 contestant blurbs.
-- Five contest titles.
+- 12 contestant names.
 - 24 obstacle callouts.
 - Eight result fragments, seven physical reactions, seven pace/lead-change
   clips, and five stage transitions.
 - One reusable `takes-the-win` finish fragment.
 
-The bundled library contains five contest-title clips and 12 character-blurb
-clips, but the current `App.tsx` contest sequence does not select those two
-families yet. The active sequence uses the selected race-start clip, contestant
-names, obstacle and reaction clips, pace/stage transitions, and the winner
-name-plus-result fragment. `announcer-audio.ts` keeps the complete reusable
-catalog available for a future narration pass.
+The review queue contains five contest-title clips and 12 character-blurb clips
+because the current `App.tsx` contest sequence does not select those families.
+The active sequence uses the selected race-start clip, contestant names,
+obstacle and reaction clips, pace/stage transitions, and the winner
+name-plus-result fragment.
 
 The selected race-start clip controls the actual race handoff. Muted, blocked,
 missing, or delayed audio uses the deterministic timing fallback instead of

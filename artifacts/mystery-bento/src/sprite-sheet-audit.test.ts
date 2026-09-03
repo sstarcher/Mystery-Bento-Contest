@@ -82,8 +82,8 @@ const movementSpriteSheets: SpriteSheetAudit[] = [
   { file: 'sencha-jump.png', columns: 8, rows: 4, occupiedFrames: 32 },
 ];
 
-const runtimeAssetPath = (file: string) => fileURLToPath(new URL(`../public/video/${file}`, import.meta.url));
-const movementRuntimeAssetPath = (file: string) => fileURLToPath(new URL(`./assets/contestants/movement/${file}`, import.meta.url));
+const runtimeAssetPath = (file: string) => fileURLToPath(new URL(`../public/runtime/video/cooking/${file}`, import.meta.url));
+const movementRuntimeAssetPath = (file: string) => fileURLToPath(new URL(`./assets/derived/contestants/movement/${file}`, import.meta.url));
 const normalizedMovementMetrics = new Map<string, { height: number; baseline: number }[]>();
 
 for (const sheet of [...spriteSheets, ...movementSpriteSheets]) {
