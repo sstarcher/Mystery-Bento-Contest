@@ -6,7 +6,7 @@ import { Toaster } from '@/components/ui/toaster';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import NotFound from '@/pages/not-found';
 import { Route, Router as WouterRouter, Switch, useLocation } from 'wouter';
-import { contestantDesigns, contestantFoodAnimationAspectRatios, contestantFoodAnimationFrames, contestantFoodSprites, contestantPortraits } from './contestant-design-config';
+import { contestantDesigns, contestantFoodAnimationAspectRatios, contestantFoodSprites, contestantPortraits } from './contestant-design-config';
 import tildaSafetyModule from './assets/derived/curios/tilda-safety-module.png';
 import tildaToolbox from './assets/derived/curios/tilda-toolbox.png';
 import tildaWrenchSet from './assets/derived/curios/tilda-wrench-set.png';
@@ -392,7 +392,7 @@ const personas: Persona[] = contestantDesigns.map((design) => ({
   memorableEvent: design.memorableEvent,
   portraitSrc: contestantPortraits[design.id],
   foodSpriteSrc: contestantFoodSprites[design.id],
-  foodAnimationFrameSrcs: design.id === 'pip' || design.id === 'sencha' || design.id === 'toro' ? undefined : contestantFoodAnimationFrames[design.id],
+  foodAnimationFrameSrcs: undefined,
   foodAnimationSpriteSheetSrc: design.id === 'pip'
     ? PIP_ANIMATION_SPRITE_SHEET_SRC
     : design.id === 'sencha'

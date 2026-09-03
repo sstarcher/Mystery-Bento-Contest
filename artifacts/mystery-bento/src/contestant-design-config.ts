@@ -6,48 +6,18 @@ import misoPortrait from './assets/derived/contestants/portraits/miso.png';
 import misoFood from './assets/derived/contestants/food/miso-food.png';
 import noriPortrait from './assets/derived/contestants/portraits/nori.png';
 import noriFood from './assets/derived/contestants/food/nori-food.png';
-import noriNibFrame1 from './assets/derived/contestants/cooking/nori-nib-frame-1.png';
-import noriNibFrame2 from './assets/derived/contestants/cooking/nori-nib-frame-2.png';
-import noriNibFrame3 from './assets/derived/contestants/cooking/nori-nib-frame-3.png';
-import noriNibFrame4 from './assets/derived/contestants/cooking/nori-nib-frame-4.png';
-import noriNibFrame5 from './assets/derived/contestants/cooking/nori-nib-frame-5.png';
-import noriNibFrame6 from './assets/derived/contestants/cooking/nori-nib-frame-6.png';
 import pankoPortrait from './assets/derived/contestants/portraits/panko.png';
 import pankoFood from './assets/derived/contestants/food/panko-food.png';
 import pipPortrait from './assets/derived/contestants/portraits/pip.png';
 import pipFood from './assets/derived/contestants/food/pip-food.png';
-import pipPorridgeFrame1 from './assets/derived/contestants/cooking/pip-porridge-frame-1.png';
-import pipPorridgeFrame2 from './assets/derived/contestants/cooking/pip-porridge-frame-2.png';
-import pipPorridgeFrame3 from './assets/derived/contestants/cooking/pip-porridge-frame-3.png';
-import pipPorridgeFrame4 from './assets/derived/contestants/cooking/pip-porridge-frame-4.png';
-import pipPorridgeFrame5 from './assets/derived/contestants/cooking/pip-porridge-frame-5.png';
-import pipPorridgeFrame6 from './assets/derived/contestants/cooking/pip-porridge-frame-6.png';
 import rolloPortrait from './assets/derived/contestants/portraits/rollo.png';
 import rolloFood from './assets/derived/contestants/food/rollo-food.png';
-import rolloRadishFrame1 from './assets/derived/contestants/cooking/rollo-radish-frame-1.png';
-import rolloRadishFrame2 from './assets/derived/contestants/cooking/rollo-radish-frame-2.png';
-import rolloRadishFrame3 from './assets/derived/contestants/cooking/rollo-radish-frame-3.png';
-import rolloRadishFrame4 from './assets/derived/contestants/cooking/rollo-radish-frame-4.png';
-import rolloRadishFrame5 from './assets/derived/contestants/cooking/rollo-radish-frame-5.png';
-import rolloRadishFrame6 from './assets/derived/contestants/cooking/rollo-radish-frame-6.png';
 import saffyPortrait from './assets/derived/contestants/portraits/saffy.png';
 import saffyFood from './assets/derived/contestants/food/saffy-food.png';
 import senchaPortrait from './assets/derived/contestants/portraits/sencha.png';
 import senchaFood from './assets/derived/contestants/food/sencha-food.png';
-import senchaTeaFrame1 from './assets/derived/contestants/cooking/sencha-tea-frame-1.png';
-import senchaTeaFrame2 from './assets/derived/contestants/cooking/sencha-tea-frame-2.png';
-import senchaTeaFrame3 from './assets/derived/contestants/cooking/sencha-tea-frame-3.png';
-import senchaTeaFrame4 from './assets/derived/contestants/cooking/sencha-tea-frame-4.png';
-import senchaTeaFrame5 from './assets/derived/contestants/cooking/sencha-tea-frame-5.png';
-import senchaTeaFrame6 from './assets/derived/contestants/cooking/sencha-tea-frame-6.png';
 import tildaPortrait from './assets/derived/contestants/portraits/tilda.png';
 import tildaFood from './assets/derived/contestants/food/tilda-food.png';
-import tildaTofuFrame1 from './assets/derived/contestants/cooking/tilda-tofu-frame-1.png';
-import tildaTofuFrame2 from './assets/derived/contestants/cooking/tilda-tofu-frame-2.png';
-import tildaTofuFrame3 from './assets/derived/contestants/cooking/tilda-tofu-frame-3.png';
-import tildaTofuFrame4 from './assets/derived/contestants/cooking/tilda-tofu-frame-4.png';
-import tildaTofuFrame5 from './assets/derived/contestants/cooking/tilda-tofu-frame-5.png';
-import tildaTofuFrame6 from './assets/derived/contestants/cooking/tilda-tofu-frame-6.png';
 import toroPortrait from './assets/derived/contestants/portraits/toro.png';
 import toroFood from './assets/derived/contestants/food/toro-food.png';
 import umaPortrait from './assets/derived/contestants/portraits/uma.png';
@@ -100,14 +70,6 @@ export const contestantFoodSprites: Record<string, string> = {
   saffy: saffyFood,
   kiku: kikuFood,
   bibi: bibiFood,
-};
-
-export const contestantFoodAnimationFrames: Partial<Record<string, string[]>> = {
-  pip: [pipPorridgeFrame1, pipPorridgeFrame2, pipPorridgeFrame3, pipPorridgeFrame4, pipPorridgeFrame5, pipPorridgeFrame6],
-  sencha: [senchaTeaFrame1, senchaTeaFrame2, senchaTeaFrame3, senchaTeaFrame4, senchaTeaFrame5, senchaTeaFrame6],
-  nori: [noriNibFrame1, noriNibFrame2, noriNibFrame3, noriNibFrame4, noriNibFrame5, noriNibFrame6],
-  tilda: [tildaTofuFrame1, tildaTofuFrame2, tildaTofuFrame3, tildaTofuFrame4, tildaTofuFrame5, tildaTofuFrame6],
-  rollo: [rolloRadishFrame1, rolloRadishFrame2, rolloRadishFrame3, rolloRadishFrame4, rolloRadishFrame5, rolloRadishFrame6],
 };
 
 export const contestantFoodAnimationAspectRatios: Partial<Record<string, string>> = {

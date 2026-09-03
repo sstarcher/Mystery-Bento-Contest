@@ -120,22 +120,19 @@ and browser-delivered runtime assets separate.
 | `assets/source/audio/` | 85 | Original announcer recordings for active runtime families | Source archive |
 | `src/assets/derived/contestants/portraits/` | 12 | Opaque contestant portraits | Active imports |
 | `src/assets/derived/contestants/food/` | 12 | Transparent food stills | Active imports |
-| `src/assets/derived/contestants/cooking/` | 30 | Six extracted counter frames for five contestants | Active imports |
 | `src/assets/derived/contestants/movement/` | 48 | 12 contestants × 4 transparent movement sheets | Active imports |
 | `src/assets/derived/curios/` | 33 | Three independent curio derivatives for 11 non-Pip contestants | Active imports |
 | `public/runtime/images/` | 16 | Race backgrounds, plates, keepsakes, and restaurant art | Active browser assets |
 | `public/runtime/video/cooking/` | 12 | Winner cooking sprite sheets | Active browser assets |
 | `public/runtime/audio/` | 69 | 68 selected announcer clips plus one Pip listening preview | Active browser assets |
 | `assets/archive/` | 38 | Restaurant alternates and superseded Pip frame exports | Preserved provenance |
-| `assets/review/unused/` | 30 | Confirmed unused derived/audio candidates awaiting review | Not shipped |
+| `assets/review/unused/` | 60 | Confirmed unused cooking/audio candidates awaiting review | Not shipped |
 
 ### Runtime image families
 
 - **12 portraits**: opaque `320 × 292` PNGs, one per contestant, in
   `src/assets/derived/contestants/portraits/`.
 - **12 food stills**: transparent PNG cutouts used around the restaurant.
-- **30 extracted cooking frames**: six transparent counter frames for Pip,
-  Sencha, Toro, Nori, Tilda, and Rollo.
 - **48 movement sheets**: transparent square-cell grids in
   `src/assets/derived/contestants/movement/`, with explicit rows, columns,
   occupied-frame counts, and per-persona normalization.
