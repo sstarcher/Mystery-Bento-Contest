@@ -77,7 +77,8 @@ Shelf or Contest Ledger to reset this browser's saved progress.
   until it becomes unreadable.
 - Contestants use portraits for the restaurant, transparent food/cooking art for
   the counter, 12 movement sprite sets for the race, and cooking sprite sheets
-  for the winner reveal.
+  for the winner reveal. Course obstacles appear once per obstacle position
+  rather than once in every contestant lane.
 - Uma Udon is the enlarged and right-shifted fallback for the restaurant chef
   presentation.
 - Curio art is rendered through one square art-box contract with a shared

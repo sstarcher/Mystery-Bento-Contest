@@ -2029,30 +2029,23 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
               </div>
               <div className="race-course-road">
                 <div className="race-finish-line" aria-hidden="true" />
+                {race.obstacles.map((obstacle) => (
+                  <span
+                    className={`race-obstacle race-obstacle-${obstacle.kind}`}
+                    style={{ left: `${obstacle.position}%` }}
+                    key={obstacle.id}
+                    title={obstacle.label}
+                    aria-hidden="true"
+                  >
+                    <span className="race-obstacle-art">
+                      <img src={obstacle.imageSrc} alt="" draggable="false" />
+                    </span>
+                    <small>{obstacle.shortLabel}</small>
+                  </span>
+                ))}
                 {contestants.map((persona) => {
-                  const lane = race.lanes.find((candidate) => candidate.personaId === persona.id);
-                  const reachedObstacleIndex = getReachedObstacleIndex(lane);
-                  const laneCurrentObstacleIndex = getCurrentLaneObstacleIndex(lane);
                   return (
                     <div className="race-lane" key={persona.id}>
-                      {race.obstacles.map((obstacle, obstacleIndex) => {
-                        const encounter = lane?.encounters[obstacle.id];
-                        const obstacleState = obstacleIndex <= reachedObstacleIndex ? `race-obstacle-${encounter?.result ?? 'clear'}` : 'race-obstacle-upcoming';
-                        return (
-                          <span
-                            className={`race-obstacle race-obstacle-${obstacle.kind} ${obstacleState} ${obstacleIndex === laneCurrentObstacleIndex ? 'is-current' : ''}`}
-                            style={{ left: `${obstacle.position}%` }}
-                            key={`${persona.id}-${obstacle.id}`}
-                            title={obstacle.label}
-                            aria-hidden="true"
-                          >
-                            <span className="race-obstacle-art">
-                              <img src={obstacle.imageSrc} alt="" draggable="false" />
-                            </span>
-                            <small>{obstacle.shortLabel}</small>
-                          </span>
-                        );
-                      })}
                     </div>
                   );
                 })}
