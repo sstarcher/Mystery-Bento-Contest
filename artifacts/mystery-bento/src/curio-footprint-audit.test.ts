@@ -15,7 +15,7 @@ const profiles = new Map(
 );
 assert.ok(profiles.size > 0, 'Curio art profile map is empty');
 assert.ok(profiles.has('image-default'), 'Image curios must have a shared default profile');
-assert.ok(profiles.has('glyph-default'), 'Legacy glyphs must have a shared default profile');
+assert.equal([...profiles.keys()].some((name) => name.startsWith('glyph-')), false, 'Legacy glyph profiles must be removed');
 for (const [name, scale] of profiles) {
   assert.ok(Number.isFinite(scale) && scale > 0, `${name}: normalization scale must be positive`);
 }
@@ -31,13 +31,8 @@ for (const variant of imageVariants) {
   );
 }
 
-const legacyGlyphs = new Set(
-  [...curioCss.matchAll(/\.curio-glyph-([a-z-]+)::before/g)].map(([, glyph]) => glyph),
-);
-assert.ok(legacyGlyphs.size > 0, 'No legacy CSS glyphs found');
-for (const glyph of legacyGlyphs) {
-  assert.ok(profiles.has(`glyph-${glyph}`), `glyph-${glyph}: missing normalization profile`);
-}
+const legacyGlyphs = new Set([...curioCss.matchAll(/\.curio-glyph-([a-z-]+)::before/g)].map(([, glyph]) => glyph));
+assert.equal(legacyGlyphs.size, 0, 'Legacy CSS glyphs must be removed');
 
 const pipProfiles = ['pip-pocket-watch', 'pip-rice-bowl', 'pip-satchel-tag'];
 const pipScales = pipProfiles.map((variant) => {
@@ -47,7 +42,7 @@ const pipScales = pipProfiles.map((variant) => {
 assert.ok(pipScales.every((scale) => scale === pipScales[0]), 'Pip watch, bowl, and satchel must share one normalized scale');
 
 assert.match(appSource, /getCurioArtProfile\(\{ artVariant \}\)/, 'Image curios must use the shared profile resolver');
-assert.match(appSource, /getCurioArtProfile\(\{ glyphClass \}\)/, 'Legacy glyphs must use the shared profile resolver');
+assert.doesNotMatch(appSource, /glyphClass/, 'Legacy glyph renderer must be removed');
 assert.match(curioCss, /\.curio-art-box \{[^}]*width: 96px; height: 96px;/);
 assert.match(curioCss, /\.curio-art-normalized \{[^}]*transform: scale\(var\(--curio-art-scale, 1\)\)/);
 assert.match(curioCss, /\.displayed-curio \.curio-art-box/);
@@ -65,4 +60,4 @@ const curioOverlayContext = appSource.slice(
 );
 assert.match(curioOverlayContext, /<CurioGlyph item=\{item\}/, 'Kitchen Curio Shelf must render curios through CurioGlyph');
 
-console.log(`Curio footprint audit passed for ${imageVariants.length} image variants and ${legacyGlyphs.size} legacy glyphs.`);
+console.log(`Curio footprint audit passed for ${imageVariants.length} image variants and no legacy glyphs.`);

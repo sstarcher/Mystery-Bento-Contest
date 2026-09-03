@@ -719,14 +719,6 @@ function buildAnnouncerSequence(contestants: Persona[], race: RaceSimulation, pr
 }
 
 const collectiblePool = [
-  { id: 'recipe-midnight-sauce', kind: 'recipe fragment', title: 'The Unfinished Midnight Sauce', description: 'A recipe-card fragment with one suspiciously important ingredient missing.', earnedBy: 'miso' },
-  { id: 'recipe-after-hours-note', kind: 'recipe fragment', title: 'The After-Hours Note', description: 'A folded kitchen note that begins with “never skip the toasted sesame.”', earnedBy: 'miso' },
-  { id: 'teacup-perfect-steep', kind: 'porcelain keepsake', title: 'The Perfect Steep Cup', description: 'A tiny porcelain cup with a gold line marking the exact moment green tea becomes itself.', earnedBy: 'sencha' },
-  { id: 'lantern-warm-glow', kind: 'lantern charm', title: 'Warm-Glow Wisp', description: 'A tiny charm that remembers the softest light in the alley.', earnedBy: 'toro' },
-  { id: 'lantern-rain-ticket', kind: 'lantern charm', title: 'Rainy Lantern Ticket', description: 'A little ticket from a stormy night when every puddle reflected gold.', earnedBy: 'toro' },
-  { id: 'chef-ladle-champion', kind: 'chef sticker', title: 'Ladle Champion', description: 'A shiny sticker for a chef who made one enormous spoon look graceful.', earnedBy: 'nori' },
-  { id: 'chef-ladle-night-shift', kind: 'chef sticker', title: 'Night-Shift Ladle Patch', description: 'A stitched patch for the cook who kept the late service perfectly stirred.', earnedBy: 'nori' },
-  { id: 'wrench-do-not-relocate', kind: 'pantry tool', title: 'The Do-Not-Relocate Wrench', description: 'A perfectly labeled wrench from Tilda’s chair-and-tool maintenance system.', earnedBy: 'tilda' },
   { id: 'tilda-toolbox', kind: 'Tilda keepsake', title: 'The Perfectly Packed Toolbox', description: 'A small ivory tool box with a lavender latch. A practical workshop keepsake from a pantry engineer.', earnedBy: 'tilda', imageSrc: tildaToolbox, artVariant: 'tilda-toolbox' as const },
   { id: 'tilda-wrench-set', kind: 'Tilda keepsake', title: 'The Crossed-Tool Set', description: 'A silver wrench crossed with a tiny copper gear. A practical workshop keepsake from a pantry engineer.', earnedBy: 'tilda', imageSrc: tildaWrenchSet, artVariant: 'tilda-wrench-set' as const },
   { id: 'tilda-safety-module', kind: 'Tilda keepsake', title: 'The Safety Module', description: 'A cube-shaped mechanism core with a dim jade indicator light. A practical workshop keepsake from a pantry engineer.', earnedBy: 'tilda', imageSrc: tildaSafetyModule, artVariant: 'tilda-safety-module' as const },
@@ -754,17 +746,9 @@ const collectiblePool = [
   { id: 'bibi-stacked-bento', kind: 'Bibi keepsake', title: 'The Patterned Bento Stack', description: 'A tiny stacked bento box with muted blue and ochre patterns. A carefully curated keepsake from a traveling lunch arranger.', earnedBy: 'bibi', imageSrc: bibiStackedBento, artVariant: 'bibi-stacked-bento' as const },
   { id: 'bibi-food-tweezers', kind: 'Bibi keepsake', title: 'The Sheathed Plating Tweezers', description: 'Precise silver food tweezers in a cream sheath. A carefully curated keepsake from a traveling lunch arranger.', earnedBy: 'bibi', imageSrc: bibiFoodTweezers, artVariant: 'bibi-food-tweezers' as const },
   { id: 'bibi-cloth-wrap', kind: 'Bibi keepsake', title: 'The Amber-Charmed Cloth Wrap', description: 'A folded pale-blue cloth wrap tied with a small amber charm. A carefully curated keepsake from a traveling lunch arranger.', earnedBy: 'bibi', imageSrc: bibiClothWrap, artVariant: 'bibi-cloth-wrap' as const },
-  { id: 'plate-moon-checker', kind: 'plate pattern', title: 'Moonlit Checker', description: 'A ceramic plate pattern in the exact colors of a late-night shortcut.', earnedBy: 'bibi' },
-  { id: 'plate-rainbow-rim', kind: 'plate pattern', title: 'Rainbow Rim Test Tile', description: 'A test tile with a rim that catches every color of the market sign.', earnedBy: 'saffy' },
   { id: 'pip-pocket-watch', kind: 'Pip keepsake', title: 'The Brass Sunrise Pocket Watch', description: 'A tiny brass pocket watch with an apricot face, kept ticking for the first warm light of morning.', earnedBy: 'pip', imageSrc: PIP_POCKET_WATCH_SRC, artVariant: 'pip-pocket-watch' as const },
   { id: 'pip-rice-bowl', kind: 'Pip keepsake', title: 'The Teal-Ribbon Rice Bowl', description: 'A little rice bowl tied with a teal ribbon, saved for meals that deserve a gentle beginning.', earnedBy: 'pip', imageSrc: PIP_RICE_BOWL_SRC, artVariant: 'pip-rice-bowl' as const },
   { id: 'pip-satchel-tag', kind: 'Pip keepsake', title: 'The Apricot Satchel Tag', description: 'An apricot luggage tag with a tiny rice charm, ready for one more shortcut home.', earnedBy: 'pip', imageSrc: PIP_SATCHEL_TAG_SRC, artVariant: 'pip-satchel-tag' as const },
-  { id: 'snapshot-great-wobble', kind: 'victory snapshot', title: 'The Great Wobble', description: 'A framed snapshot of a rice ball refusing to give up.', earnedBy: 'panko' },
-  { id: 'snapshot-last-tray', kind: 'victory snapshot', title: 'The Last Tray Home', description: 'A tiny photograph of an empty tray making it safely back to the pass.', earnedBy: 'pip' },
-  { id: 'radish-spark-sticker', kind: 'chef sticker', title: 'Radish Spark', description: 'A zippy little sticker that seems to vibrate when nobody is looking.', earnedBy: 'rollo' },
-  { id: 'radish-fizz-pin', kind: 'chef sticker', title: 'Fizz Route Pin', description: 'A bright pin marking the fastest route between the pantry and the dance floor.', earnedBy: 'rollo' },
-  { id: 'medal-longest-noodle', kind: 'flour-stall medal', title: 'The Longest Noodle Medal', description: 'A heavy little medal awarded for pulling one scientifically unnecessary, gloriously long noodle.', earnedBy: 'uma' },
-  { id: 'kettle-mostly-safe', kind: 'workshop charm', title: 'The Mostly Safe Kettle', description: 'A copper pocket kettle with a handwritten label: “safe-ish, especially when complimented.”', earnedBy: 'kiku' },
 ];
 
 const showcaseCollectibles: Collectible[] = collectiblePool.map((item) => ({
@@ -806,18 +790,6 @@ function getCurioDisplayZone(item: Collectible): CurioDisplayZone {
   if (item.id.includes('bibi-stacked-bento')) return 'house-keeps';
   if (item.id.includes('bibi-food-tweezers')) return 'hanging-tools';
   if (item.id.includes('bibi-cloth-wrap')) return 'little-finds';
-  if (item.id.includes('chef-ladle-champion')) return 'hanging-tools';
-  if (item.id.includes('chef-ladle-night-shift')) return 'hanging-tools';
-  if (item.id.includes('wrench-do-not-relocate')) return 'hanging-tools';
-  if (item.id.includes('teacup-perfect-steep')) return 'tea-tools';
-  if (item.id.includes('plate-moon-checker')) return 'spare-plates';
-  if (item.id.includes('plate-rainbow-rim')) return 'spare-plates';
-  if (item.id.includes('lantern-warm-glow')) return 'tea-tools';
-  if (item.id.includes('lantern-rain-ticket')) return 'tea-tools';
-  if (item.id.includes('radish-spark-sticker')) return 'little-finds';
-  if (item.id.includes('radish-fizz-pin')) return 'little-finds';
-  if (item.id.includes('kettle-mostly-safe')) return 'little-finds';
-  if (item.id.includes('medal-longest-noodle')) return 'house-keeps';
   return 'house-keeps';
 }
 
@@ -1020,11 +992,11 @@ function resolveContest(contestants: Persona[], rng: () => number): ContestOutco
   };
 }
 
-function useStoredState<T>(key: string, fallback: T) {
+function useStoredState<T>(key: string, fallback: T, normalize: (value: T) => T = (value) => value) {
   const [value, setValue] = useState<T>(() => {
     try {
       const saved = window.localStorage.getItem(key);
-      return saved ? (JSON.parse(saved) as T) : fallback;
+      return saved ? normalize(JSON.parse(saved) as T) : fallback;
     } catch {
       return fallback;
     }
@@ -1077,52 +1049,12 @@ function CurioArtFrame({ profile, children }: { profile: CurioArtProfile; childr
 }
 
 function CurioGlyph({ item }: { item: Collectible }) {
-  if (item.imageSrc) {
-    const artVariant = item.artVariant;
-    return (
-      <CurioArtFrame profile={getCurioArtProfile({ artVariant })}>
-        <div className={`curio-glyph curio-glyph-image${artVariant ? ` curio-glyph-image-${artVariant}` : ''}`} aria-hidden="true">
-          <img src={item.imageSrc} alt="" draggable="false" />
-        </div>
-      </CurioArtFrame>
-    );
-  }
-  const glyphClass = item.id.includes('recipe-midnight-sauce')
-    ? 'recipe'
-    : item.id.includes('recipe-after-hours-note')
-      ? 'note'
-      : item.id.includes('teacup-perfect-steep')
-        ? 'cup'
-    : item.id.includes('lantern-warm-glow')
-      ? 'lantern'
-      : item.id.includes('lantern-rain-ticket')
-        ? 'ticket'
-      : item.id.includes('chef-ladle-champion')
-        ? 'ladle'
-        : item.id.includes('chef-ladle-night-shift')
-          ? 'patch'
-          : item.id.includes('wrench-do-not-relocate')
-            ? 'wrench'
-        : item.id.includes('plate-moon-checker')
-          ? 'checker'
-        : item.id.includes('plate-rainbow-rim')
-          ? 'tile'
-          : item.id.includes('snapshot-great-wobble')
-            ? 'snapshot'
-        : item.id.includes('snapshot-last-tray')
-          ? 'tray'
-        : item.id.includes('radish-fizz-pin')
-          ? 'pin'
-        : item.id.includes('medal-longest-noodle')
-          ? 'medal'
-        : item.id.includes('kettle-mostly-safe')
-          ? 'kettle'
-            : 'radish';
+  if (!item.imageSrc) return null;
+  const artVariant = item.artVariant;
   return (
-    <CurioArtFrame profile={getCurioArtProfile({ glyphClass })}>
-      <div className={`curio-glyph curio-glyph-${glyphClass}`} aria-hidden="true">
-        <span className="curio-glyph-detail" />
-        <span className="curio-glyph-shine" />
+    <CurioArtFrame profile={getCurioArtProfile({ artVariant })}>
+      <div className={`curio-glyph curio-glyph-image${artVariant ? ` curio-glyph-image-${artVariant}` : ''}`} aria-hidden="true">
+        <img src={item.imageSrc} alt="" draggable="false" />
       </div>
     </CurioArtFrame>
   );
@@ -2251,7 +2183,7 @@ function EmptyState({ title, body }: { title: string; body: string }) {
 function Home() {
   const [meter, setMeter] = useStoredState<MeterState>(METER_KEY, { progress: 0, lastAcknowledgement: 'Choose a morsel to begin.' });
   const [ledger, setLedger] = useStoredState<ContestLedgerEntry[]>(LEDGER_KEY, []);
-  const [collectibles, setCollectibles] = useStoredState<Collectible[]>(CURIO_KEY, []);
+  const [collectibles, setCollectibles] = useStoredState<Collectible[]>(CURIO_KEY, [], (saved) => saved.filter((item) => Boolean(item.imageSrc)));
   const [acknowledgement, setAcknowledgement] = useState(meter.lastAcknowledgement);
   const [meterPulse, setMeterPulse] = useState(false);
   const [isHolding, setIsHolding] = useState(false);

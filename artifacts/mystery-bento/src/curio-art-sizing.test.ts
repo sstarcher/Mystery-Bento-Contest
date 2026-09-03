@@ -34,36 +34,14 @@ const imageVariants = [
   'bibi-cloth-wrap',
 ];
 
-const legacyGlyphs = [
-  'recipe',
-  'note',
-  'cup',
-  'lantern',
-  'ticket',
-  'ladle',
-  'patch',
-  'wrench',
-  'checker',
-  'tile',
-  'snapshot',
-  'tray',
-  'pin',
-  'medal',
-  'kettle',
-  'radish',
-];
-
 assert.ok(CURIO_ART_FIT_SCALE > 0 && CURIO_ART_FIT_SCALE < 1, 'shared fit scale must reduce the art');
 assert.equal(getCurioArtProfile({}).scale, CURIO_ART_PROFILES['image-default'].scale);
+assert.equal(Object.keys(CURIO_ART_PROFILES).some((key) => key.startsWith('glyph-')), false, 'legacy glyph profiles must be removed');
 
 for (const artVariant of imageVariants) {
   assert.ok(getCurioArtProfile({ artVariant }).scale > 0, `missing image profile fallback: ${artVariant}`);
 }
 
-for (const glyphClass of legacyGlyphs) {
-  assert.ok(getCurioArtProfile({ glyphClass }).scale > 0, `missing legacy glyph profile: ${glyphClass}`);
-}
-
 assert.equal(getCurioArtProfile({ artVariant: 'pip-pocket-watch' }).scale, getCurioArtProfile({ artVariant: 'pip-rice-bowl' }).scale);
 assert.equal(getCurioArtProfile({ artVariant: 'pip-rice-bowl' }).scale, getCurioArtProfile({ artVariant: 'pip-satchel-tag' }).scale);
-console.log(`Curio art sizing verification passed: ${imageVariants.length} image variants, ${legacyGlyphs.length} legacy glyphs, shared fit scale ${CURIO_ART_FIT_SCALE}.`);
+console.log(`Curio art sizing verification passed: ${imageVariants.length} image variants, no legacy glyph profiles, shared fit scale ${CURIO_ART_FIT_SCALE}.`);
