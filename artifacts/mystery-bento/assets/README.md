@@ -4,9 +4,13 @@ This folder contains the original uploaded source material. Runtime assets are
 kept separately so source sheets can be revisited without affecting the
 optimized files used by the app.
 
+The complete product-facing asset map is in `../README.md`. This file documents
+the source/runtime boundary and provenance details that are specific to this
+folder.
+
 ## Source images
 
-`source-images/character-sheets/`
+`source-images/character-sheets/` contains eight flattened source sheets:
 
 - `character-portraits-sheet.png` — portrait sheet for the 12 mascots
 - `character-food-stations-sheet.png` — food and cooking-station sheet
@@ -32,6 +36,26 @@ The race uses reduced, pixel-crisp WebP derivatives from
 `public/race-backgrounds/`; the six source PNG uploads remain available above
 for future editing and are not shipped to the browser.
 
+The six source panoramas are `6048 × 2592` opaque PNGs. Their active runtime
+derivatives are `1600 × 686` opaque WebPs. The source character sheets are also
+opaque flattened uploads; transparent cutouts and sprite sheets are derived
+later in the pipeline.
+
+## Image audit status
+
+- 14 source images are preserved here: eight character sheets and six race
+  backgrounds.
+- The app currently has 12 portraits, 12 food stills, 48 movement sheets, 12
+  public cooking sheets, six race-background WebPs, six sushi plates, three Pip
+  keepsakes, and 30 active image-backed curios.
+- `src/assets/contestants/` also retains six aggregate cooking-frame sheets and
+  six Toro frame PNGs that are not wired into the current counter renderer.
+- Three Saffy curio PNGs are retained but not in the active collectible pool.
+- The public directory retains 36 superseded Pip frame exports and two unused
+  restaurant interior alternates. They are preserved for provenance rather than
+  deleted.
+- No active image import or runtime image URL is currently missing.
+
 ## Source audio
 
 `source-audio/announcer/`
@@ -54,7 +78,7 @@ for future editing and are not shipped to the browser.
 
 ## Runtime audio
 
-- `public/audio/announcer/` — active reusable announcer clips
+- `public/audio/announcer/` — bundled reusable announcer clips
 - `public/audio/announcer/race-starts/` — race-start variants
 - `public/audio/announcer/character-intros/` — character-introduction lead-ins
 - `public/audio/announcer/character-names/` — name-only clips by mascot
@@ -70,6 +94,8 @@ for future editing and are not shipped to the browser.
   `pip-takes-the-win.mp3`
 
 The runtime announcer selects one of the three race-start variants
-deterministically for each contest, then composes the selected title, contestant
-names and blurbs, course beats, reactions, and winner result from the folders
-above. Missing clips are skipped without blocking the visual race.
+deterministically for each contest, then composes contestant names, course
+beats, reactions, and the winner result from the folders above. Contest-title
+and contestant-blurb clips are bundled for future narration but are not selected
+by the current contest sequence. Missing clips are skipped without blocking the
+visual race.

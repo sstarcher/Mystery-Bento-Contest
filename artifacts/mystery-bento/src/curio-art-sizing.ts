@@ -3,7 +3,9 @@ export type CurioArtProfile = { scale: number };
 // Curio art is authored on different transparent canvases. Normalize the
 // visible maximum dimension here, while keeping each artwork's aspect ratio
 // intact. The extra fit budget keeps art comfortably inside each square box.
-export const CURIO_ART_FIT_SCALE = 0.86;
+// Keep a 10% reduction from the previous shared fit scale so every image-backed
+// curio gets the same smaller footprint without per-item overrides.
+export const CURIO_ART_FIT_SCALE = 0.774;
 
 export const CURIO_ART_PROFILES: Record<string, CurioArtProfile> = {
   'image-default': { scale: 0.84 },

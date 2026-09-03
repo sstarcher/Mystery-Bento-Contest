@@ -35,6 +35,7 @@ const imageVariants = [
 ];
 
 assert.ok(CURIO_ART_FIT_SCALE > 0 && CURIO_ART_FIT_SCALE < 1, 'shared fit scale must reduce the art');
+assert.equal(CURIO_ART_FIT_SCALE, 0.86 * 0.9, 'shared fit scale must reduce the previous curio size by exactly 10%');
 assert.equal(getCurioArtProfile({}).scale, CURIO_ART_PROFILES['image-default'].scale);
 assert.equal(Object.keys(CURIO_ART_PROFILES).some((key) => key.startsWith('glyph-')), false, 'legacy glyph profiles must be removed');
 

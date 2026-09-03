@@ -74,3 +74,9 @@ Fixed-canvas shell padding must be budgeted inside the logical canvas height whe
 **Why:** The shell’s vertical padding participates in the rendered layout, so keeping a full logical content minimum in addition to top and bottom padding creates an extra scroll range on the target tablet.
 
 **How to apply:** For the 800px logical scene, keep the shell’s top spacing but account for its bottom spacing in the content minimum; verify both the exact 1600px target and a narrow cropped viewport after changes.
+
+The shared curio art fit scale is `0.774`, which is a 10% reduction from the previous `0.86` scale; preserve the common multiplier instead of adding per-item size overrides.
+
+**Why:** Curio items were visually too large, and a shared reduction keeps the shelf consistent while preserving each artwork’s proportions.
+
+**How to apply:** Change the shared fit scale for future global curio sizing adjustments, then run the curio sizing and footprint audits plus desktop and narrow previews.

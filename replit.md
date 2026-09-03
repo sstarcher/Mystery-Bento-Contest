@@ -4,12 +4,20 @@ An after-hours pixel-art food stall where curious selections charge a magical Be
 
 ## Run & Operate
 
-- `pnpm --filter @workspace/api-server run dev` — run the API server (port 5000)
-- `pnpm run typecheck` — full typecheck across all packages
-- `pnpm run build` — typecheck + build all packages
-- `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from the OpenAPI spec
-- `pnpm --filter @workspace/db run push` — push DB schema changes (dev only)
-- Required env: `DATABASE_URL` — Postgres connection string
+Mystery Bento is a frontend-only web artifact and does not require the API
+server, database, accounts, or environment secrets.
+
+- `pnpm --filter @workspace/mystery-bento run dev` — run the managed web preview
+  on port 24283
+- `pnpm --filter @workspace/mystery-bento run build` — build the production
+  static bundle
+- `pnpm --filter @workspace/mystery-bento run typecheck` — typecheck the app
+- `pnpm --filter @workspace/mystery-bento run verify:curios` — verify image-only
+  curio coverage and sizing
+- `pnpm --filter @workspace/mystery-bento run verify:race` — verify deterministic
+  race timing and momentum
+- `pnpm --filter @workspace/mystery-bento run verify:sprites` — verify movement
+  and cooking sprite-sheet boundaries
 
 ## Stack
 
@@ -24,7 +32,12 @@ An after-hours pixel-art food stall where curious selections charge a magical Be
 
 - `artifacts/mystery-bento/src/App.tsx` — the complete conveyor, meter, contest, collectible, and ledger experience.
 - `artifacts/mystery-bento/src/index.css` — the lacquer-and-parchment visual system, pixel illustrations, and motion/reduced-motion rules.
-- `artifacts/mystery-bento/README.md` — run instructions and documentation for the hidden meter gesture.
+- `artifacts/mystery-bento/README.md` — canonical run guide, player behavior,
+  asset map, and image audit.
+- `artifacts/mystery-bento/assets/README.md` — source-image provenance and the
+  source/runtime asset boundary.
+- `artifacts/mystery-bento/ANNOUNCER_PHRASES.md` — announcer audio phrase
+  catalog and live-verification checklist.
 
 ## Architecture decisions
 
@@ -47,6 +60,8 @@ _Populate as you build — explicit user instructions worth remembering across s
 
 - Contest completion is guarded so Skip scene and the automatic result path cannot award duplicate collectibles or ledger rows.
 - Reduced-motion mode keeps the same contest result and side effects but replaces the moving race with readable staged updates.
+- Active image assets are checked into the artifact's source and public folders;
+  no API or database is needed to load the experience.
 
 ## Pointers
 

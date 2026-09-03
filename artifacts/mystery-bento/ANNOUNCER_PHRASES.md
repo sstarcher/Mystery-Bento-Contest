@@ -207,8 +207,9 @@ the action phrase:
 
 - All 12 name-only assets are now present under
   `public/audio/announcer/character-names/` and
-  `assets/source-audio/announcer/character-names/`. They remain unchecked
-  until the live contest wires and verifies them.
+  `assets/source-audio/announcer/character-names/`. They are mapped into the
+  runtime sequence; the checklist below still tracks live browser playback
+  verification.
 
 - [x] Pip! — wired; verify in the live race
 - [x] Sencha! — wired; verify in the live race
