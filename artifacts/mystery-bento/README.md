@@ -201,9 +201,14 @@ pnpm --filter @workspace/mystery-bento run typecheck
 pnpm --filter @workspace/mystery-bento run verify:curios
 pnpm --filter @workspace/mystery-bento run verify:race
 pnpm --filter @workspace/mystery-bento run verify:sprites
+pnpm --filter @workspace/mystery-bento run verify:assets
 pnpm --filter @workspace/mystery-bento run build
 ```
 
 `verify:curios` checks all 36 image-backed variants, shared sizing, and the
 absence of legacy glyph paths. `verify:sprites` checks 60 runtime sheets for
 valid grids, occupied frames, transparent padding, and frame-boundary safety.
+`verify:assets` scans active source imports and browser runtime URLs, checks
+that referenced files exist in the canonical folders, rejects legacy asset
+prefixes, flags unreferenced derived/runtime files outside the review queue,
+and compares the asset-map counts above with the live folders.

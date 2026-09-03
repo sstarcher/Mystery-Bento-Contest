@@ -48,6 +48,11 @@ later in the pipeline.
 - The Rollo and Saffy curio sets use three independent transparent PNG
   derivatives each, all wired into the active collectible pool.
 - No active image import or runtime image URL is currently missing.
+- Run `pnpm --filter @workspace/mystery-bento run verify:assets` from the
+  workspace root to repeat the import, runtime URL, folder, review-queue, and
+  README count audit. The check intentionally allows the generated Pip
+  listening preview under `public/runtime/audio/previews/`, which is not part
+  of the contest sequence.
 
 ## Source audio
 
