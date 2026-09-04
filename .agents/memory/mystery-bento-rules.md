@@ -80,3 +80,9 @@ The shared curio art fit scale is `0.774`, which is a 10% reduction from the pre
 **Why:** Curio items were visually too large, and a shared reduction keeps the shelf consistent while preserving each artwork’s proportions.
 
 **How to apply:** Change the shared fit scale for future global curio sizing adjustments, then run the curio sizing and footprint audits plus desktop and narrow previews.
+
+For normal-motion race reactions, visible runner/obstacle contact is the authoritative trigger; reduced-motion may use the resolved simulation checkpoint.
+
+**Why:** The scrolling course and bounded runner projection use different coordinate systems, so a logical world-position threshold can fire while the character still looks far from the artwork.
+
+**How to apply:** Derive contact from the rendered screen anchors for staged obstacles, keep outcomes deterministic, and retain the simulation-based fallback when motion is reduced.

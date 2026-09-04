@@ -52,6 +52,7 @@ import {
   getRaceStartHandoffTiming,
   getRaceLaneProgressAtTime as getTimelineLaneProgressAtTime,
   getRaceRunnerScreenAnchors,
+  getRaceWorldScreenAnchor,
   getRaceWorldTravelPercentAtTime,
   RACE_FINALE_WORLD_END_PERCENT,
   RACE_FINALE_WORLD_START_PERCENT,
@@ -1670,11 +1671,25 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
       progress >= obstacle.position ? obstacleIndex : reachedIndex
     ), -1);
   };
-  const getCurrentLaneObstacleIndex = (lane: RaceLaneSimulation | undefined) => {
-    const reachedIndex = getReachedObstacleIndex(lane);
+  const RACE_OBSTACLE_CONTACT_WINDOW_PERCENT = 11;
+  const getCurrentLaneObstacleIndex = (lane: RaceLaneSimulation | undefined, laneIndex: number) => {
     const stageObstacleIndex = Math.min(race.obstacles.length - 1, Math.max(0, raceStepProgress[step] - 1));
-    if (step === 'intro' || step === 'winner' || reachedIndex < stageObstacleIndex) return -1;
-    return reachedIndex;
+    if (step === 'intro' || step === 'winner') return -1;
+    const reachedIndex = getReachedObstacleIndex(lane);
+    if (prefersReducedMotion) return reachedIndex < stageObstacleIndex ? -1 : reachedIndex;
+
+    const runnerAnchor = currentRunnerAnchors[laneIndex];
+    if (typeof runnerAnchor !== 'number') return -1;
+    const contactStart = runnerAnchor - RACE_OBSTACLE_CONTACT_WINDOW_PERCENT;
+    const contactEnd = runnerAnchor + RACE_OBSTACLE_CONTACT_WINDOW_PERCENT;
+    const stageObstacleIndices = race.obstacles
+      .map((obstacle, obstacleIndex) => ({ obstacle, obstacleIndex }))
+      .filter(({ obstacleIndex }) => obstacleIndex >= stageObstacleIndex);
+    const contactedObstacle = stageObstacleIndices.find(({ obstacle }) => {
+      const obstacleAnchor = Number.parseFloat(getRaceWorldScreenAnchor(obstacle.position, worldTravelPercent));
+      return obstacleAnchor >= contactStart && obstacleAnchor <= contactEnd;
+    });
+    return contactedObstacle?.obstacleIndex ?? -1;
   };
   const isAnnouncementPhase = step === 'intro' && !finishCrossed;
   const showRaceStartGraphic = isAnnouncementPhase && raceStartGraphicVisible;
@@ -2073,7 +2088,7 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
               {contestants.map((persona, index) => {
                 const lane = raceLanes[index];
                 const laneProgress = getLaneProgress(lane);
-                const laneCurrentObstacleIndex = getCurrentLaneObstacleIndex(lane);
+                const laneCurrentObstacleIndex = getCurrentLaneObstacleIndex(lane, index);
                 const laneCurrentObstacle = laneCurrentObstacleIndex >= 0 ? race.obstacles[laneCurrentObstacleIndex] : null;
                 const encounter = laneCurrentObstacle ? lane?.encounters[laneCurrentObstacle.id] : undefined;
                 const runnerReaction = laneCurrentObstacle && encounter ? getRaceRunnerReaction(laneCurrentObstacle.kind, encounter.result) : 'ready';
@@ -2147,9 +2162,9 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
             </div>
             <p>{spokenBeatLabel} · {finishLineVisible ? 'The finish line is in sight. The last crossing is being settled.' : step === 'winner' && winner ? `${winner.name} takes the finish after the last hazard.` : currentObstacleCopy}</p>
             <div className="race-encounter-row" aria-label="Contestant obstacle results">
-              {contestants.map((persona) => {
+              {contestants.map((persona, index) => {
                 const lane = race.lanes.find((candidate) => candidate.personaId === persona.id);
-                const laneCurrentObstacleIndex = getCurrentLaneObstacleIndex(lane);
+                const laneCurrentObstacleIndex = getCurrentLaneObstacleIndex(lane, index);
                 const laneCurrentObstacle = laneCurrentObstacleIndex >= 0 ? race.obstacles[laneCurrentObstacleIndex] : null;
                 const encounter = laneCurrentObstacle ? lane?.encounters[laneCurrentObstacle.id] : null;
                 return (
