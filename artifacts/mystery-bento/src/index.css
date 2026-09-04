@@ -304,7 +304,7 @@
 .restaurant-curio-displays { position: absolute; inset: 0; z-index: 4; pointer-events: none; }
 .curio-hotspot { position: relative; display: grid; border: 0; padding: 0; background: transparent; color: inherit; font: inherit; cursor: pointer; pointer-events: auto; }
 .curio-hotspot:focus-visible { outline: 3px solid #f5c968; outline-offset: 5px; }
-.curio-info-card { position: absolute; left: 50%; bottom: calc(100% + 14px); z-index: 50; display: grid; width: 236px; gap: 4px; padding: 12px 13px; transform: translate(-50%, 8px); visibility: hidden; opacity: 0; border: 3px solid #17121e; background: #f5e8c9; color: #30223c; box-shadow: 5px 5px 0 rgba(23,18,30,.48); font-family: var(--app-font-mono); font-size: 9px; line-height: 1.35; text-align: left; text-transform: none; letter-spacing: normal; pointer-events: none; transition: opacity .16s ease, transform .16s ease, visibility .16s ease; }
+.curio-info-card { position: absolute; left: 50%; bottom: calc(100% + 14px); z-index: 50; display: grid; width: 236px; gap: 4px; padding: 12px 13px; transform: translate(-50%, 8px); visibility: hidden; opacity: 0; border: 3px solid #17121e; background: #f5e8c9; color: #30223c; box-shadow: 5px 5px 0 rgba(23,18,30,.48); font-family: var(--app-font-mono); font-size: 9px; line-height: 1.35; text-align: left; text-transform: none; letter-spacing: normal; pointer-events: none; transition: opacity .15s ease, transform .15s ease, visibility .15s ease; }
 .curio-info-card::after { content: ''; position: absolute; left: 50%; bottom: -9px; width: 13px; height: 13px; transform: translateX(-50%) rotate(45deg); border-right: 3px solid #17121e; border-bottom: 3px solid #17121e; background: #f5e8c9; }
 .curio-info-card strong { position: relative; z-index: 1; font-family: var(--font-display); font-size: 15px; line-height: 1.05; }
 .curio-info-kind, .curio-info-earned { position: relative; z-index: 1; color: #a34d43; font-size: 8px; text-transform: uppercase; letter-spacing: .1em; }
@@ -484,12 +484,12 @@
 .race-runner .persona-portrait { width: 60px; height: 60px; margin: 0; border-width: 3px; border-radius: 13px; }
 .race-runner .persona-portrait-image { inset: 2px; border-radius: 7px; }
 .race-runner .persona-portrait-shine { width: 6px; height: 6px; top: 6px; right: 6px; }
-@keyframes race-reaction-dodge { 0%, 100% { transform: translateX(0) rotate(0); } 45% { transform: translateX(-10px) rotate(-7deg); } 75% { transform: translateX(6px) rotate(4deg); } }
-@keyframes race-reaction-slide { 0%, 100% { transform: translateY(0) scaleY(1) rotate(0); } 45% { transform: translateY(11px) scaleY(.72) rotate(-6deg); } 78% { transform: translateY(6px) scaleY(.84) rotate(-3deg); } }
-@keyframes race-reaction-duck { 0%, 100% { transform: translateY(0) scaleY(1); } 45% { transform: translateY(10px) scaleY(.7); } 78% { transform: translateY(4px) scaleY(.9); } }
-@keyframes race-reaction-stumble { 0%, 100% { transform: rotate(0); } 25% { transform: rotate(9deg) translateX(5px); } 55% { transform: rotate(-7deg) translateX(-4px); } 78% { transform: rotate(3deg); } }
-@keyframes race-reaction-weave { 0%, 100% { transform: translateX(0) rotate(0); } 35% { transform: translateX(8px) rotate(5deg); } 70% { transform: translateX(-8px) rotate(-5deg); } }
-@keyframes race-reaction-surge { 0%, 100% { transform: translateY(0) scale(1); } 35% { transform: translateY(-6px) scale(1.08); } 70% { transform: translateY(0) scale(1.02); } }
+@keyframes race-reaction-dodge { 0%, 100% { transform: translateX(0) rotate(0); } 25% { transform: translateX(-19px) rotate(-13deg) scale(.94); } 55% { transform: translateX(13px) rotate(8deg) scale(1.03); } 78% { transform: translateX(4px) rotate(2deg); } }
+@keyframes race-reaction-slide { 0%, 100% { transform: translateY(0) scaleY(1) rotate(0); } 35% { transform: translateY(18px) scaleY(.6) rotate(-10deg); } 68% { transform: translateY(9px) scaleY(.76) rotate(-5deg); } 84% { transform: translateY(3px) scaleY(.92) rotate(-2deg); } }
+@keyframes race-reaction-duck { 0%, 100% { transform: translateY(0) scaleY(1); } 35% { transform: translateY(17px) scaleY(.56) rotate(-3deg); } 70% { transform: translateY(7px) scaleY(.82) rotate(1deg); } }
+@keyframes race-reaction-stumble { 0%, 100% { transform: rotate(0) translateX(0); } 22% { transform: rotate(16deg) translateX(9px) translateY(2px); } 48% { transform: rotate(-13deg) translateX(-8px) translateY(5px); } 70% { transform: rotate(7deg) translateX(4px); } 86% { transform: rotate(-2deg); } }
+@keyframes race-reaction-weave { 0%, 100% { transform: translateX(0) rotate(0); } 28% { transform: translateX(17px) rotate(10deg); } 56% { transform: translateX(-17px) rotate(-10deg); } 78% { transform: translateX(7px) rotate(4deg); } }
+@keyframes race-reaction-surge { 0%, 100% { transform: translateY(0) scale(1); } 28% { transform: translateY(-15px) scale(1.16) rotate(-3deg); } 58% { transform: translateY(1px) scale(1.04) rotate(2deg); } 78% { transform: translateY(-3px) scale(1.01); } }
 .race-runner-lane[data-runner-reaction="dodge"] .race-runner-sprite { animation: race-reaction-dodge .42s ease-out both; }
 .race-runner-lane[data-runner-reaction="slide"] .race-runner-sprite { animation: race-reaction-slide .42s ease-out both; }
 .race-runner-lane[data-runner-reaction="duck"] .race-runner-sprite { animation: race-reaction-duck .42s ease-out both; }
@@ -914,6 +914,36 @@
   bottom: 24px;
   z-index: 16;
 }
+
+/* Keep the visual language lively without making any one interaction feel
+   rushed: shared motion is tuned about 8% faster than the original pass. */
+.curio-info-card { transition-duration: .15s; }
+.displayed-curio-latest .curio-glyph-image,
+.curio-award-marker { animation-duration: 1.53s; }
+.conveyor-track { animation-duration: 22.22s; }
+.food-button,
+.curio-button,
+.race-voice-toggle { transition-duration: .17s; }
+.meter-fill { transition-duration: .37s; }
+.meter-track.is-holding .meter-fill { animation-duration: 1.39s; }
+.ack-bubble { animation-duration: .26s; }
+.float-in { animation-duration: .51s; }
+.bump { animation-duration: .37s; }
+.race-finish-line { animation-duration: 1.02s; }
+.race-runner-lane[data-runner-reaction="dodge"] .race-runner-sprite,
+.race-runner-lane[data-runner-reaction="slide"] .race-runner-sprite,
+.race-runner-lane[data-runner-reaction="duck"] .race-runner-sprite,
+.race-runner-lane[data-runner-reaction="weave"] .race-runner-sprite,
+.race-runner-lane[data-runner-reaction="surge"] .race-runner-sprite { animation-duration: .39s; }
+.race-runner-lane[data-runner-reaction="stumble"] .race-runner-sprite { animation-duration: .43s; }
+.race-winner-reveal-card { animation-duration: .72s; }
+.selection-splash { animation-duration: 11.67s; }
+.selection-card { animation-duration: .74s; }
+.splash-particle { animation-duration: .97s; }
+.splash-particle-two { animation-delay: .07s; }
+.splash-particle-three { animation-delay: .15s; }
+.contest-announcement-card { animation-duration: .51s; }
+.contest-start-graphic { animation-duration: .37s; }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .001ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; transition-duration: .001ms !important; }

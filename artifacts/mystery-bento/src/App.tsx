@@ -170,6 +170,8 @@ const METER_KEY = 'mystery-bento-meter';
 const LEDGER_KEY = 'mystery-bento-ledger';
 const CURIO_KEY = 'mystery-bento-curios';
 const VOICE_ANNOUNCER_KEY = 'mystery-bento-voice-announcer';
+const MOTION_SPEEDUP = 1.08;
+const speedUpDurationMs = (durationMs: number) => Math.max(1, Math.round(durationMs / MOTION_SPEEDUP));
 const ANNOUNCER_AUDIO_BASE = `${import.meta.env.BASE_URL}runtime/audio/announcer`;
 
 const RACE_BACKGROUND_BASE = `${import.meta.env.BASE_URL}runtime/images/race-backgrounds`;
@@ -912,7 +914,7 @@ function buildRaceSimulation(contestants: Persona[], rng: () => number): RaceSim
         spread,
         rng,
       });
-      const progressDelta = result === 'surge' ? 16 : result === 'slow' ? -16 : result === 'reroute' ? -7 : 3;
+      const progressDelta = result === 'surge' ? 18 : result === 'slow' ? -20 : result === 'reroute' ? -10 : 3;
       const pace = 18
         + (lane.persona.traits.speed - 50) * 0.05
         + (lane.persona.traits.focus - 50) * 0.015;
@@ -1255,7 +1257,7 @@ function AnimatedChefSprite({ persona }: { persona: Persona }) {
   const frameCount = spriteSheetSrc ? spriteSheetFrameCount : frames.length;
   const [frameIndex, setFrameIndex] = useState(0);
   const aspectRatio = persona.foodAnimationAspectRatio ?? '362 / 724';
-  const frameDurationMs = persona.foodAnimationFrameDurationMs ?? 300;
+  const frameDurationMs = speedUpDurationMs(persona.foodAnimationFrameDurationMs ?? 300);
 
   useEffect(() => {
     if (frameCount < 2 || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
@@ -1367,8 +1369,8 @@ function MovementSprite({
     if (!spriteSheet || prefersReducedMotion || spriteSheet.frameCount < 2) return;
     const isOneShot = action === 'jump' && effectiveAction === 'jump';
     const frameDurationMs = isOneShot
-      ? spriteSheet.frameDurationMs / 2
-      : spriteSheet.frameDurationMs;
+      ? speedUpDurationMs(spriteSheet.frameDurationMs) / 2
+      : speedUpDurationMs(spriteSheet.frameDurationMs);
     const timer = window.setInterval(() => {
       setFrameIndex((current) => isOneShot
         ? Math.min(current + 1, spriteSheet.frameCount - 1)
@@ -1745,7 +1747,7 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
       setShowWinnerReveal(true);
       return;
     }
-    const timer = window.setTimeout(() => setShowWinnerReveal(true), 2600);
+    const timer = window.setTimeout(() => setShowWinnerReveal(true), speedUpDurationMs(2600));
     return () => window.clearTimeout(timer);
   }, [step, winner]);
 
@@ -2288,7 +2290,7 @@ function Home() {
     if (contestOpen || contestQueued.current) return;
     contestQueued.current = true;
     setLiveStatus(message);
-    window.setTimeout(launchContest, 520);
+    window.setTimeout(launchContest, speedUpDurationMs(520));
   };
 
   const cancelHold = () => {
@@ -2369,14 +2371,14 @@ function Home() {
     setAcknowledgement(nextAck);
     setLiveStatus(`${nextAck} ${increment} sparkle points added.`);
     setMeterPulse(true);
-    window.setTimeout(() => setMeterPulse(false), 420);
+    window.setTimeout(() => setMeterPulse(false), speedUpDurationMs(420));
     if (foodSplashTimer.current) window.clearTimeout(foodSplashTimer.current);
     setFoodSplash({ item, key: foodSplashSequence.current + 1 });
     foodSplashSequence.current += 1;
     foodSplashTimer.current = window.setTimeout(() => {
       setFoodSplash(null);
       foodSplashTimer.current = null;
-    }, 12600);
+    }, speedUpDurationMs(12600));
     if (progress >= 100 && !contestQueued.current) {
       queueContest('The Mystery Bento Meter is full. The curtain is lifting.');
     }
@@ -2398,8 +2400,8 @@ function Home() {
       setLiveStatus('The bento hums warmly. The Mystery Bento Meter is full.');
       setMeterPulse(true);
       contestQueued.current = true;
-      window.setTimeout(launchContest, 520);
-    }, 1500);
+      window.setTimeout(launchContest, speedUpDurationMs(520));
+    }, speedUpDurationMs(1500));
   };
   const handleMeterKeyDown = (event: KeyboardEvent<HTMLDivElement>) => { if ((event.key === 'Enter' || event.key === ' ') && !event.repeat) { event.preventDefault(); startHold(); } };
   const handleMeterKeyUp = (event: KeyboardEvent<HTMLDivElement>) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); cancelHold(); } };
@@ -2415,7 +2417,7 @@ function Home() {
     setAcknowledgement('The bento hums warmly…');
     setLiveStatus('The bento hums warmly. The Mystery Bento Meter is full.');
     setMeterPulse(true);
-    window.setTimeout(() => setMeterPulse(false), 420);
+    window.setTimeout(() => setMeterPulse(false), speedUpDurationMs(420));
     queueContest('The bento hums warmly. The Mystery Bento Meter is full.');
   };
   const skipContest = () => {

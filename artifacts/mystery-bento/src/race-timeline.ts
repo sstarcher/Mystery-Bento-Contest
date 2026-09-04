@@ -17,10 +17,10 @@ export const RACE_STAGE_DURATIONS: Record<RaceTimelineStage, number> = {
   // Intro is the maximum pre-race announcement budget. The actual race clock
   // begins from the race-start handoff after the announcement finishes.
   intro: 15200,
-  warmup: 7600,
-  matchup: 9200,
-  finale: 11000,
-  winner: 16500,
+  warmup: 7000,
+  matchup: 8500,
+  finale: 10100,
+  winner: 15200,
 };
 
 // The contest clock includes the announcement intro, but the race clock starts
