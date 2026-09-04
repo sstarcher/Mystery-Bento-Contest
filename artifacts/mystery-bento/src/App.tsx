@@ -1365,11 +1365,14 @@ function MovementSprite({
   useEffect(() => {
     if (!spriteSheet || prefersReducedMotion || spriteSheet.frameCount < 2) return;
     const isOneShot = action === 'jump' && effectiveAction === 'jump';
+    const frameDurationMs = isOneShot
+      ? spriteSheet.frameDurationMs / 2
+      : spriteSheet.frameDurationMs;
     const timer = window.setInterval(() => {
       setFrameIndex((current) => isOneShot
         ? Math.min(current + 1, spriteSheet.frameCount - 1)
         : (current + 1) % spriteSheet.frameCount);
-    }, spriteSheet.frameDurationMs);
+    }, frameDurationMs);
     return () => window.clearInterval(timer);
   }, [action, effectiveAction, prefersReducedMotion, spriteSheet]);
 
@@ -2107,9 +2110,6 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
                         '--race-finish-crossing-duration': `${finishCrossingDuration}ms`,
                       } as CSSProperties}
                     >
-                       <span className="race-runner-label">
-                         {persona.name.split(' ')[0]} · {runnerReaction === 'ready' ? 'on course' : runnerReaction}
-                       </span>
                       <span className="race-runner-sprite">
                         {step === 'winner' || finishCrossed ? (
                           <PersonaPortrait persona={persona} />

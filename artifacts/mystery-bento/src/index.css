@@ -472,8 +472,8 @@
 .race-finish-line::before { content: 'FINISH'; position: absolute; top: -24px; left: 50%; padding: 3px 5px; color: #30223c; background: #f5c968; border: 2px solid #17121e; font-family: var(--app-font-mono); font-size: 8px; font-weight: 700; letter-spacing: .1em; transform: translateX(-50%); }
 @keyframes finish-line-glow { 50% { box-shadow: 0 0 0 3px #f5c968, 0 0 30px 11px rgba(245,201,104,.68); filter: brightness(1.16); } }
 .race-lane { position: relative; height: 36px; }
-.race-obstacle { position: absolute; top: 32px; z-index: 3; display: grid; justify-items: center; width: 144px; transform: translate(-50%, -50%); color: #f5e8c9; }
-.race-obstacle-art { display: grid; place-items: center; width: 116px; height: 116px; border: 3px solid #17121e; border-radius: 10px; background: rgba(36,26,48,.7); box-shadow: 4px 4px 0 rgba(23,18,30,.4); }
+.race-obstacle { position: absolute; top: auto; right: auto; bottom: 10px; z-index: 3; display: grid; justify-items: center; width: 144px; transform: translate(-50%, 50%); color: #f5e8c9; }
+.race-obstacle-art { display: grid; place-items: center; width: 116px; height: 116px; border: 0; border-radius: 0; background: transparent; box-shadow: none; }
 .race-obstacle-art img { display: block; width: 100%; height: 100%; object-fit: contain; image-rendering: pixelated; }
 .race-obstacle small { max-width: 144px; overflow: hidden; color: rgba(248,231,198,.8); font-family: var(--app-font-mono); font-size: 7px; line-height: 1; text-align: center; text-transform: uppercase; letter-spacing: .04em; white-space: nowrap; }
 .race-runner-overlay { position: absolute; inset: 0; z-index: 5; padding-top: 165px; pointer-events: none; }
@@ -482,10 +482,21 @@
 .race-runner-sprite { display: block; width: 66px; height: 66px; transform-origin: 50% 100%; }
 .race-movement-sprite { position: relative; display: block; width: 100%; height: 100%; overflow: visible; }
 .race-movement-frame { position: absolute; inset: 0; display: block; background-repeat: no-repeat; image-rendering: pixelated; }
-.race-runner-label { position: absolute; top: -30px; left: 50%; z-index: 6; max-width: 132px; padding: 4px 6px; color: #f8e7c6; background: rgba(36,26,48,.86); border: 1px solid rgba(245,201,104,.68); box-shadow: 2px 2px 0 rgba(23,18,30,.45); font-family: var(--app-font-mono); font-size: 8px; letter-spacing: .04em; text-align: center; text-transform: uppercase; transform: translateX(-50%); white-space: nowrap; }
 .race-runner .persona-portrait { width: 60px; height: 60px; margin: 0; border-width: 3px; border-radius: 13px; }
 .race-runner .persona-portrait-image { inset: 2px; border-radius: 7px; }
 .race-runner .persona-portrait-shine { width: 6px; height: 6px; top: 6px; right: 6px; }
+@keyframes race-reaction-dodge { 0%, 100% { transform: translateX(0) rotate(0); } 45% { transform: translateX(-10px) rotate(-7deg); } 75% { transform: translateX(6px) rotate(4deg); } }
+@keyframes race-reaction-slide { 0%, 100% { transform: translateY(0) scaleY(1) rotate(0); } 45% { transform: translateY(11px) scaleY(.72) rotate(-6deg); } 78% { transform: translateY(6px) scaleY(.84) rotate(-3deg); } }
+@keyframes race-reaction-duck { 0%, 100% { transform: translateY(0) scaleY(1); } 45% { transform: translateY(10px) scaleY(.7); } 78% { transform: translateY(4px) scaleY(.9); } }
+@keyframes race-reaction-stumble { 0%, 100% { transform: rotate(0); } 25% { transform: rotate(9deg) translateX(5px); } 55% { transform: rotate(-7deg) translateX(-4px); } 78% { transform: rotate(3deg); } }
+@keyframes race-reaction-weave { 0%, 100% { transform: translateX(0) rotate(0); } 35% { transform: translateX(8px) rotate(5deg); } 70% { transform: translateX(-8px) rotate(-5deg); } }
+@keyframes race-reaction-surge { 0%, 100% { transform: translateY(0) scale(1); } 35% { transform: translateY(-6px) scale(1.08); } 70% { transform: translateY(0) scale(1.02); } }
+.race-runner-lane[data-runner-reaction="dodge"] .race-runner-sprite { animation: race-reaction-dodge .42s ease-out both; }
+.race-runner-lane[data-runner-reaction="slide"] .race-runner-sprite { animation: race-reaction-slide .42s ease-out both; }
+.race-runner-lane[data-runner-reaction="duck"] .race-runner-sprite { animation: race-reaction-duck .42s ease-out both; }
+.race-runner-lane[data-runner-reaction="stumble"] .race-runner-sprite { animation: race-reaction-stumble .46s ease-out both; }
+.race-runner-lane[data-runner-reaction="weave"] .race-runner-sprite { animation: race-reaction-weave .42s ease-out both; }
+.race-runner-lane[data-runner-reaction="surge"] .race-runner-sprite { animation: race-reaction-surge .42s ease-out both; }
 .race-world-track { transition: none; }
 @keyframes race-runner-warmup { from { left: var(--race-intro-anchor); } to { left: var(--race-warmup-anchor); } }
 @keyframes race-runner-matchup { from { left: var(--race-warmup-anchor); } to { left: var(--race-matchup-anchor); } }
@@ -603,8 +614,8 @@
   .race-winner-reveal-copy p { font-size: 11px; }
   .race-winner-reveal-note { font-size: 7px; }
   .race-winner-reveal-kicker { right: 8px; font-size: 6px; }
-  .race-obstacle { top: 18px; width: 58px; }
-  .race-obstacle b { width: 24px; height: 24px; font-size: 17px; }
+  .race-obstacle { top: auto; bottom: 5px; width: 76px; transform: translate(-50%, 50%); }
+  .race-obstacle-art { width: 68px; height: 68px; }
   .race-obstacle small { max-width: 58px; font-size: 6px; }
    .race-event-heading { gap: 7px; }
   .race-event-heading strong { font-size: 13px; }
@@ -871,8 +882,8 @@
 .race-runner-sprite, .race-movement-sprite { width: 216px; height: 216px; }
 .race-runner .persona-portrait { width: 196px; height: 196px; border-radius: 18px; }
 .race-runner .persona-portrait-image { border-radius: 12px; }
-.race-obstacle { top: 44px; width: 140px; }
-.race-obstacle b { width: 50px; height: 50px; font-size: 30px; }
+.race-obstacle { top: auto; bottom: 10px; width: 140px; transform: translate(-50%, 50%); }
+.race-obstacle-art { width: 124px; height: 124px; }
 .race-obstacle small { max-width: 140px; font-size: 10px; }
 .race-event-report {
   position: absolute;
