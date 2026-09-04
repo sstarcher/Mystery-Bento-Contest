@@ -472,10 +472,9 @@
 .race-finish-line::before { content: 'FINISH'; position: absolute; top: -24px; left: 50%; padding: 3px 5px; color: #30223c; background: #f5c968; border: 2px solid #17121e; font-family: var(--app-font-mono); font-size: 8px; font-weight: 700; letter-spacing: .1em; transform: translateX(-50%); }
 @keyframes finish-line-glow { 50% { box-shadow: 0 0 0 3px #f5c968, 0 0 30px 11px rgba(245,201,104,.68); filter: brightness(1.16); } }
 .race-lane { position: relative; height: 36px; }
-.race-obstacle { position: absolute; top: auto; right: auto; bottom: 210px; z-index: 3; display: grid; justify-items: center; width: 144px; transform: translate(-50%, 50%); color: #f5e8c9; }
-.race-obstacle-art { display: grid; place-items: center; width: 116px; height: 116px; border: 0; border-radius: 0; background: transparent; box-shadow: none; }
+.race-obstacle { position: absolute; top: auto; right: auto; bottom: 210px; z-index: 3; display: grid; justify-items: center; width: 288px; transform: translate(-50%, 50%); color: #f5e8c9; }
+.race-obstacle-art { display: grid; place-items: center; width: 232px; height: 232px; border: 0; border-radius: 0; background: transparent; box-shadow: none; }
 .race-obstacle-art img { display: block; width: 100%; height: 100%; object-fit: contain; image-rendering: pixelated; }
-.race-obstacle small { max-width: 144px; overflow: hidden; color: rgba(248,231,198,.8); font-family: var(--app-font-mono); font-size: 7px; line-height: 1; text-align: center; text-transform: uppercase; letter-spacing: .04em; white-space: nowrap; }
 .race-runner-overlay { position: absolute; inset: 0; z-index: 5; padding-top: 165px; pointer-events: none; }
 .race-runner-lane { position: relative; height: 36px; }
 .race-runner { position: absolute; z-index: 5; left: var(--race-runner-anchor, var(--race-intro-anchor)); top: -13px; width: 66px; height: 66px; transform: translateX(-50%); will-change: left; }
@@ -614,9 +613,8 @@
   .race-winner-reveal-copy p { font-size: 11px; }
   .race-winner-reveal-note { font-size: 7px; }
   .race-winner-reveal-kicker { right: 8px; font-size: 6px; }
-  .race-obstacle { top: auto; bottom: 205px; width: 76px; transform: translate(-50%, 50%); }
-  .race-obstacle-art { width: 68px; height: 68px; }
-  .race-obstacle small { max-width: 58px; font-size: 6px; }
+  .race-obstacle { top: auto; bottom: 205px; width: 152px; transform: translate(-50%, 50%); }
+  .race-obstacle-art { width: 136px; height: 136px; }
    .race-event-heading { gap: 7px; }
   .race-event-heading strong { font-size: 13px; }
    .race-voice-toggle { margin-left: 0; font-size: 7px; }
@@ -876,15 +874,14 @@
 /* Bento Dash presentation: oversized runners cluster in the lower half of the
    fixed canvas while the authored lane order and race positions stay intact. */
 .race-course-road, .race-runner-overlay { padding-top: 410px; }
-.race-lane, .race-runner-lane { height: 78px; border-bottom: 2px solid rgba(245,201,104,.2); }
+.race-lane, .race-runner-lane { height: 78px; }
 .race-lane::before, .race-lane::after { display: none; }
 .race-runner { top: -64px; width: 216px; height: 216px; }
 .race-runner-sprite, .race-movement-sprite { width: 216px; height: 216px; }
 .race-runner .persona-portrait { width: 196px; height: 196px; border-radius: 18px; }
 .race-runner .persona-portrait-image { border-radius: 12px; }
-.race-obstacle { top: auto; bottom: 210px; width: 140px; transform: translate(-50%, 50%); }
-.race-obstacle-art { width: 124px; height: 124px; }
-.race-obstacle small { max-width: 140px; font-size: 10px; }
+.race-obstacle { top: auto; bottom: 210px; width: 280px; transform: translate(-50%, 50%); }
+.race-obstacle-art { width: 248px; height: 248px; }
 .race-event-report {
   position: absolute;
   right: 32px;

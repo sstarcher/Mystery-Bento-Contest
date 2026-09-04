@@ -2059,7 +2059,6 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
                     <span className="race-obstacle-art">
                       <img src={obstacle.imageSrc} alt="" draggable="false" />
                     </span>
-                    <small>{obstacle.shortLabel}</small>
                   </span>
                 ))}
                 {contestants.map((persona) => {
