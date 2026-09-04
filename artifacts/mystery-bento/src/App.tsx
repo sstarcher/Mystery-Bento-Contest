@@ -41,6 +41,7 @@ import saffyGarnishPlate from './assets/derived/curios/saffy-garnish-plate.png';
 import saffyPlatingTweezers from './assets/derived/curios/saffy-plating-tweezers.png';
 import saffyPresentationFan from './assets/derived/curios/saffy-presentation-fan.png';
 import { getMovementSpriteSheet, type MovementAction } from './movement-sprite-config';
+import { getMovementSpriteRenderStyle } from './movement-sprite-normalization';
 import { RACE_BACKGROUND_SEQUENCE } from './race-backgrounds';
 import { CURIO_ART_FIT_SCALE, getCurioArtProfile, type CurioArtProfile } from './curio-art-sizing';
 import {
@@ -56,6 +57,7 @@ import {
   RACE_FINALE_WORLD_START_PERCENT,
   RACE_LAST_CONTESTANT_PAUSE_MS,
   RACE_MATCHUP_WORLD_END_PERCENT,
+  RACE_STAGE_OFFSETS,
   RACE_STAGE_DURATIONS,
   RACE_WARMUP_WORLD_END_PERCENT,
   type RaceTimelineCheckpoint,
@@ -488,7 +490,7 @@ function getRaceFinishVisibleOffset(prefersReducedMotion: boolean) {
 }
 
 function getRaceFinishVisibleAt(startedAt: number, prefersReducedMotion: boolean) {
-  return startedAt + contestStepOffsets.finale + getRaceFinishVisibleOffset(prefersReducedMotion);
+  return startedAt + RACE_STAGE_OFFSETS.finale + getRaceFinishVisibleOffset(prefersReducedMotion);
 }
 const contestNextStep: Partial<Record<ContestStep, ContestStep>> = {
   intro: 'warmup',
@@ -1385,6 +1387,7 @@ function MovementSprite({
   const column = visibleFrameIndex % spriteSheet.columns;
   const row = Math.floor(visibleFrameIndex / spriteSheet.columns);
   const backgroundPosition = `${spriteSheet.columns > 1 ? (column / (spriteSheet.columns - 1)) * 100 : 0}% ${spriteSheet.rows > 1 ? (row / (spriteSheet.rows - 1)) * 100 : 0}%`;
+  const renderStyle = getMovementSpriteRenderStyle(spriteSheet.normalization);
 
   return (
     <span
@@ -1392,13 +1395,16 @@ function MovementSprite({
       role="img"
       aria-label={`${persona.name} ${action} movement`}
       data-movement-action={action}
-        data-movement-frame={visibleFrameIndex}
+      data-movement-frame={visibleFrameIndex}
       data-movement-grid={`${spriteSheet.columns}x${spriteSheet.rows}`}
+      style={{ transform: renderStyle.spriteTransform }}
     >
       <span
         className="race-movement-frame"
         aria-hidden="true"
         style={{
+          transform: renderStyle.frameTransform,
+          transformOrigin: renderStyle.frameTransformOrigin,
           backgroundImage: `url(${spriteSheet.src})`,
           backgroundSize: `${spriteSheet.columns * 100}% ${spriteSheet.rows * 100}%`,
           backgroundPosition,
@@ -1507,6 +1513,8 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
   } | null>(null);
   const announcerAudioReadyAt = useRef(0);
   const spokenBeatIds = useRef(new Set<string>());
+  const announcerSessionStartedAt = useRef<number | null>(null);
+  const announcerSessionResetKey = useRef<number | null>(null);
   useEffect(() => {
     const movementActions: MovementAction[] = ['idle', 'walk', 'run', 'jump'];
     contestants.forEach((persona) => {
@@ -1632,11 +1640,11 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
     return () => timers.forEach((timer) => window.clearTimeout(timer));
   }, [announcementTimeline, announcerSequence, contestStartedAt, contestants.length, step, voiceEnabled]);
   const getLaneProgress = (lane: RaceLaneSimulation | undefined) => lane
-    ? getTimelineLaneProgressAtTime(step, lane, race.obstacles, raceClockMs - contestStepOffsets[step], prefersReducedMotion)
+    ? getTimelineLaneProgressAtTime(step, lane, race.obstacles, raceClockMs - RACE_STAGE_OFFSETS[step], prefersReducedMotion)
     : 0;
   const worldTravelPercent = getRaceWorldTravelPercentAtTime(
     step,
-    raceClockMs - contestStepOffsets[step],
+    raceClockMs - RACE_STAGE_OFFSETS[step],
     prefersReducedMotion,
   );
   const raceLanes = contestants.map((_, index) => race.lanes.find((lane) => lane.personaId === contestants[index]?.id) ?? race.lanes[index]);
@@ -1673,8 +1681,10 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
   const toggleVoice = () => {
     if (voiceEnabled && audioNeedsGesture && pendingAudio.current) {
       const pending = pendingAudio.current;
-      const startedAt = contestStartedAt ?? Date.now();
-      const deadlineAt = startedAt + contestStepOffsets[pending.beat.step] + pending.beat.deadlineOffset;
+      const startedAt = announcerSessionStartedAt.current ?? contestStartedAt ?? Date.now();
+      const deadlineAt = startedAt
+        + (announcerResetKey === 0 ? contestStepOffsets[pending.beat.step] : 0)
+        + pending.beat.deadlineOffset;
       const durationMs = Number.isFinite(pending.audio.duration)
         ? pending.audio.duration * 1000
         : pending.beat.clips[pending.clipIndex]?.durationMs ?? 2000;
@@ -1724,12 +1734,16 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
   useEffect(() => {
     // A reset is used by Skip scene to start the winner call from the
     // interruption point instead of waiting for the original race clock.
-    const startedAt = announcerResetKey > 0 ? Date.now() : (contestStartedAt ?? Date.now());
+    if (announcerSessionResetKey.current !== announcerResetKey || !announcerSessionStartedAt.current) {
+      announcerSessionStartedAt.current = announcerResetKey > 0 ? Date.now() : (contestStartedAt ?? Date.now());
+      announcerSessionResetKey.current = announcerResetKey;
+    }
+    const startedAt = announcerSessionStartedAt.current;
     const beats = announcerSequence
       .filter((beat) => announcerResetKey === 0 || beat.step === 'winner')
       .map((beat) => ({
         beat,
-        offset: contestStepOffsets[beat.step] + beat.offset,
+        offset: (announcerResetKey === 0 ? contestStepOffsets[beat.step] : 0) + beat.offset,
       }))
       .sort((a, b) => a.offset - b.offset);
     const timers: number[] = [];
@@ -1786,7 +1800,9 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
     };
 
     function deadlineFor(beat: AnnouncerBeat) {
-      return startedAt + contestStepOffsets[beat.step] + beat.deadlineOffset;
+      return startedAt
+        + (announcerResetKey === 0 ? contestStepOffsets[beat.step] : 0)
+        + beat.deadlineOffset;
     }
 
     function finishBeat(beat: AnnouncerBeat) {
@@ -1965,7 +1981,7 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
   }, []);
 
   return (
-    <div className="contest-backdrop fixed inset-0 z-30 flex items-stretch justify-center" role="dialog" aria-modal="true" aria-labelledby="contest-title">
+    <div className="contest-backdrop contest-race-backdrop fixed inset-0 z-30 flex items-stretch justify-center" role="dialog" aria-modal="true" aria-labelledby="contest-title">
       <div className="contest-stage w-full p-3 sm:p-5">
         <div className="contest-header">
           <h2 id="contest-title" className="font-display text-3xl font-bold tracking-tight sm:text-5xl">{contestName}</h2>
@@ -2078,8 +2094,8 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
                  const runnerScreenAnchor = isWinner && (step === 'winner' || finishCrossed)
                    ? 'var(--race-finish-anchor)'
                   : formatRunnerAnchor(currentRunnerAnchors[index]);
-                return (
-                  <div className="race-runner-lane" key={persona.id}>
+                 return (
+                   <div className="race-runner-lane" key={persona.id} data-persona-id={persona.id} data-runner-reaction={runnerReaction}>
                     <div
                       className={`race-runner ${finishCrossingActive ? 'is-finish-crossing' : ''}`}
                       style={{
@@ -2091,6 +2107,9 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
                         '--race-finish-crossing-duration': `${finishCrossingDuration}ms`,
                       } as CSSProperties}
                     >
+                       <span className="race-runner-label">
+                         {persona.name.split(' ')[0]} · {runnerReaction === 'ready' ? 'on course' : runnerReaction}
+                       </span>
                       <span className="race-runner-sprite">
                         {step === 'winner' || finishCrossed ? (
                           <PersonaPortrait persona={persona} />
@@ -2420,16 +2439,16 @@ function Home() {
     if (!nextStep) return;
     const startedAt = contestRaceStartedAt.current ?? contestIntroStartedAt.current ?? Date.now();
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const nextStepAt = nextStep === 'winner'
+      const nextStepAt = nextStep === 'winner'
       ? getRaceFinishVisibleAt(startedAt, prefersReducedMotion)
-      : startedAt + contestStepOffsets[nextStep];
+        : startedAt + RACE_STAGE_OFFSETS[nextStep];
     contestTimer.current = window.setTimeout(() => {
       if (nextStep === 'winner') {
         if (finishLineVisible || finishCrossedRef.current) return;
         setFinishLineVisible(true);
         setLiveStatus('The finish line is in sight. The last crossing is being settled.');
           const finishCrossingAt = startedAt
-            + contestStepOffsets.finale
+            + RACE_STAGE_OFFSETS.finale
             + getRaceFinishCrossingOffset(prefersReducedMotion);
           finishTransitionTimer.current = window.setTimeout(() => {
             if (!contestOpen || completionGuard.current || finishCrossedRef.current) return;

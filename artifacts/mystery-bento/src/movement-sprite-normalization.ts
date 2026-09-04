@@ -15,6 +15,22 @@ export type MovementSpriteNormalization = {
   baselineOffset: number;
 };
 
+export type MovementSpriteRenderStyle = {
+  frameTransform: string;
+  frameTransformOrigin: string;
+  spriteTransform: string;
+};
+
+export function getMovementSpriteRenderStyle(
+  normalization: MovementSpriteNormalization,
+): MovementSpriteRenderStyle {
+  return {
+    frameTransform: `scale(${normalization.scale})`,
+    frameTransformOrigin: '50% 100%',
+    spriteTransform: `translateY(${normalization.baselineOffset}px)`,
+  };
+}
+
 type NormalizationSet = Record<MovementAction, MovementSpriteNormalization>;
 
 const normalized = (

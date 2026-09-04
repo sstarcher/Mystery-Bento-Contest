@@ -448,6 +448,7 @@
 .ledger-entry { border-left: 4px solid hsl(var(--primary)); background: rgba(255,255,255,.45); }
 
 .contest-backdrop { background: rgba(28, 19, 37, .76); backdrop-filter: blur(5px); }
+.contest-race-backdrop { overflow: auto; justify-content: flex-start; }
 .contest-stage { width: 100%; min-height: var(--fixed-canvas-height); background: #30223c; border: 0; box-shadow: none; border-radius: 0; color: #f8e7c6; position: relative; overflow-x: hidden; overflow-y: auto; }
 .contest-stage::before { content: ''; position: absolute; inset: 0; background-image: radial-gradient(circle at 50% 15%, rgba(244,190,68,.18), transparent 16rem), repeating-linear-gradient(90deg, rgba(255,255,255,.025) 0 1px, transparent 1px 8px); pointer-events: none; }
 .contest-stage > * { position: relative; z-index: 1; width: 100%; max-width: 1180px; margin-left: auto; margin-right: auto; }
@@ -479,8 +480,9 @@
 .race-runner-lane { position: relative; height: 36px; }
 .race-runner { position: absolute; z-index: 5; left: var(--race-runner-anchor, var(--race-intro-anchor)); top: -13px; width: 66px; height: 66px; transform: translateX(-50%); will-change: left; }
 .race-runner-sprite { display: block; width: 66px; height: 66px; transform-origin: 50% 100%; }
-.race-movement-sprite { position: relative; display: block; width: 100%; height: 100%; overflow: hidden; }
+.race-movement-sprite { position: relative; display: block; width: 100%; height: 100%; overflow: visible; }
 .race-movement-frame { position: absolute; inset: 0; display: block; background-repeat: no-repeat; image-rendering: pixelated; }
+.race-runner-label { position: absolute; top: -30px; left: 50%; z-index: 6; max-width: 132px; padding: 4px 6px; color: #f8e7c6; background: rgba(36,26,48,.86); border: 1px solid rgba(245,201,104,.68); box-shadow: 2px 2px 0 rgba(23,18,30,.45); font-family: var(--app-font-mono); font-size: 8px; letter-spacing: .04em; text-align: center; text-transform: uppercase; transform: translateX(-50%); white-space: nowrap; }
 .race-runner .persona-portrait { width: 60px; height: 60px; margin: 0; border-width: 3px; border-radius: 13px; }
 .race-runner .persona-portrait-image { inset: 2px; border-radius: 7px; }
 .race-runner .persona-portrait-shine { width: 6px; height: 6px; top: 6px; right: 6px; }
@@ -732,7 +734,7 @@
 
 /* The contest is a second fixed Pixel Tablet scene. Narrow viewports crop this
    logical canvas instead of shrinking the artwork and runner proportions. */
-.contest-backdrop { align-items: flex-start; overflow: hidden; }
+.contest-race-backdrop { align-items: flex-start; }
 .contest-stage {
   width: var(--fixed-canvas-width);
   height: var(--fixed-canvas-height);
@@ -855,12 +857,15 @@
   border: 0;
   box-shadow: none;
 }
+@media (min-width: 1280px) {
+  .contest-race-backdrop { justify-content: center; }
+}
 .race-track-label { inset: 28px 34px auto; }
 .race-course-viewport { --race-finish-anchor: 88%; height: 100%; border: 0; }
 /* Bento Dash presentation: oversized runners cluster in the lower half of the
    fixed canvas while the authored lane order and race positions stay intact. */
 .race-course-road, .race-runner-overlay { padding-top: 410px; }
-.race-lane, .race-runner-lane { height: 78px; border-bottom: 0; }
+.race-lane, .race-runner-lane { height: 78px; border-bottom: 2px solid rgba(245,201,104,.2); }
 .race-lane::before, .race-lane::after { display: none; }
 .race-runner { top: -64px; width: 216px; height: 216px; }
 .race-runner-sprite, .race-movement-sprite { width: 216px; height: 216px; }

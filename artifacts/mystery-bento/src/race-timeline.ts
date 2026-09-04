@@ -23,6 +23,17 @@ export const RACE_STAGE_DURATIONS: Record<RaceTimelineStage, number> = {
   winner: 16500,
 };
 
+// The contest clock includes the announcement intro, but the race clock starts
+// at the starting-lantern handoff. Keep this schedule explicit so visual
+// motion, stage transitions, and finish milestones all share one origin.
+export const RACE_STAGE_OFFSETS: Record<RaceTimelineStage, number> = {
+  intro: 0,
+  warmup: 0,
+  matchup: RACE_STAGE_DURATIONS.warmup,
+  finale: RACE_STAGE_DURATIONS.warmup + RACE_STAGE_DURATIONS.matchup,
+  winner: RACE_STAGE_DURATIONS.warmup + RACE_STAGE_DURATIONS.matchup + RACE_STAGE_DURATIONS.finale,
+};
+
 export const RACE_LAST_CONTESTANT_PAUSE_MS = 1000;
 
 export const RACE_WORLD_TRACK_WIDTH_MULTIPLIER = 6;
@@ -37,6 +48,7 @@ export const RACE_RUNNER_VISUAL_START_PERCENT = 14;
 export const RACE_RUNNER_VISUAL_MAX_DISTANCE = 90;
 export const RACE_RUNNER_PRESENTATION_TOP_PX = 410;
 export const RACE_RUNNER_LANE_HEIGHT_PX = 78;
+export const RACE_RUNNER_NORMALIZED_BASELINE_MAX_PX = 220;
 
 export const RACE_STAGE_OBSTACLE_INDICES: Record<Exclude<RaceTimelineStage, 'intro' | 'winner'>, number[]> = {
   warmup: [0],

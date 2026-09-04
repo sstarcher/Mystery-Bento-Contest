@@ -22,11 +22,14 @@ import {
   RACE_STAGE_DURATIONS,
   RACE_WARMUP_WORLD_END_PERCENT,
   RACE_RUNNER_LANE_HEIGHT_PX,
+  RACE_RUNNER_NORMALIZED_BASELINE_MAX_PX,
   RACE_RUNNER_PRESENTATION_TOP_PX,
+  RACE_STAGE_OFFSETS,
   type RaceTimelineLane,
   type RaceTimelineObstacle,
   type RaceTimelineStage,
 } from './race-timeline';
+import { getMovementSpriteRenderStyle, movementSpriteNormalization } from './movement-sprite-normalization';
 
 const obstacles: RaceTimelineObstacle[] = [
   { id: 'napkin', position: 18 },
@@ -116,6 +119,17 @@ assert.ok(
   raceStartHandoff.movementStartOffset < RACE_STAGE_DURATIONS.intro,
   'the complete roster-to-race handoff should fit inside the intro budget',
 );
+assert.deepEqual(
+  RACE_STAGE_OFFSETS,
+  {
+    intro: 0,
+    warmup: 0,
+    matchup: RACE_STAGE_DURATIONS.warmup,
+    finale: RACE_STAGE_DURATIONS.warmup + RACE_STAGE_DURATIONS.matchup,
+    winner: RACE_STAGE_DURATIONS.warmup + RACE_STAGE_DURATIONS.matchup + RACE_STAGE_DURATIONS.finale,
+  },
+  'visual race stages should use an origin at the starting-lantern handoff',
+);
 const handoffLane = lineups[0][0];
 assert.equal(
   getRaceWorldTravelPercentAtTime('intro', raceStartHandoff.raceStartOffset, false),
@@ -136,6 +150,31 @@ assert.ok(
   getRaceLaneProgressAtTime('warmup', handoffLane, obstacles, 1, false) > handoffLane.positions.intro,
   'movement should advance after the race clock starts',
 );
+assert.equal(
+  getRaceWorldTravelPercentAtTime('warmup', 0, false),
+  0,
+  'the first post-handoff frame should still be at the starting view',
+);
+assert.equal(
+  getRaceWorldTravelPercentAtTime('matchup', RACE_STAGE_DURATIONS.matchup, false),
+  RACE_MATCHUP_WORLD_END_PERCENT,
+  'the matchup world endpoint should use the race-relative stage duration',
+);
+const normalizedRunStyle = getMovementSpriteRenderStyle(movementSpriteNormalization.miso.run);
+assert.deepEqual(
+  normalizedRunStyle,
+  {
+    frameTransform: 'scale(2.022)',
+    frameTransformOrigin: '50% 100%',
+    spriteTransform: 'translateY(105.2px)',
+  },
+  'runtime movement rendering should apply both scale and baseline normalization metadata',
+);
+assert.notEqual(
+  normalizedRunStyle.frameTransform,
+  getMovementSpriteRenderStyle(movementSpriteNormalization.miso.idle).frameTransform,
+  'action changes should preserve per-action normalization rather than reusing idle sizing',
+);
 const fallbackDelay = getRaceAnnouncementCompletionDelay(6350, 520);
 const mutedFallbackCompletion = raceStartHandoff.raceStartOffset + fallbackDelay;
 const unavailableFallbackCompletion = raceStartHandoff.raceStartOffset + fallbackDelay;
@@ -146,8 +185,11 @@ assert.equal(
 );
 assert.ok(RACE_RUNNER_PRESENTATION_TOP_PX >= 380 + 30, 'runner presentation should move down by about 30px');
 assert.ok(
-  RACE_RUNNER_PRESENTATION_TOP_PX + (4 - 1) * RACE_RUNNER_LANE_HEIGHT_PX - 64 + 216 <= 800,
-  'the lowest supported lane should remain inside the fixed race canvas',
+  RACE_RUNNER_PRESENTATION_TOP_PX
+    + (4 - 1) * RACE_RUNNER_LANE_HEIGHT_PX
+    - 64
+    + RACE_RUNNER_NORMALIZED_BASELINE_MAX_PX <= 800,
+  'the lowest supported normalized baseline should remain inside the fixed race canvas',
 );
 
 const checkpointLane: RaceTimelineLane = {
