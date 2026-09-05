@@ -21,7 +21,7 @@ export const RACE_BACKGROUND_SEQUENCE: RaceBackgroundScene[] = [
     file: 'race-background-01-village-market.webp',
     sourceAsset: 'scene1_1788633612334.webp',
     label: 'village market street',
-    aspectRatio: 13000 / 2592,
+    aspectRatio: 12516 / 2592,
   },
   {
     id: 'tea-stall-crossing',
