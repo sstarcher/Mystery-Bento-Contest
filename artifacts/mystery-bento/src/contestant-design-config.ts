@@ -1,27 +1,15 @@
 import bibiPortrait from './assets/derived/contestants/portraits/bibi.png';
-import bibiFood from './assets/derived/contestants/food/bibi-food.png';
 import kikuPortrait from './assets/derived/contestants/portraits/kiku.png';
-import kikuFood from './assets/derived/contestants/food/kiku-food.png';
 import misoPortrait from './assets/derived/contestants/portraits/miso.png';
-import misoFood from './assets/derived/contestants/food/miso-food.png';
 import noriPortrait from './assets/derived/contestants/portraits/nori.png';
-import noriFood from './assets/derived/contestants/food/nori-food.png';
 import pankoPortrait from './assets/derived/contestants/portraits/panko.png';
-import pankoFood from './assets/derived/contestants/food/panko-food.png';
 import pipPortrait from './assets/derived/contestants/portraits/pip.png';
-import pipFood from './assets/derived/contestants/food/pip-food.png';
 import rolloPortrait from './assets/derived/contestants/portraits/rollo.png';
-import rolloFood from './assets/derived/contestants/food/rollo-food.png';
 import saffyPortrait from './assets/derived/contestants/portraits/saffy.png';
-import saffyFood from './assets/derived/contestants/food/saffy-food.png';
 import senchaPortrait from './assets/derived/contestants/portraits/sencha.png';
-import senchaFood from './assets/derived/contestants/food/sencha-food.png';
 import tildaPortrait from './assets/derived/contestants/portraits/tilda.png';
-import tildaFood from './assets/derived/contestants/food/tilda-food.png';
 import toroPortrait from './assets/derived/contestants/portraits/toro.png';
-import toroFood from './assets/derived/contestants/food/toro-food.png';
 import umaPortrait from './assets/derived/contestants/portraits/uma.png';
-import umaFood from './assets/derived/contestants/food/uma-food.png';
 
 export type ContestantDesign = {
   id: string;
@@ -55,21 +43,6 @@ export const contestantPortraits: Record<string, string> = {
   saffy: saffyPortrait,
   kiku: kikuPortrait,
   bibi: bibiPortrait,
-};
-
-export const contestantFoodSprites: Record<string, string> = {
-  pip: pipFood,
-  sencha: senchaFood,
-  toro: toroFood,
-  nori: noriFood,
-  tilda: tildaFood,
-  rollo: rolloFood,
-  miso: misoFood,
-  uma: umaFood,
-  panko: pankoFood,
-  saffy: saffyFood,
-  kiku: kikuFood,
-  bibi: bibiFood,
 };
 
 export const contestantFoodAnimationAspectRatios: Partial<Record<string, string>> = {

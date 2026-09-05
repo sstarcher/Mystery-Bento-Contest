@@ -42,8 +42,8 @@ later in the pipeline.
 
 - 18 source images are preserved here: one character sheet, six race
   backgrounds, and 11 obstacle illustrations.
-- The app currently has 12 portraits, 12 food stills, 48 movement sheets, 12
-  public cooking sheets, six
+- The app currently has 12 portraits, 48 movement sheets, 12 public cooking
+  sheets, six
   race-background WebPs, six sushi plates, three Pip keepsakes, and 36 active
   image-backed curios.
 - `assets/review/unused/derived/contestants/cooking/` contains the 30 extracted

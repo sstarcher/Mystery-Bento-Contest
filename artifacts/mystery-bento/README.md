@@ -75,7 +75,7 @@ Shelf or Contest Ledger to reset this browser's saved progress.
   canvases.
 - Narrow screens crop the canvas horizontally rather than shrinking the artwork
   until it becomes unreadable.
-- Contestants use portraits for the restaurant, transparent food/cooking art for
+- Contestants use portraits for the restaurant, cooking art for
   the counter, 12 movement sprite sets for the race, and cooking sprite sheets
   for the winner reveal. Course obstacles appear once per obstacle position
   rather than once in every contestant lane.
@@ -88,8 +88,8 @@ Shelf or Contest Ledger to reset this browser's saved progress.
 
 ## Contestants
 
-The roster contains 12 kitchen personas. Every persona has a portrait, food
-still, and four movement actions: idle, walk, run, and jump.
+The roster contains 12 kitchen personas. Every persona has a portrait, cooking
+reveal, and four movement actions: idle, walk, run, and jump.
 
 | Persona | Contest edge | Movement | Cooking reveal | Curio set |
 | --- | --- | --- | --- | --- |
@@ -120,7 +120,6 @@ and browser-delivered runtime assets separate.
 | `assets/source/images/` | 18 | Character, race-background, and obstacle art uploads | Source archive |
 | `assets/source/audio/` | 85 | Original announcer recordings for active runtime families | Source archive |
 | `src/assets/derived/contestants/portraits/` | 12 | Opaque contestant portraits | Active imports |
-| `src/assets/derived/contestants/food/` | 12 | Transparent food stills | Active imports |
 | `src/assets/derived/contestants/movement/` | 48 | 12 contestants × 4 transparent movement sheets | Active imports |
 | `src/assets/derived/curios/` | 33 | Three independent curio derivatives for 11 non-Pip contestants | Active imports |
 | `public/runtime/images/` | 27 | Race backgrounds, obstacle art, plates, keepsakes, and restaurant art | Active browser assets |
@@ -132,7 +131,6 @@ and browser-delivered runtime assets separate.
 
 - **12 portraits**: opaque `320 × 292` PNGs, one per contestant, in
   `src/assets/derived/contestants/portraits/`.
-- **12 food stills**: transparent PNG cutouts used around the restaurant.
 - **48 movement sheets**: transparent square-cell grids in
   `src/assets/derived/contestants/movement/`, with explicit rows, columns,
   occupied-frame counts, and per-persona normalization.

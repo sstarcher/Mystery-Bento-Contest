@@ -24,7 +24,6 @@ const readmeCountPaths = [
   'assets/source/images',
   'assets/source/audio',
   'src/assets/derived/contestants/portraits',
-  'src/assets/derived/contestants/food',
   'src/assets/derived/contestants/movement',
   'src/assets/derived/curios',
   'public/runtime/images',

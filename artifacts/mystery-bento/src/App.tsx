@@ -6,7 +6,7 @@ import { Toaster } from '@/components/ui/toaster';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import NotFound from '@/pages/not-found';
 import { Route, Router as WouterRouter, Switch, useLocation } from 'wouter';
-import { contestantDesigns, contestantFoodAnimationAspectRatios, contestantFoodSprites, contestantPortraits } from './contestant-design-config';
+import { contestantDesigns, contestantFoodAnimationAspectRatios, contestantPortraits } from './contestant-design-config';
 import tildaSafetyModule from './assets/derived/curios/tilda-safety-module.png';
 import tildaToolbox from './assets/derived/curios/tilda-toolbox.png';
 import tildaWrenchSet from './assets/derived/curios/tilda-wrench-set.png';
@@ -89,7 +89,6 @@ type Persona = {
   contestBehavior: string;
   memorableEvent: string;
   portraitSrc: string;
-  foodSpriteSrc: string;
   foodAnimationFrameSrcs?: string[];
   foodAnimationSpriteSheetSrc?: string;
   foodAnimationSpriteSheetColumns?: number;
@@ -411,7 +410,6 @@ const personas: Persona[] = contestantDesigns.map((design) => ({
   contestBehavior: design.contestBehavior,
   memorableEvent: design.memorableEvent,
   portraitSrc: contestantPortraits[design.id],
-  foodSpriteSrc: contestantFoodSprites[design.id],
   foodAnimationFrameSrcs: undefined,
   foodAnimationSpriteSheetSrc: design.id === 'pip'
     ? PIP_ANIMATION_SPRITE_SHEET_SRC
@@ -1350,7 +1348,6 @@ function AnimatedChefSprite({ persona }: { persona: Persona }) {
           muted
           playsInline
           preload="auto"
-          poster={persona.foodSpriteSrc}
           aria-hidden="true"
         />
       </span>
@@ -2613,9 +2610,7 @@ function Home() {
               <div className={`counter-chef counter-chef-${activeChef.id}`}>
                 {activeChef.foodAnimationVideoSrc || activeChef.foodAnimationFrameSrcs || activeChef.foodAnimationSpriteSheetSrc ? (
                   <AnimatedChefSprite persona={activeChef} />
-                ) : (
-                  <img className="counter-chef-image" src={activeChef.foodSpriteSrc} alt="" />
-                )}
+                ) : null}
               </div>
             </div>
           )}
