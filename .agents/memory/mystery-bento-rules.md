@@ -33,6 +33,12 @@ Jump movement sheets are one-shot reactions tied to an obstacle encounter; after
 
 **How to apply:** Give each jump encounter a stable animation key, reset at the start of that key, stop on its final frame, and switch back to walk/run without changing the deterministic race outcome.
 
+Fall movement sheets are also one-shot reactions: they must finish one complete cycle before the runner resumes its gait, even if the obstacle contact window ends first.
+
+**Why:** Returning to run as soon as contact ends truncates the authored fall and makes the reaction look broken; reduced-motion playback must not leave the runner stuck in the fall state.
+
+**How to apply:** Hold the active fall key until its final frame, then hand off to the current gait; in reduced-motion mode, advance directly to the final fall frame so the handoff still completes.
+
 Resolved race reactions are sprite-driven rather than CSS-transform-driven: the conceptual reaction label may remain distinct for narration, but only negative obstacle outcomes use the fall sheet, freeze on their grounded final frame, and the winner uses a looping victory sheet after the finish.
 
 **Why:** CSS dodge, slide, duck, stumble, weave, and surge transforms made the race look like unrelated wobble effects and could fight the authored sprite silhouettes.

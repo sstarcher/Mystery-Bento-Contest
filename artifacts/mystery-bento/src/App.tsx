@@ -1421,23 +1421,43 @@ function MovementSprite({
   const [displayAction, setDisplayAction] = useState<MovementAction>(action);
   const [frameIndex, setFrameIndex] = useState(0);
   const [completedOneShotKey, setCompletedOneShotKey] = useState<string | null>(null);
+  const [isHoldingFall, setIsHoldingFall] = useState(false);
+  const activeFallKey = useRef<string | null>(null);
   const oneShotKey = animationKey ?? action;
-  const effectiveAction = action === 'jump' && completedOneShotKey === oneShotKey ? 'run' : displayAction;
+  const effectiveAction = action === 'fall'
+    ? completedOneShotKey === oneShotKey && !isHoldingFall ? 'run' : 'fall'
+    : isHoldingFall
+      ? 'fall'
+      : action === 'jump' && completedOneShotKey === oneShotKey
+        ? 'run'
+        : displayAction;
   const requestedSpriteSheet = getMovementSpriteSheet(persona.id, effectiveAction);
   const spriteSheet = requestedSpriteSheet ?? getMovementSpriteSheet(persona.id, 'run');
   const renderedAction = requestedSpriteSheet ? effectiveAction : 'run';
   const isOneShot = requestedSpriteSheet !== undefined
-    && (action === 'jump' || action === 'fall')
-    && effectiveAction === action;
+    && effectiveAction === 'fall'
+    && (action === 'fall' || isHoldingFall);
   const previousSpriteSource = useRef<string | null>(null);
   const previousFrameCount = useRef(1);
   const speedMultiplierRef = useRef(speedMultiplier);
   speedMultiplierRef.current = speedMultiplier;
 
   useEffect(() => {
+    if (action === 'fall') {
+      if (activeFallKey.current !== oneShotKey) {
+        activeFallKey.current = oneShotKey;
+        setCompletedOneShotKey(null);
+        setIsHoldingFall(true);
+        setDisplayAction('fall');
+        setFrameIndex(0);
+      }
+      return;
+    }
+    if (isHoldingFall) return;
+    activeFallKey.current = null;
     setCompletedOneShotKey(null);
     setDisplayAction(action);
-    if (action === 'jump' || action === 'fall' || action === 'victory') setFrameIndex(0);
+    if (action === 'jump' || action === 'victory') setFrameIndex(0);
   }, [action, animationKey]);
 
   useEffect(() => {
@@ -1470,9 +1490,17 @@ function MovementSprite({
   }, [action, effectiveAction, prefersReducedMotion, spriteSheet]);
 
   useEffect(() => {
+    if (!spriteSheet || !isOneShot || !prefersReducedMotion) return;
+    setFrameIndex(spriteSheet.frameCount - 1);
+  }, [isOneShot, prefersReducedMotion, spriteSheet]);
+
+  useEffect(() => {
     if (!spriteSheet || !isOneShot || frameIndex < spriteSheet.frameCount - 1) return;
-    setCompletedOneShotKey(oneShotKey);
-  }, [frameIndex, isOneShot, oneShotKey, spriteSheet]);
+    setCompletedOneShotKey(activeFallKey.current ?? oneShotKey);
+    setIsHoldingFall(false);
+    setDisplayAction(action);
+    activeFallKey.current = null;
+  }, [action, frameIndex, isOneShot, oneShotKey, spriteSheet]);
 
   if (!spriteSheet) return <PersonaPortrait persona={persona} />;
 

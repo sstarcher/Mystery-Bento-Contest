@@ -6,6 +6,7 @@ import type { MovementAction } from './movement-sprite-actions';
 import { movementSpriteNormalization } from './movement-sprite-normalization';
 import {
   RACE_RUNNER_LANE_HEIGHT_PX,
+  RACE_RUNNER_OVERLAY_TOP_PX,
   RACE_RUNNER_PRESENTATION_TOP_PX,
 } from './race-timeline';
 
@@ -185,7 +186,8 @@ for (const [personaId, metrics] of normalizedMovementMetrics) {
 
 const raceCss = readFileSync(fileURLToPath(new URL('./index.css', import.meta.url)), 'utf8');
 const appSource = readFileSync(fileURLToPath(new URL('./App.tsx', import.meta.url)), 'utf8');
-assert.match(raceCss, new RegExp(`\\.race-course-road, \\.race-runner-overlay \\{ padding-top: ${RACE_RUNNER_PRESENTATION_TOP_PX}px; \\}`));
+assert.match(raceCss, new RegExp(`\\.race-course-road \\{ padding-top: ${RACE_RUNNER_PRESENTATION_TOP_PX}px; \\}`));
+assert.match(raceCss, new RegExp(`\\.race-runner-overlay \\{ padding-top: ${RACE_RUNNER_OVERLAY_TOP_PX}px; \\}`));
 assert.match(raceCss, new RegExp(`\\.race-lane, \\.race-runner-lane \\{ height: ${RACE_RUNNER_LANE_HEIGHT_PX}px;`));
 assert.doesNotMatch(raceCss, /race-reaction-/);
 assert.match(appSource, /\['idle', 'walk', 'run', 'jump', 'fall', 'victory'\]/);
