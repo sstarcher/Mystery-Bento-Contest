@@ -22,6 +22,9 @@ export const RACE_STAGE_DURATIONS: Record<RaceTimelineStage, number> = {
   finale: 10100,
   winner: 15200,
 };
+export const RACE_RACE_DURATION_MS = RACE_STAGE_DURATIONS.warmup
+  + RACE_STAGE_DURATIONS.matchup
+  + RACE_STAGE_DURATIONS.finale;
 
 // The contest clock includes the announcement intro, but the race clock starts
 // at the starting-lantern handoff. Keep this schedule explicit so visual
@@ -37,10 +40,14 @@ export const RACE_STAGE_OFFSETS: Record<RaceTimelineStage, number> = {
 export const RACE_LAST_CONTESTANT_PAUSE_MS = 1000;
 
 export const RACE_WORLD_TRACK_WIDTH_MULTIPLIER = 6;
-export const RACE_WARMUP_WORLD_END_PERCENT = 20;
-export const RACE_MATCHUP_WORLD_END_PERCENT = 40;
-export const RACE_FINALE_WORLD_START_PERCENT = RACE_MATCHUP_WORLD_END_PERCENT;
 export const RACE_FINALE_WORLD_END_PERCENT = 83.333;
+export const RACE_WARMUP_WORLD_END_PERCENT = RACE_FINALE_WORLD_END_PERCENT
+  * RACE_STAGE_DURATIONS.warmup
+  / RACE_RACE_DURATION_MS;
+export const RACE_MATCHUP_WORLD_END_PERCENT = RACE_FINALE_WORLD_END_PERCENT
+  * (RACE_STAGE_DURATIONS.warmup + RACE_STAGE_DURATIONS.matchup)
+  / RACE_RACE_DURATION_MS;
+export const RACE_FINALE_WORLD_START_PERCENT = RACE_MATCHUP_WORLD_END_PERCENT;
 export const RACE_RUNNER_SCREEN_MIN_PERCENT = 12;
 export const RACE_RUNNER_SCREEN_MAX_PERCENT = 88;
 export const RACE_RUNNER_MAX_SPREAD_PERCENT = 64;
@@ -80,8 +87,9 @@ export function getRaceWorldTravelPercentAtTime(stage: RaceTimelineStage, elapse
       ? RACE_FINALE_WORLD_START_PERCENT
       : RACE_FINALE_WORLD_END_PERCENT;
   if (prefersReducedMotion) return stageEndTravel;
-  const progress = Math.max(0, Math.min(1, elapsedMs / RACE_STAGE_DURATIONS[stage]));
-  return stageStartTravel + (stageEndTravel - stageStartTravel) * progress;
+  const raceElapsed = RACE_STAGE_OFFSETS[stage] + Math.max(0, elapsedMs);
+  return RACE_FINALE_WORLD_END_PERCENT
+    * Math.max(0, Math.min(1, raceElapsed / RACE_RACE_DURATION_MS));
 }
 
 export function getRaceWorldScreenAnchor(position: number, worldTravelPercent: number) {

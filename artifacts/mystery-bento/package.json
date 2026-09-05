@@ -8,7 +8,7 @@
     "build": "vite build --config vite.config.ts",
     "serve": "vite preview --config vite.config.ts --host 0.0.0.0",
     "verify:assets": "node scripts/verify-asset-inventory.mjs",
-    "verify:race": "tsx src/race-timeline.test.ts && tsx src/race-momentum.test.ts",
+    "verify:race": "tsx src/race-timeline.test.ts && tsx src/race-momentum.test.ts && tsx src/race-speed-model.test.ts",
     "verify:sprites": "tsx src/sprite-sheet-audit.test.ts",
     "verify:curios": "tsx src/curio-art-sizing.test.ts && tsx src/curio-footprint-audit.test.ts",
     "typecheck": "tsc -p tsconfig.json --noEmit"

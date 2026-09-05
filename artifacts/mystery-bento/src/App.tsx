@@ -58,12 +58,20 @@ import {
   RACE_FINALE_WORLD_START_PERCENT,
   RACE_LAST_CONTESTANT_PAUSE_MS,
   RACE_MATCHUP_WORLD_END_PERCENT,
+  RACE_RACE_DURATION_MS,
   RACE_STAGE_OFFSETS,
   RACE_STAGE_DURATIONS,
   RACE_WARMUP_WORLD_END_PERCENT,
   type RaceTimelineCheckpoint,
 } from './race-timeline';
 import { resolveRaceEncounterResult } from './race-momentum';
+import {
+  getContinuousRunnerPosition,
+  getRunnerBaseSpeedMultiplier,
+  getRunnerEffectiveSpeed,
+  getRunnerMovementState,
+  type RunnerSpeedEvent,
+} from './race-speed-model';
 
 type MeterState = { progress: number; lastAcknowledgement: string };
 type Persona = {
@@ -148,6 +156,8 @@ type RaceLaneSimulation = {
   finishScore: number;
   encounters: Record<string, RaceEncounter>;
   checkpoints: RaceTimelineCheckpoint[];
+  baseSpeedMultiplier: number;
+  speedEvents: RunnerSpeedEvent[];
 };
 type RaceLeadChange = {
   obstacleId: string;
@@ -871,6 +881,7 @@ function buildRaceSimulation(contestants: Persona[], rng: () => number): RaceSim
       + (persona.traits.chaos - 50) * 0.07
       + rng() * 8 - 4;
     let progress = 6 + persona.traits.speed * 0.06 + startingStagger;
+    const baseSpeedMultiplier = getRunnerBaseSpeedMultiplier(persona.traits.speed);
     const lane: WorkingRaceLane = {
       persona,
       progress,
@@ -879,6 +890,8 @@ function buildRaceSimulation(contestants: Persona[], rng: () => number): RaceSim
       finishPosition: 92,
       finishScore: 0,
       personaId: persona.id,
+      baseSpeedMultiplier,
+      speedEvents: [],
       positions: {
         intro: clampRacePosition(progress),
         warmup: clampRacePosition(progress),
@@ -981,14 +994,31 @@ function buildRaceSimulation(contestants: Persona[], rng: () => number): RaceSim
 
   if (obstacles.length < 3) lanes.forEach((lane) => { lane.positions.finale = lane.progress; });
   lanes.forEach((lane) => {
-    lane.finishScore = lane.progress
+    const courseSpeed = RACE_FINALE_WORLD_END_PERCENT / RACE_RACE_DURATION_MS;
+    lane.speedEvents = obstacles.map((obstacle) => ({
+      obstacleId: obstacle.id,
+      result: lane.encounters[obstacle.id]?.result ?? 'clear',
+      triggerMs: Math.max(0, obstacle.position - lane.positions.intro)
+        / (courseSpeed * lane.baseSpeedMultiplier),
+    }));
+    const continuousFinishPosition = getContinuousRunnerPosition(
+      {
+        startPosition: lane.positions.intro,
+        baseSpeedMultiplier: lane.baseSpeedMultiplier,
+        events: lane.speedEvents,
+      },
+      RACE_RACE_DURATION_MS,
+      RACE_FINALE_WORLD_END_PERCENT,
+      RACE_RACE_DURATION_MS,
+    );
+    lane.finishScore = continuousFinishPosition
       + lane.persona.traits.speed * 0.28
       + lane.persona.traits.balance * 0.1
       + lane.persona.traits.focus * 0.12
       + lane.persona.traits.luck * 0.14
       + (100 - lane.persona.traits.chaos) * 0.06
       + rng() * 8 - 4;
-    lane.finishPosition = clampRacePosition(lane.progress + lane.persona.traits.focus * 0.08 + lane.persona.traits.luck * 0.06 + lane.persona.traits.chaos * 0.03 + rng() * 10 - 5);
+    lane.finishPosition = clampRacePosition(continuousFinishPosition + lane.persona.traits.focus * 0.08 + lane.persona.traits.luck * 0.06 + lane.persona.traits.chaos * 0.03 + rng() * 10 - 5);
     lane.positions.winner = lane.finishPosition;
   });
 
@@ -1331,11 +1361,13 @@ function MovementSprite({
   action,
   prefersReducedMotion,
   animationKey,
+  speedMultiplier = 1,
 }: {
   persona: Persona;
   action: MovementAction;
   prefersReducedMotion: boolean;
   animationKey?: string;
+  speedMultiplier?: number;
 }) {
   const [displayAction, setDisplayAction] = useState<MovementAction>(action);
   const [frameIndex, setFrameIndex] = useState(0);
@@ -1368,16 +1400,19 @@ function MovementSprite({
   useEffect(() => {
     if (!spriteSheet || prefersReducedMotion || spriteSheet.frameCount < 2) return;
     const isOneShot = action === 'jump' && effectiveAction === 'jump';
+    const cadenceMultiplier = isOneShot
+      ? 1
+      : Math.min(1.35, Math.max(0.72, speedMultiplier));
     const frameDurationMs = isOneShot
       ? speedUpDurationMs(spriteSheet.frameDurationMs) / 2
-      : speedUpDurationMs(spriteSheet.frameDurationMs);
+      : speedUpDurationMs(spriteSheet.frameDurationMs / cadenceMultiplier);
     const timer = window.setInterval(() => {
       setFrameIndex((current) => isOneShot
         ? Math.min(current + 1, spriteSheet.frameCount - 1)
         : (current + 1) % spriteSheet.frameCount);
     }, frameDurationMs);
     return () => window.clearInterval(timer);
-  }, [action, effectiveAction, prefersReducedMotion, spriteSheet]);
+  }, [action, effectiveAction, prefersReducedMotion, speedMultiplier, spriteSheet]);
 
   useEffect(() => {
     if (!spriteSheet || action !== 'jump' || effectiveAction !== 'jump' || frameIndex < spriteSheet.frameCount - 1) return;
@@ -1645,9 +1680,28 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
 
     return () => timers.forEach((timer) => window.clearTimeout(timer));
   }, [announcementTimeline, announcerSequence, contestStartedAt, contestants.length, step, voiceEnabled]);
-  const getLaneProgress = (lane: RaceLaneSimulation | undefined) => lane
-    ? getTimelineLaneProgressAtTime(step, lane, race.obstacles, raceClockMs - RACE_STAGE_OFFSETS[step], prefersReducedMotion)
-    : 0;
+  const getLaneProgress = (lane: RaceLaneSimulation | undefined) => {
+    if (!lane) return 0;
+    if (step === 'intro' || step === 'winner' || prefersReducedMotion) {
+      return getTimelineLaneProgressAtTime(
+        step,
+        lane,
+        race.obstacles,
+        raceClockMs - RACE_STAGE_OFFSETS[step],
+        prefersReducedMotion,
+      );
+    }
+    return getContinuousRunnerPosition(
+      {
+        startPosition: lane.positions.intro,
+        baseSpeedMultiplier: lane.baseSpeedMultiplier,
+        events: lane.speedEvents,
+      },
+      raceClockMs,
+      RACE_FINALE_WORLD_END_PERCENT,
+      RACE_RACE_DURATION_MS,
+    );
+  };
   const worldTravelPercent = getRaceWorldTravelPercentAtTime(
     step,
     raceClockMs - RACE_STAGE_OFFSETS[step],
@@ -2093,14 +2147,18 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
                 const laneCurrentObstacleIndex = getCurrentLaneObstacleIndex(lane, index);
                 const laneCurrentObstacle = laneCurrentObstacleIndex >= 0 ? race.obstacles[laneCurrentObstacleIndex] : null;
                 const encounter = laneCurrentObstacle ? lane?.encounters[laneCurrentObstacle.id] : undefined;
-                const runnerReaction = laneCurrentObstacle && encounter ? getRaceRunnerReaction(laneCurrentObstacle.kind, encounter.result) : 'ready';
-                 const runnerAction: MovementAction = runnerReaction === 'jump'
-                   ? 'jump'
-                   : step === 'intro'
-                     ? 'idle'
-                     : step === 'warmup'
-                       ? 'walk'
-                       : 'run';
+                 const runnerProfile = {
+                   startPosition: lane?.positions.intro ?? 0,
+                   baseSpeedMultiplier: lane?.baseSpeedMultiplier ?? 1,
+                   events: lane?.speedEvents ?? [],
+                 };
+                 const runnerSpeedMultiplier = getRunnerEffectiveSpeed(runnerProfile, raceClockMs);
+                 const runnerReaction = laneCurrentObstacle && encounter ? getRaceRunnerReaction(laneCurrentObstacle.kind, encounter.result) : 'ready';
+                  const runnerAction: MovementAction = runnerReaction === 'jump'
+                    ? 'jump'
+                    : step === 'intro'
+                      ? 'idle'
+                      : getRunnerMovementState(runnerProfile, raceClockMs);
                  const movementAnimationKey = runnerReaction === 'jump'
                    ? `${step}-${laneCurrentObstacle?.id ?? 'jump'}`
                    : step;
@@ -2134,6 +2192,7 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
                             persona={persona}
                             action={runnerAction}
                             animationKey={movementAnimationKey}
+                            speedMultiplier={runnerSpeedMultiplier}
                             prefersReducedMotion={prefersReducedMotion}
                           />
                         )}

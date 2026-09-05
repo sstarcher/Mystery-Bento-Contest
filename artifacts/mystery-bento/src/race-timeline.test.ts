@@ -76,11 +76,11 @@ for (const lanes of lineups) {
   }
 }
 
-assert.equal(getRaceWorldTravelPercentAtTime('warmup', RACE_STAGE_DURATIONS.warmup, false), RACE_WARMUP_WORLD_END_PERCENT);
-assert.equal(getRaceWorldTravelPercentAtTime('matchup', RACE_STAGE_DURATIONS.matchup, false), RACE_MATCHUP_WORLD_END_PERCENT);
-assert.equal(getRaceWorldTravelPercentAtTime('finale', RACE_STAGE_DURATIONS.finale, false), RACE_FINALE_WORLD_END_PERCENT);
-assert.equal(getRaceWorldTravelPercentAtTime('matchup', 0, false), RACE_WARMUP_WORLD_END_PERCENT);
-assert.equal(getRaceWorldTravelPercentAtTime('finale', 0, false), RACE_MATCHUP_WORLD_END_PERCENT);
+assert.ok(Math.abs(getRaceWorldTravelPercentAtTime('warmup', RACE_STAGE_DURATIONS.warmup, false) - RACE_WARMUP_WORLD_END_PERCENT) < 1e-9);
+assert.ok(Math.abs(getRaceWorldTravelPercentAtTime('matchup', RACE_STAGE_DURATIONS.matchup, false) - RACE_MATCHUP_WORLD_END_PERCENT) < 1e-9);
+assert.ok(Math.abs(getRaceWorldTravelPercentAtTime('finale', RACE_STAGE_DURATIONS.finale, false) - RACE_FINALE_WORLD_END_PERCENT) < 1e-9);
+assert.ok(Math.abs(getRaceWorldTravelPercentAtTime('matchup', 0, false) - RACE_WARMUP_WORLD_END_PERCENT) < 1e-9);
+assert.ok(Math.abs(getRaceWorldTravelPercentAtTime('finale', 0, false) - RACE_MATCHUP_WORLD_END_PERCENT) < 1e-9);
 assert.equal(getRaceFinishCrossingOffset(false), RACE_STAGE_DURATIONS.finale);
 assert.equal(getRaceFinishCrossingOffset(true), 0);
 assert.deepEqual(

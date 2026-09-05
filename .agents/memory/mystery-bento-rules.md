@@ -15,11 +15,11 @@ Contest results must be resolved once per contest session and reused by animatio
 
 **How to apply:** Resolve contestants, winner, event, and collectible choice before the visual sequence begins, then guard completion side effects against duplicate calls.
 
-The race stage timeline is authoritative after the race-start handoff; roster cards reveal from each name clip, then the race scene appears during the start call while runners remain at the line.
+The race-start handoff is authoritative for when movement begins, but post-handoff runner movement is continuous rather than stage-owned; narrative stages remain presentation beats.
 
-**Why:** Audio can be delayed, missing, muted, or blocked by autoplay while the visual race still needs to communicate continuous progress.
+**Why:** A stage-driven walk/run switch made movement feel artificial: every racer walked during warm-up and ran during matchup regardless of obstacle impact. The course now travels at a stable reference pace while stat and obstacle modifiers move each runner relative to it.
 
-**How to apply:** Serialize the roster clips first, wait one second after the last name, show the race scene during the start call, begin the race clock when that call finishes, and retain a deterministic muted fallback. Schedule winner narration only after the visual finish has crossed.
+**How to apply:** Serialize the roster clips first, wait one second after the last name, show the race scene during the start call, begin the race clock when that call finishes, and retain a deterministic muted fallback. Use a small speed-trait multiplier at baseline, temporary slow/surge windows after obstacle results, walk only during slow recovery, and run otherwise. Schedule winner narration only after the visual finish has crossed.
 
 Jump movement sheets are one-shot reactions tied to an obstacle encounter; after one authored cycle the runner returns to its normal gait.
 
