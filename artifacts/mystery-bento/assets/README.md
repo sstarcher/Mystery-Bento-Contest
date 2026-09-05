@@ -51,7 +51,7 @@ transparent cutouts and sprite sheets are derived later in the pipeline.
 
 ## Image audit status
 
-- 48 source images are preserved here: one character sheet, 11 race
+- 49 source images are preserved here: one character sheet, 12 race
   backgrounds, 12 obstacle illustrations, and 24 runner-action sheets.
 - The app currently has 12 portraits, 72 movement sheets, 12 public cooking
   sheets, six

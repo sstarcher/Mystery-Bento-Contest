@@ -924,7 +924,7 @@
 /* Bento Dash presentation: oversized runners cluster in the lower half of the
    fixed canvas while the authored lane order and race positions stay intact. */
 .race-course-road { padding-top: 470px; }
-.race-runner-overlay { padding-top: 420px; }
+.race-runner-overlay { padding-top: 440px; }
 .race-lane, .race-runner-lane { height: 87px; }
 .race-lane::before, .race-lane::after { display: none; }
 .race-runner { top: -64px; width: 216px; height: 216px; }

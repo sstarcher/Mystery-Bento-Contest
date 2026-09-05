@@ -33,9 +33,9 @@ export const RACE_BACKGROUND_SEQUENCE: RaceBackgroundScene[] = [
   {
     id: 'evening-market',
     file: 'race-background-03-evening-market.webp',
-    sourceAsset: 'scene3_1788634669324.webp',
+    sourceAsset: 'scene3-evening-market_1788636506195.webp',
     label: 'evening market',
-    aspectRatio: 8000 / 2592,
+    aspectRatio: 7144 / 2592,
   },
   {
     id: 'lantern-crossing',
