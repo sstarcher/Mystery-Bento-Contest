@@ -189,6 +189,8 @@ assert.match(raceCss, new RegExp(`\\.race-course-road, \\.race-runner-overlay \\
 assert.match(raceCss, new RegExp(`\\.race-lane, \\.race-runner-lane \\{ height: ${RACE_RUNNER_LANE_HEIGHT_PX}px;`));
 assert.doesNotMatch(raceCss, /race-reaction-/);
 assert.match(appSource, /\['idle', 'walk', 'run', 'jump', 'fall', 'victory'\]/);
+assert.match(appSource, /hasNegativeObstacleImpact\(encounter\?\.result\)/);
+assert.match(appSource, /result === 'slow' \|\| result === 'reroute'/);
 assert.match(appSource, /const runnerAction: MovementAction = raceHasFinished/);
 assert.match(appSource, /action=\{runnerAction\}/);
 console.log(`Sprite-sheet audit passed for ${spriteSheets.length + movementSpriteSheets.length} runtime sheets with sprite-driven race reactions.`);

@@ -582,6 +582,11 @@ function getRaceRunnerReaction(obstacleKind: RaceObstacleKind, result: RaceEncou
   if (obstacleKind === 'wobble-stack' || obstacleKind === 'bento-stack') return 'duck';
   return raceJumpObstacleKinds.has(obstacleKind) ? 'jump' : 'dodge';
 }
+
+function hasNegativeObstacleImpact(result: RaceEncounterResult | undefined) {
+  return result === 'slow' || result === 'reroute';
+}
+
 function buildAnnouncerSequence(contestants: Persona[], race: RaceSimulation, prefersReducedMotion = false): AnnouncerBeat[] {
   const raceStart = announcerClip('race-starts', 'race-start-quiet-kitchen', 'The race is underway');
   const rosterOpening = announcerClip('character-intros', 'contestants-are', 'Tonight’s contestants are');
@@ -1425,6 +1430,8 @@ function MovementSprite({
     && effectiveAction === action;
   const previousSpriteSource = useRef<string | null>(null);
   const previousFrameCount = useRef(1);
+  const speedMultiplierRef = useRef(speedMultiplier);
+  speedMultiplierRef.current = speedMultiplier;
 
   useEffect(() => {
     setCompletedOneShotKey(null);
@@ -1449,7 +1456,7 @@ function MovementSprite({
     if (!spriteSheet || prefersReducedMotion || spriteSheet.frameCount < 2) return;
     const cadenceMultiplier = isOneShot
       ? 1
-      : Math.min(1.35, Math.max(0.72, speedMultiplier));
+      : Math.min(1.35, Math.max(0.72, speedMultiplierRef.current));
     const frameDurationMs = isOneShot
       ? speedUpDurationMs(spriteSheet.frameDurationMs) / 2
       : speedUpDurationMs(spriteSheet.frameDurationMs / cadenceMultiplier);
@@ -1459,7 +1466,7 @@ function MovementSprite({
         : (current + 1) % spriteSheet.frameCount);
     }, frameDurationMs);
     return () => window.clearInterval(timer);
-  }, [action, effectiveAction, prefersReducedMotion, speedMultiplier, spriteSheet]);
+  }, [action, effectiveAction, prefersReducedMotion, spriteSheet]);
 
   useEffect(() => {
     if (!spriteSheet || !isOneShot || frameIndex < spriteSheet.frameCount - 1) return;
@@ -2218,7 +2225,7 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
                  const runnerReaction = laneCurrentObstacle && encounter ? getRaceRunnerReaction(laneCurrentObstacle.kind, encounter.result) : 'ready';
                   const isWinner = (winner?.id ?? race.winnerId) === persona.id;
                   const raceHasFinished = step === 'winner' || finishCrossed;
-                  const hasObstacleReaction = runnerReaction !== 'ready';
+                   const hasObstacleReaction = hasNegativeObstacleImpact(encounter?.result);
                   const runnerAction: MovementAction = raceHasFinished
                     ? isWinner
                       ? 'victory'
