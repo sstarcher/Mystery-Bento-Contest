@@ -847,6 +847,7 @@
   animation: contestant-card-reveal .55s cubic-bezier(.22,1,.36,1) both;
 }
 .contest-announcement-card .persona-portrait { width: 140px; height: 140px; }
+.contest-announcement-card .persona-portrait-shine { display: none; }
 @keyframes contestant-card-reveal {
   from { opacity: 0; transform: translateY(24px) rotate(-3deg) scale(.86); }
   to { opacity: 1; transform: translateY(0) rotate(0) scale(1); }
@@ -922,7 +923,8 @@
 .race-course-viewport { --race-finish-anchor: 88%; height: 100%; border: 0; }
 /* Bento Dash presentation: oversized runners cluster in the lower half of the
    fixed canvas while the authored lane order and race positions stay intact. */
-.race-course-road, .race-runner-overlay { padding-top: 470px; }
+.race-course-road { padding-top: 470px; }
+.race-runner-overlay { padding-top: 420px; }
 .race-lane, .race-runner-lane { height: 87px; }
 .race-lane::before, .race-lane::after { display: none; }
 .race-runner { top: -64px; width: 216px; height: 216px; }
