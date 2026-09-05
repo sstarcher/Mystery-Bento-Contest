@@ -19,7 +19,7 @@ export const RACE_BACKGROUND_SEQUENCE: RaceBackgroundScene[] = [
   {
     id: 'village-market',
     file: 'race-background-01-village-market.webp',
-    sourceAsset: 'scene1_1788633612334.webp',
+    sourceAsset: 'scene1-small_1788635911600.webp',
     label: 'village market street',
     aspectRatio: 12516 / 2592,
   },
