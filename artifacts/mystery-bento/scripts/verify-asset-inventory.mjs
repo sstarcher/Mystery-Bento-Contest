@@ -25,13 +25,11 @@ const readmeCountPaths = [
   'assets/source/audio',
   'src/assets/derived/contestants/portraits',
   'src/assets/derived/contestants/food',
-  'src/assets/derived/contestants/cooking',
   'src/assets/derived/contestants/movement',
   'src/assets/derived/curios',
   'public/runtime/images',
   'public/runtime/video/cooking',
   'public/runtime/audio',
-  'assets/archive',
   'assets/review/unused',
 ];
 
@@ -132,6 +130,17 @@ async function collectActiveReferences() {
         path.join('public/runtime', match[1]),
         `${relativeSourcePath}:${lineNumber(source, match.index)}`,
       );
+    }
+
+    if (relativeSourcePath === 'src/App.tsx') {
+      const obstacleImagePattern = /\$\{RACE_OBSTACLE_IMAGE_BASE\}\/([A-Za-z0-9_.-]+\.png)/g;
+      for (const match of source.matchAll(obstacleImagePattern)) {
+        addReference(
+          references,
+          path.join('public/runtime/images/obstacles', match[1]),
+          `${relativeSourcePath}:${lineNumber(source, match.index)}`,
+        );
+      }
     }
 
     if (relativeSourcePath === 'src/race-backgrounds.ts') {

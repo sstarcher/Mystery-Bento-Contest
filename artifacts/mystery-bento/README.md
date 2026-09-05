@@ -126,7 +126,7 @@ and browser-delivered runtime assets separate.
 | `public/runtime/images/` | 27 | Race backgrounds, obstacle art, plates, keepsakes, and restaurant art | Active browser assets |
 | `public/runtime/video/cooking/` | 12 | Winner cooking sprite sheets | Active browser assets |
 | `public/runtime/audio/` | 69 | 68 selected announcer clips plus one Pip listening preview | Active browser assets |
-| `assets/review/unused/` | 60 | Confirmed unused cooking/audio candidates awaiting review | Not shipped |
+| `assets/review/unused/` | 18 | Confirmed unused audio candidates awaiting review | Not shipped |
 
 ### Runtime image families
 
