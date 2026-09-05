@@ -53,6 +53,7 @@ export const RACE_RUNNER_SCREEN_MAX_PERCENT = 88;
 export const RACE_RUNNER_MAX_SPREAD_PERCENT = 64;
 export const RACE_RUNNER_VISUAL_START_PERCENT = 14;
 export const RACE_RUNNER_VISUAL_MAX_DISTANCE = 90;
+export const RACE_OBSTACLE_CONTACT_WINDOW_PERCENT = 11;
 export const RACE_RUNNER_PRESENTATION_TOP_PX = 410;
 export const RACE_RUNNER_LANE_HEIGHT_PX = 78;
 export const RACE_RUNNER_NORMALIZED_BASELINE_MAX_PX = 220;
@@ -227,6 +228,54 @@ export function getRaceStageObstacleMilestones(stage: RaceTimelineStage, lane: R
       previousOffset = milestone.offset;
       return milestone;
     });
+}
+
+export function getRaceRunnerObstacleContactOffset(
+  stage: RaceTimelineStage,
+  obstacle: RaceTimelineObstacle,
+  lane: RaceTimelineLane,
+  obstacles: RaceTimelineObstacle[],
+  getRunnerPositionAtRaceTime: (elapsedMs: number) => number,
+  prefersReducedMotion = false,
+  contactWindowPercent = RACE_OBSTACLE_CONTACT_WINDOW_PERCENT,
+) {
+  const milestone = getRaceStageObstacleMilestones(stage, lane, obstacles)
+    .find((candidate) => candidate.obstacle.id === obstacle.id);
+  if (!milestone) return RACE_STAGE_DURATIONS[stage];
+  if (prefersReducedMotion) return milestone.offset;
+
+  const stageOffset = RACE_STAGE_OFFSETS[stage];
+  const runnerStartPosition = lane.positions.intro;
+  const getObstacleToRunnerDistance = (stageElapsedMs: number) => {
+    const runnerPosition = getRunnerPositionAtRaceTime(stageOffset + stageElapsedMs);
+    const runnerAnchor = getRaceRunnerScreenAnchors([runnerPosition], [runnerStartPosition])[0] ?? RACE_RUNNER_VISUAL_START_PERCENT;
+    const worldTravelPercent = getRaceWorldTravelPercentAtTime(stage, stageElapsedMs, false);
+    const obstacleAnchor = Number.parseFloat(getRaceWorldScreenAnchor(obstacle.position, worldTravelPercent));
+    return obstacleAnchor - runnerAnchor;
+  };
+
+  // The obstacle travels left through the fixed runner overlay while the
+  // runner's projected anchor moves right. Solve for the first frame where
+  // the same contact window used by the live reaction is entered. The
+  // monotonic search keeps the resolved trigger deterministic between frames.
+  const stageDuration = RACE_STAGE_DURATIONS[stage];
+  const contactStart = getObstacleToRunnerDistance(0);
+  if (contactStart <= contactWindowPercent) return 0;
+  const contactEnd = getObstacleToRunnerDistance(stageDuration);
+  if (contactEnd > contactWindowPercent) return stageDuration;
+
+  let low = 0;
+  let high = stageDuration;
+  for (let iteration = 0; iteration < 24; iteration += 1) {
+    const middle = (low + high) / 2;
+    if (getObstacleToRunnerDistance(middle) <= contactWindowPercent) high = middle;
+    else low = middle;
+  }
+  let triggerMs = Math.round(high);
+  while (triggerMs < stageDuration && getObstacleToRunnerDistance(triggerMs) > contactWindowPercent) {
+    triggerMs += 1;
+  }
+  return triggerMs;
 }
 
 export function getFirstRunnerObstacleHitOffset(

@@ -49,6 +49,7 @@ import {
   getRaceFinishCrossingOffset,
   getRaceAnnouncementRevealOffsets,
   getRaceAnnouncementCompletionDelay,
+  getRaceRunnerObstacleContactOffset,
   getRaceStartHandoffTiming,
   getRaceLaneProgressAtTime as getTimelineLaneProgressAtTime,
   getRaceRunnerScreenAnchors,
@@ -58,6 +59,7 @@ import {
   RACE_FINALE_WORLD_START_PERCENT,
   RACE_LAST_CONTESTANT_PAUSE_MS,
   RACE_MATCHUP_WORLD_END_PERCENT,
+  RACE_OBSTACLE_CONTACT_WINDOW_PERCENT,
   RACE_RACE_DURATION_MS,
   RACE_STAGE_OFFSETS,
   RACE_STAGE_DURATIONS,
@@ -995,13 +997,39 @@ function buildRaceSimulation(contestants: Persona[], rng: () => number): RaceSim
 
   if (obstacles.length < 3) lanes.forEach((lane) => { lane.positions.finale = lane.progress; });
   lanes.forEach((lane) => {
-    const courseSpeed = RACE_FINALE_WORLD_END_PERCENT / RACE_RACE_DURATION_MS;
-    lane.speedEvents = obstacles.map((obstacle) => ({
-      obstacleId: obstacle.id,
-      result: lane.encounters[obstacle.id]?.result ?? 'clear',
-      triggerMs: Math.max(0, obstacle.position - lane.positions.intro)
-        / (courseSpeed * lane.baseSpeedMultiplier),
-    }));
+    const speedEvents: RunnerSpeedEvent[] = [];
+    const timelineLane = {
+      positions: lane.positions,
+      encounters: Object.fromEntries(
+        Object.entries(lane.encounters).map(([obstacleId, encounter]) => [obstacleId, { result: encounter.result }]),
+      ),
+      checkpoints: lane.checkpoints,
+    };
+    obstacles.forEach((obstacle, obstacleIndex) => {
+      const stage = obstacleIndex === 0 ? 'warmup' : obstacleIndex === 1 ? 'matchup' : 'finale';
+      const triggerMs = getRaceRunnerObstacleContactOffset(
+        stage,
+        obstacle,
+        timelineLane,
+        obstacles,
+        (elapsedMs) => getContinuousRunnerPosition(
+          {
+            startPosition: lane.positions.intro,
+            baseSpeedMultiplier: lane.baseSpeedMultiplier,
+            events: speedEvents,
+          },
+          elapsedMs,
+          RACE_FINALE_WORLD_END_PERCENT,
+          RACE_RACE_DURATION_MS,
+        ),
+      );
+      speedEvents.push({
+        obstacleId: obstacle.id,
+        result: lane.encounters[obstacle.id]?.result ?? 'clear',
+        triggerMs: RACE_STAGE_OFFSETS[stage] + triggerMs,
+      });
+    });
+    lane.speedEvents = speedEvents;
     const continuousFinishPosition = getContinuousRunnerPosition(
       {
         startPosition: lane.positions.intro,
@@ -1728,7 +1756,6 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
       progress >= obstacle.position ? obstacleIndex : reachedIndex
     ), -1);
   };
-  const RACE_OBSTACLE_CONTACT_WINDOW_PERCENT = 11;
   const getCurrentLaneObstacleIndex = (lane: RaceLaneSimulation | undefined, laneIndex: number) => {
     const stageObstacleIndex = Math.min(race.obstacles.length - 1, Math.max(0, raceStepProgress[step] - 1));
     if (step === 'intro' || step === 'winner') return -1;

@@ -6,6 +6,7 @@ import {
   getRaceAnnouncementCompletionDelay,
   getRaceLaneProgressAtTime,
   getRaceRunnerScreenAnchors,
+  getRaceRunnerObstacleContactOffset,
   getRaceStartHandoffTiming,
   getRaceStageObstacleMilestones,
   getRaceWorldScreenAnchor,
@@ -13,6 +14,7 @@ import {
   RACE_FINALE_WORLD_END_PERCENT,
   RACE_LAST_CONTESTANT_PAUSE_MS,
   RACE_MATCHUP_WORLD_END_PERCENT,
+  RACE_OBSTACLE_CONTACT_WINDOW_PERCENT,
   RACE_RUNNER_MAX_SPREAD_PERCENT,
   RACE_RUNNER_SCREEN_MAX_PERCENT,
   RACE_RUNNER_SCREEN_MIN_PERCENT,
@@ -231,6 +233,50 @@ assert.equal(
   getRaceWorldScreenAnchor(50, 40),
   `${(50 - 40) * RACE_WORLD_TRACK_WIDTH_MULTIPLIER}.000%`,
   'full-width race projection should use the six-panel world track',
+);
+
+const contactLane = lineups[0][0];
+const contactObstacle = obstacles[0];
+const contactOffset = getRaceRunnerObstacleContactOffset(
+  'warmup',
+  contactObstacle,
+  contactLane,
+  obstacles,
+  (elapsedMs) => contactLane.positions.intro
+    + (contactLane.positions.warmup - contactLane.positions.intro)
+      * Math.min(1, Math.max(0, elapsedMs / RACE_STAGE_DURATIONS.warmup)),
+);
+const contactRunnerAnchor = (elapsedMs: number) => getRaceRunnerScreenAnchors(
+  [contactLane.positions.intro
+    + (contactLane.positions.warmup - contactLane.positions.intro)
+      * Math.min(1, Math.max(0, elapsedMs / RACE_STAGE_DURATIONS.warmup))],
+  [contactLane.positions.intro],
+)[0];
+const contactObstacleAnchor = (elapsedMs: number) => Number.parseFloat(getRaceWorldScreenAnchor(
+  contactObstacle.position,
+  getRaceWorldTravelPercentAtTime('warmup', elapsedMs, false),
+));
+assert.ok(
+  Math.abs((contactObstacleAnchor(contactOffset) ?? 0) - (contactRunnerAnchor(contactOffset) ?? 0)) <= RACE_OBSTACLE_CONTACT_WINDOW_PERCENT,
+  'speed triggers should begin inside the same rendered contact window as live reactions',
+);
+assert.ok(
+  contactOffset === 0
+    || (contactObstacleAnchor(contactOffset - 1) ?? 0) - (contactRunnerAnchor(contactOffset - 1) ?? 0) > RACE_OBSTACLE_CONTACT_WINDOW_PERCENT,
+  'contact solving should choose the first entry into the rendered contact window',
+);
+assert.equal(
+  contactOffset,
+  getRaceRunnerObstacleContactOffset(
+    'warmup',
+    contactObstacle,
+    contactLane,
+    obstacles,
+    (elapsedMs) => contactLane.positions.intro
+      + (contactLane.positions.warmup - contactLane.positions.intro)
+        * Math.min(1, Math.max(0, elapsedMs / RACE_STAGE_DURATIONS.warmup)),
+  ),
+  'identical lane inputs should resolve contact timing deterministically',
 );
 
 const parseAnchors = (anchors: number[]) => anchors.map((anchor) => Number(anchor.toFixed(3)));
