@@ -1405,17 +1405,22 @@ function MovementSprite({
 }) {
   const [displayAction, setDisplayAction] = useState<MovementAction>(action);
   const [frameIndex, setFrameIndex] = useState(0);
-  const [completedJumpKey, setCompletedJumpKey] = useState<string | null>(null);
-  const jumpKey = animationKey ?? 'jump';
-  const effectiveAction = action === 'jump' && completedJumpKey === jumpKey ? 'run' : displayAction;
-  const spriteSheet = getMovementSpriteSheet(persona.id, effectiveAction);
+  const [completedOneShotKey, setCompletedOneShotKey] = useState<string | null>(null);
+  const oneShotKey = animationKey ?? action;
+  const effectiveAction = action === 'jump' && completedOneShotKey === oneShotKey ? 'run' : displayAction;
+  const requestedSpriteSheet = getMovementSpriteSheet(persona.id, effectiveAction);
+  const spriteSheet = requestedSpriteSheet ?? getMovementSpriteSheet(persona.id, 'run');
+  const renderedAction = requestedSpriteSheet ? effectiveAction : 'run';
+  const isOneShot = requestedSpriteSheet !== undefined
+    && (action === 'jump' || action === 'fall')
+    && effectiveAction === action;
   const previousSpriteSource = useRef<string | null>(null);
   const previousFrameCount = useRef(1);
 
   useEffect(() => {
-    setCompletedJumpKey(null);
+    setCompletedOneShotKey(null);
     setDisplayAction(action);
-    if (action === 'jump') setFrameIndex(0);
+    if (action === 'jump' || action === 'fall' || action === 'victory') setFrameIndex(0);
   }, [action, animationKey]);
 
   useEffect(() => {
@@ -1433,7 +1438,6 @@ function MovementSprite({
 
   useEffect(() => {
     if (!spriteSheet || prefersReducedMotion || spriteSheet.frameCount < 2) return;
-    const isOneShot = action === 'jump' && effectiveAction === 'jump';
     const cadenceMultiplier = isOneShot
       ? 1
       : Math.min(1.35, Math.max(0.72, speedMultiplier));
@@ -1449,9 +1453,9 @@ function MovementSprite({
   }, [action, effectiveAction, prefersReducedMotion, speedMultiplier, spriteSheet]);
 
   useEffect(() => {
-    if (!spriteSheet || action !== 'jump' || effectiveAction !== 'jump' || frameIndex < spriteSheet.frameCount - 1) return;
-    setCompletedJumpKey(jumpKey);
-  }, [action, effectiveAction, frameIndex, jumpKey, spriteSheet]);
+    if (!spriteSheet || !isOneShot || frameIndex < spriteSheet.frameCount - 1) return;
+    setCompletedOneShotKey(oneShotKey);
+  }, [frameIndex, isOneShot, oneShotKey, spriteSheet]);
 
   if (!spriteSheet) return <PersonaPortrait persona={persona} />;
 
@@ -1468,8 +1472,8 @@ function MovementSprite({
     <span
       className="race-movement-sprite"
       role="img"
-      aria-label={`${persona.name} ${action} movement`}
-      data-movement-action={action}
+      aria-label={`${persona.name} ${renderedAction} movement`}
+      data-movement-action={renderedAction}
       data-movement-frame={visibleFrameIndex}
       data-movement-grid={`${spriteSheet.columns}x${spriteSheet.rows}`}
       style={{ transform: renderStyle.spriteTransform }}
@@ -1591,7 +1595,7 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
   const announcerSessionStartedAt = useRef<number | null>(null);
   const announcerSessionResetKey = useRef<number | null>(null);
   useEffect(() => {
-    const movementActions: MovementAction[] = ['idle', 'walk', 'run', 'jump'];
+    const movementActions: MovementAction[] = ['idle', 'walk', 'run', 'jump', 'fall', 'victory'];
     contestants.forEach((persona) => {
       movementActions.forEach((action) => {
         const spriteSheet = getMovementSpriteSheet(persona.id, action);
@@ -2186,15 +2190,23 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
                  };
                  const runnerSpeedMultiplier = getRunnerEffectiveSpeed(runnerProfile, raceClockMs);
                  const runnerReaction = laneCurrentObstacle && encounter ? getRaceRunnerReaction(laneCurrentObstacle.kind, encounter.result) : 'ready';
-                  const runnerAction: MovementAction = runnerReaction === 'jump'
-                    ? 'jump'
-                    : step === 'intro'
-                      ? 'idle'
-                      : getRunnerMovementState(runnerProfile, raceClockMs);
-                 const movementAnimationKey = runnerReaction === 'jump'
-                   ? `${step}-${laneCurrentObstacle?.id ?? 'jump'}`
-                   : step;
-                const isWinner = (winner?.id ?? race.winnerId) === persona.id;
+                  const isWinner = (winner?.id ?? race.winnerId) === persona.id;
+                  const raceHasFinished = step === 'winner' || finishCrossed;
+                  const hasObstacleReaction = runnerReaction !== 'ready';
+                  const runnerAction: MovementAction = raceHasFinished
+                    ? isWinner
+                      ? 'victory'
+                      : 'fall'
+                    : hasObstacleReaction
+                      ? 'fall'
+                      : step === 'intro'
+                        ? 'idle'
+                        : getRunnerMovementState(runnerProfile, raceClockMs);
+                  const movementAnimationKey = raceHasFinished
+                    ? `${isWinner ? 'victory' : 'finish-fall'}-${persona.id}`
+                    : hasObstacleReaction
+                      ? `${step}-${laneCurrentObstacle?.id ?? 'reaction'}-${runnerReaction}`
+                      : step;
                  const runnerScreenAnchor = isWinner && (step === 'winner' || finishCrossed)
                    ? 'var(--race-finish-anchor)'
                   : formatRunnerAnchor(currentRunnerAnchors[index]);
@@ -2211,17 +2223,13 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
                       } as CSSProperties}
                     >
                       <span className="race-runner-sprite">
-                        {step === 'winner' || finishCrossed ? (
-                          <PersonaPortrait persona={persona} />
-                        ) : (
-                          <MovementSprite
-                            persona={persona}
-                            action={runnerAction}
-                            animationKey={movementAnimationKey}
-                            speedMultiplier={runnerSpeedMultiplier}
-                            prefersReducedMotion={prefersReducedMotion}
-                          />
-                        )}
+                        <MovementSprite
+                          persona={persona}
+                          action={runnerAction}
+                          animationKey={movementAnimationKey}
+                          speedMultiplier={runnerSpeedMultiplier}
+                          prefersReducedMotion={prefersReducedMotion}
+                        />
                       </span>
                     </div>
                   </div>

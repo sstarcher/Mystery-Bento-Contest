@@ -33,6 +33,12 @@ Jump movement sheets are one-shot reactions tied to an obstacle encounter; after
 
 **How to apply:** Give each jump encounter a stable animation key, reset at the start of that key, stop on its final frame, and switch back to walk/run without changing the deterministic race outcome.
 
+Resolved race reactions are sprite-driven rather than CSS-transform-driven: the conceptual reaction label may remain distinct for narration, but every non-ready obstacle reaction uses the fall sheet, freezes on its grounded final frame, and the winner uses a looping victory sheet after the finish.
+
+**Why:** CSS dodge, slide, duck, stumble, weave, and surge transforms made the race look like unrelated wobble effects and could fight the authored sprite silhouettes.
+
+**How to apply:** Keep `getRaceRunnerReaction` for deterministic narrative labels and announcer copy, map its visual output to `fall`, reset fall/victory playback with stable handoff keys, and reserve portraits for cards or missing-asset fallback only.
+
 Visual spectacle should always have a readable staged fallback when reduced motion is enabled.
 
 **Why:** The belt, item splash, and contest race are part of the story but must not be required for understanding what happened.

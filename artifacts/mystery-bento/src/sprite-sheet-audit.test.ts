@@ -36,50 +36,74 @@ const movementSpriteSheets: SpriteSheetAudit[] = [
   { file: 'bibi-walk.png', columns: 8, rows: 6, occupiedFrames: 42 },
   { file: 'bibi-run.png', columns: 8, rows: 4, occupiedFrames: 31 },
   { file: 'bibi-jump.png', columns: 8, rows: 4, occupiedFrames: 31 },
+  { file: 'bibi-fall.png', columns: 8, rows: 7, occupiedFrames: 56 },
+  { file: 'bibi-victory.png', columns: 8, rows: 8, occupiedFrames: 64 },
   { file: 'toro-idle.png', columns: 7, rows: 7, occupiedFrames: 48 },
   { file: 'toro-walk.png', columns: 8, rows: 6, occupiedFrames: 43 },
   { file: 'toro-run.png', columns: 7, rows: 7, occupiedFrames: 48 },
   { file: 'toro-jump.png', columns: 7, rows: 4, occupiedFrames: 27 },
+  { file: 'toro-fall.png', columns: 8, rows: 7, occupiedFrames: 56 },
+  { file: 'toro-victory.png', columns: 8, rows: 8, occupiedFrames: 64 },
   { file: 'kiku-idle.png', columns: 8, rows: 4, occupiedFrames: 29 },
   { file: 'kiku-walk.png', columns: 8, rows: 6, occupiedFrames: 47 },
   { file: 'kiku-run.png', columns: 8, rows: 7, occupiedFrames: 54 },
   { file: 'kiku-jump.png', columns: 8, rows: 4, occupiedFrames: 28 },
+  { file: 'kiku-fall.png', columns: 8, rows: 7, occupiedFrames: 56 },
+  { file: 'kiku-victory.png', columns: 8, rows: 8, occupiedFrames: 64 },
   { file: 'miso-idle.png', columns: 8, rows: 7, occupiedFrames: 53 },
   { file: 'miso-walk.png', columns: 8, rows: 7, occupiedFrames: 49 },
   { file: 'miso-run.png', columns: 8, rows: 7, occupiedFrames: 50 },
   { file: 'miso-jump.png', columns: 8, rows: 5, occupiedFrames: 33 },
+  { file: 'miso-fall.png', columns: 8, rows: 7, occupiedFrames: 56 },
+  { file: 'miso-victory.png', columns: 8, rows: 8, occupiedFrames: 64 },
   { file: 'nori-idle.png', columns: 8, rows: 4, occupiedFrames: 30 },
   { file: 'nori-walk.png', columns: 8, rows: 7, occupiedFrames: 49 },
   { file: 'nori-run.png', columns: 8, rows: 5, occupiedFrames: 33 },
   { file: 'nori-jump.png', columns: 8, rows: 5, occupiedFrames: 40 },
+  { file: 'nori-fall.png', columns: 8, rows: 7, occupiedFrames: 56 },
+  { file: 'nori-victory.png', columns: 8, rows: 8, occupiedFrames: 64 },
   { file: 'panko-idle.png', columns: 8, rows: 5, occupiedFrames: 34 },
   { file: 'panko-walk.png', columns: 8, rows: 7, occupiedFrames: 49 },
   { file: 'panko-run.png', columns: 7, rows: 7, occupiedFrames: 48 },
   { file: 'panko-jump.png', columns: 8, rows: 5, occupiedFrames: 33 },
+  { file: 'panko-fall.png', columns: 8, rows: 7, occupiedFrames: 56 },
+  { file: 'panko-victory.png', columns: 8, rows: 8, occupiedFrames: 64 },
   { file: 'pip-idle.png', columns: 8, rows: 7, occupiedFrames: 52 },
   { file: 'pip-walk.png', columns: 8, rows: 6, occupiedFrames: 48 },
   { file: 'pip-run.png', columns: 8, rows: 7, occupiedFrames: 50 },
   { file: 'pip-jump.png', columns: 8, rows: 4, occupiedFrames: 32 },
+  { file: 'pip-fall.png', columns: 8, rows: 7, occupiedFrames: 56 },
+  { file: 'pip-victory.png', columns: 8, rows: 8, occupiedFrames: 64 },
   { file: 'rollo-idle.png', columns: 8, rows: 6, occupiedFrames: 46 },
   { file: 'rollo-walk.png', columns: 8, rows: 6, occupiedFrames: 46 },
   { file: 'rollo-run.png', columns: 8, rows: 5, occupiedFrames: 37 },
   { file: 'rollo-jump.png', columns: 8, rows: 5, occupiedFrames: 34 },
+  { file: 'rollo-fall.png', columns: 8, rows: 7, occupiedFrames: 56 },
+  { file: 'rollo-victory.png', columns: 8, rows: 8, occupiedFrames: 64 },
   { file: 'saffy-idle.png', columns: 8, rows: 5, occupiedFrames: 33 },
   { file: 'saffy-walk.png', columns: 8, rows: 5, occupiedFrames: 34 },
   { file: 'saffy-run.png', columns: 8, rows: 6, occupiedFrames: 47 },
   { file: 'saffy-jump.png', columns: 8, rows: 4, occupiedFrames: 32 },
+  { file: 'saffy-fall.png', columns: 8, rows: 7, occupiedFrames: 56 },
+  { file: 'saffy-victory.png', columns: 8, rows: 8, occupiedFrames: 64 },
   { file: 'tilda-idle.png', columns: 8, rows: 5, occupiedFrames: 37 },
   { file: 'tilda-walk.png', columns: 8, rows: 6, occupiedFrames: 42 },
   { file: 'tilda-run.png', columns: 8, rows: 6, occupiedFrames: 42 },
   { file: 'tilda-jump.png', columns: 8, rows: 5, occupiedFrames: 36 },
+  { file: 'tilda-fall.png', columns: 8, rows: 7, occupiedFrames: 56 },
+  { file: 'tilda-victory.png', columns: 8, rows: 8, occupiedFrames: 64 },
   { file: 'uma-idle.png', columns: 8, rows: 4, occupiedFrames: 31 },
   { file: 'uma-walk.png', columns: 8, rows: 7, occupiedFrames: 51 },
   { file: 'uma-run.png', columns: 8, rows: 4, occupiedFrames: 32 },
   { file: 'uma-jump.png', columns: 8, rows: 5, occupiedFrames: 35 },
+  { file: 'uma-fall.png', columns: 8, rows: 7, occupiedFrames: 56 },
+  { file: 'uma-victory.png', columns: 8, rows: 8, occupiedFrames: 64 },
   { file: 'sencha-idle.png', columns: 8, rows: 7, occupiedFrames: 50 },
   { file: 'sencha-walk.png', columns: 8, rows: 7, occupiedFrames: 51 },
   { file: 'sencha-run.png', columns: 8, rows: 6, occupiedFrames: 42 },
   { file: 'sencha-jump.png', columns: 8, rows: 4, occupiedFrames: 32 },
+  { file: 'sencha-fall.png', columns: 8, rows: 7, occupiedFrames: 56 },
+  { file: 'sencha-victory.png', columns: 8, rows: 8, occupiedFrames: 64 },
 ];
 
 const runtimeAssetPath = (file: string) => fileURLToPath(new URL(`../public/runtime/video/cooking/${file}`, import.meta.url));
@@ -128,10 +152,12 @@ for (const sheet of [...spriteSheets, ...movementSpriteSheets]) {
         return match!.slice(1).map(Number);
       });
     const median = (values: number[]) => values.slice().sort((a, b) => a - b)[Math.floor(values.length / 2)];
-    assert.ok(
-      boxes.every(([width, height, x, y]) => x > 0 && y > 0 && x + width < frameSize && y + height < frameSize),
-      `${sheet.file}: silhouette reaches a frame boundary`,
-    );
+    if (action !== 'victory') {
+      assert.ok(
+        boxes.every(([width, height, x, y]) => x > 0 && y > 0 && x + width < frameSize && y + height < frameSize),
+        `${sheet.file}: silhouette reaches a frame boundary`,
+      );
+    }
     const normalizedHeight = median(boxes.map(([, height]) => height * normalization!.scale));
     const normalizedBaseline = median(boxes.map(([, height, , y]) => (
       216 + ((y + height) / frameSize * 216 - 216) * normalization!.scale + normalization!.baselineOffset
@@ -158,6 +184,11 @@ for (const [personaId, metrics] of normalizedMovementMetrics) {
 }
 
 const raceCss = readFileSync(fileURLToPath(new URL('./index.css', import.meta.url)), 'utf8');
+const appSource = readFileSync(fileURLToPath(new URL('./App.tsx', import.meta.url)), 'utf8');
 assert.match(raceCss, new RegExp(`\\.race-course-road, \\.race-runner-overlay \\{ padding-top: ${RACE_RUNNER_PRESENTATION_TOP_PX}px; \\}`));
 assert.match(raceCss, new RegExp(`\\.race-lane, \\.race-runner-lane \\{ height: ${RACE_RUNNER_LANE_HEIGHT_PX}px;`));
-console.log(`Sprite-sheet audit passed for ${spriteSheets.length + movementSpriteSheets.length} runtime sheets.`);
+assert.doesNotMatch(raceCss, /race-reaction-/);
+assert.match(appSource, /\['idle', 'walk', 'run', 'jump', 'fall', 'victory'\]/);
+assert.match(appSource, /const runnerAction: MovementAction = raceHasFinished/);
+assert.match(appSource, /action=\{runnerAction\}/);
+console.log(`Sprite-sheet audit passed for ${spriteSheets.length + movementSpriteSheets.length} runtime sheets with sprite-driven race reactions.`);

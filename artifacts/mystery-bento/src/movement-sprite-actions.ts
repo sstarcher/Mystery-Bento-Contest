@@ -1,1 +1,1 @@
-export type MovementAction = 'idle' | 'walk' | 'run' | 'jump';
+export type MovementAction = 'idle' | 'walk' | 'run' | 'jump' | 'fall' | 'victory';

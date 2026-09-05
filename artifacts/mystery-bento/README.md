@@ -89,7 +89,7 @@ Shelf or Contest Ledger to reset this browser's saved progress.
 ## Contestants
 
 The roster contains 12 kitchen personas. Every persona has a portrait, cooking
-reveal, and four movement actions: idle, walk, run, and jump.
+reveal, and six movement actions: idle, walk, run, jump, fall, and victory.
 
 | Persona | Contest edge | Movement | Cooking reveal | Curio set |
 | --- | --- | --- | --- | --- |
@@ -117,10 +117,10 @@ and browser-delivered runtime assets separate.
 
 | Location | Count | Purpose | Status |
 | --- | ---: | --- | --- |
-| `assets/source/images/` | 19 | Character, race-background, and obstacle art uploads | Source archive |
+| `assets/source/images/` | 43 | Character, race-background, obstacle, and runner-action art uploads | Source archive |
 | `assets/source/audio/` | 85 | Original announcer recordings for active runtime families | Source archive |
 | `src/assets/derived/contestants/portraits/` | 12 | Opaque contestant portraits | Active imports |
-| `src/assets/derived/contestants/movement/` | 48 | 12 contestants × 4 transparent movement sheets | Active imports |
+| `src/assets/derived/contestants/movement/` | 72 | 12 contestants × 6 transparent movement sheets | Active imports |
 | `src/assets/derived/curios/` | 33 | Three independent curio derivatives for 11 non-Pip contestants | Active imports |
 | `public/runtime/images/` | 28 | Race backgrounds, obstacle art, plates, keepsakes, and restaurant art | Active browser assets |
 | `public/runtime/video/cooking/` | 12 | Winner cooking sprite sheets | Active browser assets |
@@ -131,11 +131,12 @@ and browser-delivered runtime assets separate.
 
 - **12 portraits**: opaque `320 × 292` PNGs, one per contestant, in
   `src/assets/derived/contestants/portraits/`.
-- **48 movement sheets**: transparent square-cell grids in
+- **72 movement sheets**: transparent square-cell grids in
   `src/assets/derived/contestants/movement/`, with explicit rows, columns,
-  occupied-frame counts, and per-persona normalization.
+  occupied-frame counts, and per-persona normalization. Fall sheets are
+  one-shot and freeze on their grounded final frame; victory sheets loop.
 - **12 cooking sheets**: transparent public sprite sheets used for winner
-  cooking reveals. The sprite audit covers all 12 cooking sheets and all 48
+  cooking reveals. The sprite audit covers all 12 cooking sheets and all 72
   movement sheets.
 - **12 obstacle images**: transparent pixel-art runtime derivatives in
   `public/runtime/images/obstacles/`, including separate tea-puddle and
