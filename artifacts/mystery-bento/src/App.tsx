@@ -5,6 +5,7 @@ import { ErrorBoundary } from '@/components/error-boundary';
 import { Toaster } from '@/components/ui/toaster';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import NotFound from '@/pages/not-found';
+import RaceTrackDebugPage from '@/pages/race-track-debug';
 import { Route, Router as WouterRouter, Switch, useLocation } from 'wouter';
 import { contestantDesigns, contestantFoodAnimationAspectRatios, contestantPortraits } from './contestant-design-config';
 import tildaSafetyModule from './assets/derived/curios/tilda-safety-module.png';
@@ -1573,6 +1574,7 @@ function RestaurantControls({ onOpenCurio, ledgerCount, curioCount }: { onOpenCu
         <button type="button" onClick={() => onOpenCurio('ledger')} className="curio-button" data-testid="button-open-ledger">
           <BookOpen className="h-3.5 w-3.5 text-[#f5c968]" aria-hidden="true" /><span>Ledger</span><span className="font-mono-ui text-[#f5c968]">{ledgerCount}</span>
         </button>
+        <a className="curio-button track-debug-nav-link" href={`${import.meta.env.BASE_URL}race-track-debug`}>Track</a>
       </nav>
     </div>
   );
@@ -2735,7 +2737,7 @@ function Home() {
 
 function Router() {
   const [location] = useLocation();
-  return <ErrorBoundary resetKey={location}><Switch><Route path="/" component={Home} /><Route component={NotFound} /></Switch></ErrorBoundary>;
+  return <ErrorBoundary resetKey={location}><Switch><Route path="/" component={Home} /><Route path="/race-track-debug" component={RaceTrackDebugPage} /><Route component={NotFound} /></Switch></ErrorBoundary>;
 }
 
 function App() {

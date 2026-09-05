@@ -155,6 +155,13 @@ build-time derivatives live under `src/assets/derived/`. Original uploads live
 under `assets/source/`; and confirmed unused candidates live under
 `assets/review/unused/`.
 
+## Race track visual inspector
+
+Open `/race-track-debug` (or use the `Track` link beside Curios and Ledger in
+the restaurant header) to inspect the complete race panorama without starting
+a contest. Drag left and right, use the scrollbar, or focus the track and use
+the arrow keys.
+
 ### Asset review queue
 
 The review queue is intentionally separate from active source and runtime
