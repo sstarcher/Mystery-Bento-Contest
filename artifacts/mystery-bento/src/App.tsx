@@ -66,7 +66,7 @@ import {
   RACE_WARMUP_WORLD_END_PERCENT,
   type RaceTimelineCheckpoint,
 } from './race-timeline';
-import { resolveRaceEncounterResult } from './race-momentum';
+import { ensureRaceEncounterVariety, resolveRaceEncounterResult } from './race-momentum';
 import { selectContestants } from './contest-roster';
 import {
   getContinuousRunnerPosition,
@@ -917,19 +917,27 @@ function buildRaceSimulation(contestants: Persona[], rng: () => number): RaceSim
     const spread = (rankingBefore[0]?.progress ?? 0) - (rankingBefore[rankingBefore.length - 1]?.progress ?? 0);
     const leaderBefore = rankingBefore[0];
 
-    lanes.forEach((lane) => {
-      const rankIndex = rankingBefore.indexOf(lane);
+    const encounterResults = ensureRaceEncounterVariety(
+      lanes.map((lane) => {
+        const rankIndex = rankingBefore.indexOf(lane);
+        const catalog = raceObstacleCatalog[obstacle.kind];
+        return resolveRaceEncounterResult({
+          traits: lane.persona.traits,
+          primaryTrait: catalog.primaryTrait,
+          secondaryTrait: catalog.secondaryTrait,
+          obstacleKind: obstacle.kind,
+          rankIndex,
+          laneCount: rankingBefore.length,
+          spread,
+          rng,
+        });
+      }),
+      obstacleIndex,
+    );
+
+    lanes.forEach((lane, laneIndex) => {
       const catalog = raceObstacleCatalog[obstacle.kind];
-      const result: RaceEncounterResult = resolveRaceEncounterResult({
-        traits: lane.persona.traits,
-        primaryTrait: catalog.primaryTrait,
-        secondaryTrait: catalog.secondaryTrait,
-        obstacleKind: obstacle.kind,
-        rankIndex,
-        laneCount: rankingBefore.length,
-        spread,
-        rng,
-      });
+      const result: RaceEncounterResult = encounterResults[laneIndex] ?? 'clear';
       const progressDelta = result === 'surge' ? 18 : result === 'slow' ? -20 : result === 'reroute' ? -10 : 3;
       const pace = 18
         + (lane.persona.traits.speed - 50) * 0.05

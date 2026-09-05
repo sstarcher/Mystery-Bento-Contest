@@ -2,6 +2,23 @@ export type RaceMomentumTrait = 'speed' | 'balance' | 'focus' | 'luck' | 'chaos'
 export type RaceMomentumTraits = Record<RaceMomentumTrait, number>;
 export type RaceMomentumEncounterResult = 'clear' | 'slow' | 'surge' | 'reroute';
 
+const successfulEncounterResults = new Set<RaceMomentumEncounterResult>(['clear', 'surge']);
+
+export function ensureRaceEncounterVariety(
+  results: RaceMomentumEncounterResult[],
+  divergingIndex = 0,
+) {
+  if (results.length < 2) return results;
+
+  const allSuccessful = results.every((result) => successfulEncounterResults.has(result));
+  const allUnsuccessful = results.every((result) => !successfulEncounterResults.has(result));
+  if (!allSuccessful && !allUnsuccessful) return results;
+
+  const normalizedIndex = ((divergingIndex % results.length) + results.length) % results.length;
+  const divergentResult: RaceMomentumEncounterResult = allSuccessful ? 'slow' : 'clear';
+  return results.map((result, index) => index === normalizedIndex ? divergentResult : result);
+}
+
 export function getRaceMomentumAdjustment(laneIndex: number, laneCount: number, spread: number) {
   if (laneCount < 2 || laneIndex !== 0 && laneIndex !== laneCount - 1) return 0;
   const boundedSpread = Math.max(0, Math.min(24, spread));

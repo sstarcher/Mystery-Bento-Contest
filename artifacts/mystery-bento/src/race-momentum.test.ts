@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import {
+  ensureRaceEncounterVariety,
   getRaceMomentumAdjustment,
   resolveRaceEncounterResult,
   type RaceMomentumTraits,
@@ -47,8 +48,8 @@ function runRace(seed: number, roster: typeof contestants, startingOffsets: numb
   obstacles.forEach((obstacle, obstacleIndex) => {
     const ranking = [...lanes].sort((a, b) => b.progress - a.progress);
     const spread = ranking[0].progress - ranking[ranking.length - 1].progress;
-    lanes.forEach((lane) => {
-      const result = resolveRaceEncounterResult({
+    const encounterResults = ensureRaceEncounterVariety(
+      lanes.map((lane) => resolveRaceEncounterResult({
         traits: lane.traits,
         primaryTrait: obstacle.primaryTrait,
         secondaryTrait: obstacle.secondaryTrait,
@@ -57,7 +58,11 @@ function runRace(seed: number, roster: typeof contestants, startingOffsets: numb
         laneCount: ranking.length,
         spread,
         rng,
-      });
+      })),
+      obstacleIndex,
+    );
+    lanes.forEach((lane, laneIndex) => {
+      const result = encounterResults[laneIndex];
       const delta = result === 'surge' ? 16 : result === 'slow' ? -16 : result === 'reroute' ? -7 : 3;
       const pace = 18 + (lane.traits.speed - 50) * 0.05 + (lane.traits.focus - 50) * 0.015;
       const nextPosition = obstacles[obstacleIndex + 1]?.position ?? 96;
@@ -74,6 +79,21 @@ assert.ok(getRaceMomentumAdjustment(3, 4, 4) > 0, 'a trailing lane should get a 
 assert.ok(getRaceMomentumAdjustment(0, 4, 4) < 0, 'the leader should get a disruption adjustment');
 assert.ok(Math.abs(getRaceMomentumAdjustment(0, 4, 8)) <= 3, 'a close pack should only get a mild adjustment');
 assert.equal(getRaceMomentumAdjustment(1, 4, 20), 0, 'middle lanes should retain their authored odds');
+assert.deepEqual(
+  ensureRaceEncounterVariety(['clear', 'surge', 'clear'], 1),
+  ['clear', 'slow', 'clear'],
+  'all-success obstacle results should force one contrasting setback',
+);
+assert.deepEqual(
+  ensureRaceEncounterVariety(['slow', 'reroute', 'slow'], 2),
+  ['slow', 'reroute', 'clear'],
+  'all-failure obstacle results should force one contrasting success',
+);
+assert.deepEqual(
+  ensureRaceEncounterVariety(['clear', 'slow', 'surge'], 1),
+  ['clear', 'slow', 'surge'],
+  'already varied obstacle results should remain unchanged',
+);
 
 const repeatA = runRace(73, contestants.slice(0, 4));
 const repeatB = runRace(73, contestants.slice(0, 4));
@@ -87,6 +107,11 @@ for (let seed = 1; seed <= 512; seed += 1) {
     ? contestants.slice(0, 4)
     : contestants.slice((seed * 5) % 3, (seed * 5) % 3 + 3);
   const race = runRace(seed, roster);
+  race.results.forEach((obstacleResults, obstacleIndex) => {
+    const hasSuccess = obstacleResults.some((result) => result === 'clear' || result === 'surge');
+    const hasFailure = obstacleResults.some((result) => result === 'slow' || result === 'reroute');
+    assert.ok(hasSuccess && hasFailure, `obstacle ${obstacleIndex + 1} should have mixed success and failure results`);
+  });
   const changeCount = race.leaders.slice(1).filter((leader, index) => leader !== race.leaders[index]).length;
   if (changeCount > 0) racesWithLeadChange += 1;
   if (changeCount > 1) {
