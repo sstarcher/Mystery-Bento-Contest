@@ -23,8 +23,8 @@ folder.
   crossing and winner state.
 
 `source/images/obstacles/` contains the 11 uploaded obstacle illustrations used
-by the race catalog. The tea-puddle and moon-reflection behaviors share one
-combined source image.
+by the race catalog. The tea-puddle and moon-reflection behaviors share the
+tea-puddle source image.
 
 The extracted and optimized image files used by the app live in
 `src/assets/derived/contestants/`, grouped by role and named by contestant.
