@@ -2198,25 +2198,19 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
                    ? `${step}-${laneCurrentObstacle?.id ?? 'jump'}`
                    : step;
                 const isWinner = (winner?.id ?? race.winnerId) === persona.id;
-                 const finishCrossingActive = isWinner && step === 'finale' && finishLineVisible && !finishCrossed;
-                 const finishCrossingDuration = Math.max(
-                   1,
-                   getRaceFinishCrossingOffset(prefersReducedMotion) - getRaceFinishVisibleOffset(prefersReducedMotion),
-                 );
                  const runnerScreenAnchor = isWinner && (step === 'winner' || finishCrossed)
                    ? 'var(--race-finish-anchor)'
                   : formatRunnerAnchor(currentRunnerAnchors[index]);
                  return (
                    <div className="race-runner-lane" key={persona.id} data-persona-id={persona.id} data-runner-reaction={runnerReaction}>
                     <div
-                      className={`race-runner ${finishCrossingActive ? 'is-finish-crossing' : ''}`}
+                       className="race-runner"
                       style={{
                         '--race-intro-anchor': formatRunnerAnchor(stageRunnerAnchors.intro[index]),
                         '--race-warmup-anchor': formatRunnerAnchor(stageRunnerAnchors.warmup[index]),
                         '--race-matchup-anchor': formatRunnerAnchor(stageRunnerAnchors.matchup[index]),
                         '--race-finale-anchor': formatRunnerAnchor(stageRunnerAnchors.finale[index]),
                         '--race-runner-anchor': runnerScreenAnchor,
-                        '--race-finish-crossing-duration': `${finishCrossingDuration}ms`,
                       } as CSSProperties}
                     >
                       <span className="race-runner-sprite">

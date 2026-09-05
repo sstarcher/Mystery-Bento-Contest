@@ -188,8 +188,8 @@ assert.equal(
   'unavailable audio should use the same deterministic timing fallback as muted audio',
 );
 assert.ok(
-  RACE_RUNNER_PRESENTATION_TOP_PX >= 510,
-  'runner presentation should move down by about 100px from the original lower-half layout',
+  RACE_RUNNER_PRESENTATION_TOP_PX <= 490,
+  'runner presentation should move up by about 20px from the lower-half layout',
 );
 assert.ok(
   RACE_RUNNER_PRESENTATION_TOP_PX
@@ -197,6 +197,10 @@ assert.ok(
     - 64
     + RACE_RUNNER_NORMALIZED_BASELINE_MAX_PX <= 800,
   'the lowest three-runner normalized baseline should remain inside the fixed race canvas',
+);
+assert.ok(
+  RACE_RUNNER_LANE_HEIGHT_PX >= 77,
+  'runner lanes should keep a little more vertical separation',
 );
 
 const checkpointLane: RaceTimelineLane = {
