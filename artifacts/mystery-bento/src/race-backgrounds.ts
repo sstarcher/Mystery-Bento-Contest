@@ -33,16 +33,16 @@ export const RACE_BACKGROUND_SEQUENCE: RaceBackgroundScene[] = [
   {
     id: 'evening-market',
     file: 'race-background-03-evening-market.webp',
-    sourceAsset: 'scene3-evening-market_1788636506195.webp',
-    label: 'evening market',
-    aspectRatio: 7144 / 2592,
+    sourceAsset: 'scene3-updated_1788637581138.webp',
+    label: 'village road market',
+    aspectRatio: 6260 / 2592,
   },
   {
     id: 'lantern-crossing',
     file: 'race-background-04-lantern-crossing.webp',
-    sourceAsset: 'asset_DLD3nhkVhXHv2FawintnVK94_Use_the_attached_image_only_as__1788143277474.png',
-    label: 'lantern crossing',
-    aspectRatio: 6048 / 2592,
+    sourceAsset: 'scene4_1788637581139.webp',
+    label: 'bamboo lantern crossing',
+    aspectRatio: 7172 / 2593,
   },
   {
     id: 'central-stall',

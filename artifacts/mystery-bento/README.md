@@ -117,7 +117,7 @@ and browser-delivered runtime assets separate.
 
 | Location | Count | Purpose | Status |
 | --- | ---: | --- | --- |
-| `assets/source/images/` | 49 | Character, race-background, obstacle, and runner-action art uploads | Source archive |
+| `assets/source/images/` | 51 | Character, race-background, obstacle, and runner-action art uploads | Source archive |
 | `assets/source/audio/` | 85 | Original announcer recordings for active runtime families | Source archive |
 | `src/assets/derived/contestants/portraits/` | 12 | Opaque contestant portraits | Active imports |
 | `src/assets/derived/contestants/movement/` | 72 | 12 contestants × 6 transparent movement sheets | Active imports |
@@ -143,8 +143,8 @@ and browser-delivered runtime assets separate.
   moon-reflection art.
 - **6 race backgrounds**: opaque WebP derivatives rendered at their source
   proportions. They render in this fixed order: village market street, tea
-  stall crossing, evening market, lantern crossing, central stall, and
-  moonlit pavilion destination. The original uploaded panoramas remain
+  stall crossing, village road market, bamboo lantern crossing, central stall,
+  and moonlit pavilion destination. The original uploaded panoramas remain
   preserved in the source archive.
 - **6 sushi plates** and **3 Pip keepsakes**: transparent `2048 × 2048` and
   `160 × 160` PNGs respectively, under `public/runtime/images/`.
