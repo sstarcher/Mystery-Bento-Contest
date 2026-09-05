@@ -45,13 +45,6 @@ export const RACE_BACKGROUND_SEQUENCE: RaceBackgroundScene[] = [
     aspectRatio: 7172 / 2593,
   },
   {
-    id: 'central-stall',
-    file: 'race-background-05-central-stall.webp',
-    sourceAsset: 'asset_JLExZCGvnw6NywtZamvCsBXu_Use_the_attached_image_only_as__1788143277474.png',
-    label: 'central stall',
-    aspectRatio: 6048 / 2592,
-  },
-  {
     id: 'moonlit-pavilion',
     file: 'race-background-06-pavilion-destination.webp',
     sourceAsset: 'asset_mqEPbJkj88U6xZzrAaQh62rA_Use_the_attached_image_only_as__1788143277474.png',

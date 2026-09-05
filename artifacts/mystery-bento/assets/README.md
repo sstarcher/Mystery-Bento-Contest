@@ -18,7 +18,7 @@ folder.
 
 - The original high-resolution race scenes are preserved here. The active
   deterministic course order starts with `scene1_...`, `scene2_...`,
-  `scene3-updated_...`, `scene4_...`, `asset_JLEx...`, then `asset_mqEP...`.
+  `scene3-updated_...`, `scene4_...`, then `asset_mqEP...`.
 - The earlier lantern-gate and garden-market uploads remain preserved as
   inactive source material.
 - The previous transparent-edge `scene1_...` upload remains preserved as
@@ -28,6 +28,8 @@ folder.
 - The previous `scene3-evening-market_...` and `asset_DLD...` uploads remain
   preserved as inactive source material; the latest scene 3 and scene 4
   uploads are now active.
+- The former scene 5 `asset_JLEx...` upload remains preserved as inactive source
+  material after being removed from the active course.
 - `asset_mqEP...` is the final moonlit-pavilion destination used for the finish
   crossing and winner state.
 
@@ -57,7 +59,7 @@ transparent cutouts and sprite sheets are derived later in the pipeline.
 - 51 source images are preserved here: one character sheet, 14 race
   backgrounds, 12 obstacle illustrations, and 24 runner-action sheets.
 - The app currently has 12 portraits, 72 movement sheets, 12 public cooking
-  sheets, six
+  sheets, five
   race-background WebPs, six sushi plates, three Pip keepsakes, and 36 active
   image-backed curios.
 - `assets/review/unused/derived/contestants/cooking/` contains the 30 extracted

@@ -122,7 +122,7 @@ and browser-delivered runtime assets separate.
 | `src/assets/derived/contestants/portraits/` | 12 | Opaque contestant portraits | Active imports |
 | `src/assets/derived/contestants/movement/` | 72 | 12 contestants × 6 transparent movement sheets | Active imports |
 | `src/assets/derived/curios/` | 33 | Three independent curio derivatives for 11 non-Pip contestants | Active imports |
-| `public/runtime/images/` | 28 | Race backgrounds, obstacle art, plates, keepsakes, and restaurant art | Active browser assets |
+| `public/runtime/images/` | 27 | Race backgrounds, obstacle art, plates, keepsakes, and restaurant art | Active browser assets |
 | `public/runtime/video/cooking/` | 12 | Winner cooking sprite sheets | Active browser assets |
 | `public/runtime/audio/` | 69 | 68 selected announcer clips plus one Pip listening preview | Active browser assets |
 | `assets/review/unused/` | 18 | Confirmed unused audio candidates awaiting review | Not shipped |
@@ -141,11 +141,11 @@ and browser-delivered runtime assets separate.
 - **12 obstacle images**: transparent pixel-art runtime derivatives in
   `public/runtime/images/obstacles/`, including separate tea-puddle and
   moon-reflection art.
-- **6 race backgrounds**: opaque WebP derivatives rendered at their source
+- **5 race backgrounds**: opaque WebP derivatives rendered at their source
   proportions. They render in this fixed order: village market street, tea
-  stall crossing, village road market, bamboo lantern crossing, central stall,
-  and moonlit pavilion destination. The original uploaded panoramas remain
-  preserved in the source archive.
+  stall crossing, village road market, bamboo lantern crossing, and moonlit
+  pavilion destination. The removed central-stall panorama remains preserved in
+  the source archive.
 - **6 sushi plates** and **3 Pip keepsakes**: transparent `2048 × 2048` and
   `160 × 160` PNGs respectively, under `public/runtime/images/`.
 - **Restaurant backdrop**: `public/runtime/images/restaurant/background.png`.
