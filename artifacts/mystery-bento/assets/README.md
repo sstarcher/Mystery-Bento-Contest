@@ -21,6 +21,8 @@ folder.
   `scene3_...`, `asset_DLD...`, `asset_JLEx...`, then `asset_mqEP...`.
 - The earlier lantern-gate and garden-market uploads remain preserved as
   inactive source material.
+- The previous uncropped `scene2_...` upload also remains preserved as inactive
+  source material; the cropped `scene2-cropped_...` upload is now active.
 - `asset_mqEP...` is the final moonlit-pavilion destination used for the finish
   crossing and winner state.
 
@@ -47,7 +49,7 @@ transparent cutouts and sprite sheets are derived later in the pipeline.
 
 ## Image audit status
 
-- 46 source images are preserved here: one character sheet, nine race
+- 47 source images are preserved here: one character sheet, 10 race
   backgrounds, 12 obstacle illustrations, and 24 runner-action sheets.
 - The app currently has 12 portraits, 72 movement sheets, 12 public cooking
   sheets, six

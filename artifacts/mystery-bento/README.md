@@ -117,7 +117,7 @@ and browser-delivered runtime assets separate.
 
 | Location | Count | Purpose | Status |
 | --- | ---: | --- | --- |
-| `assets/source/images/` | 46 | Character, race-background, obstacle, and runner-action art uploads | Source archive |
+| `assets/source/images/` | 47 | Character, race-background, obstacle, and runner-action art uploads | Source archive |
 | `assets/source/audio/` | 85 | Original announcer recordings for active runtime families | Source archive |
 | `src/assets/derived/contestants/portraits/` | 12 | Opaque contestant portraits | Active imports |
 | `src/assets/derived/contestants/movement/` | 72 | 12 contestants × 6 transparent movement sheets | Active imports |

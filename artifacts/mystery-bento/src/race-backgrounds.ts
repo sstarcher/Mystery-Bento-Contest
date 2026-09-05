@@ -26,9 +26,9 @@ export const RACE_BACKGROUND_SEQUENCE: RaceBackgroundScene[] = [
   {
     id: 'tea-stall-crossing',
     file: 'race-background-02-tea-stall-crossing.webp',
-    sourceAsset: 'scene2_1788633561855.webp',
+    sourceAsset: 'scene2-cropped_1788635658507.webp',
     label: 'tea stall crossing',
-    aspectRatio: 7000 / 2592,
+    aspectRatio: 6132 / 2592,
   },
   {
     id: 'evening-market',
