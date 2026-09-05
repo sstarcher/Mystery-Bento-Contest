@@ -117,7 +117,7 @@ and browser-delivered runtime assets separate.
 
 | Location | Count | Purpose | Status |
 | --- | ---: | --- | --- |
-| `assets/source/images/` | 43 | Character, race-background, obstacle, and runner-action art uploads | Source archive |
+| `assets/source/images/` | 46 | Character, race-background, obstacle, and runner-action art uploads | Source archive |
 | `assets/source/audio/` | 85 | Original announcer recordings for active runtime families | Source archive |
 | `src/assets/derived/contestants/portraits/` | 12 | Opaque contestant portraits | Active imports |
 | `src/assets/derived/contestants/movement/` | 72 | 12 contestants × 6 transparent movement sheets | Active imports |
@@ -141,10 +141,10 @@ and browser-delivered runtime assets separate.
 - **12 obstacle images**: transparent pixel-art runtime derivatives in
   `public/runtime/images/obstacles/`, including separate tea-puddle and
   moon-reflection art.
-- **6 race backgrounds**: `1600 × 686` opaque WebP derivatives of the six
-  `6048 × 2592` source panoramas. They render in this fixed order:
-  lantern gate market, garden market, night alley, lantern crossing, central
-  stall, and moonlit pavilion destination.
+- **6 race backgrounds**: `1600 × 686` opaque WebP derivatives. They render in
+  this fixed order: village market street, tea stall crossing, evening market,
+  lantern crossing, central stall, and moonlit pavilion destination. The
+  original uploaded panoramas remain preserved in the source archive.
 - **6 sushi plates** and **3 Pip keepsakes**: transparent `2048 × 2048` and
   `160 × 160` PNGs respectively, under `public/runtime/images/`.
 - **Restaurant backdrop**: `public/runtime/images/restaurant/background.png`.

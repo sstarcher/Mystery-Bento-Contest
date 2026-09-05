@@ -16,9 +16,11 @@ folder.
 
 `source/images/race-backgrounds/`
 
-- The six original high-resolution race scenes are preserved here in the
-  deterministic course order: `asset_Jg8...`, `asset_HZMG...`, `asset_5ja...`,
-  `asset_DLD...`, `asset_JLEx...`, then `asset_mqEP...`.
+- The original high-resolution race scenes are preserved here. The active
+  deterministic course order starts with `scene1_...`, `scene2_...`,
+  `scene3_...`, `asset_DLD...`, `asset_JLEx...`, then `asset_mqEP...`.
+- The earlier lantern-gate and garden-market uploads remain preserved as
+  inactive source material.
 - `asset_mqEP...` is the final moonlit-pavilion destination used for the finish
   crossing and winner state.
 
@@ -31,17 +33,18 @@ The extracted and optimized image files used by the app live in
 `src/assets/derived/contestants/`, grouped by role and named by contestant.
 
 The race uses reduced, pixel-crisp WebP derivatives from
-`public/runtime/images/race-backgrounds/`; the six source PNG uploads remain available above
+`public/runtime/images/race-backgrounds/`; source uploads remain available above
 for future editing and are not shipped to the browser.
 
-The six source panoramas are `6048 × 2592` opaque PNGs. Their active runtime
-derivatives are `1600 × 686` opaque WebPs. The source character sheets are also
-opaque flattened uploads; transparent cutouts and sprite sheets are derived
-later in the pipeline.
+The active runtime race derivatives are `1600 × 686` opaque WebPs. The two new
+source panoramas are preserved at their uploaded dimensions, while the earlier
+source scenes remain available for future editing. The source character sheets
+are also opaque flattened uploads; transparent cutouts and sprite sheets are
+derived later in the pipeline.
 
 ## Image audit status
 
-- 43 source images are preserved here: one character sheet, six race
+- 46 source images are preserved here: one character sheet, nine race
   backgrounds, 12 obstacle illustrations, and 24 runner-action sheets.
 - The app currently has 12 portraits, 72 movement sheets, 12 public cooking
   sheets, six

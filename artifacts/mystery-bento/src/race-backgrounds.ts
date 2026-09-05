@@ -13,22 +13,22 @@ export type RaceBackgroundScene = {
  */
 export const RACE_BACKGROUND_SEQUENCE: RaceBackgroundScene[] = [
   {
-    id: 'lantern-gate-market',
-    file: 'race-background-01-lantern-gate-market.webp',
-    sourceAsset: 'asset_Jg8Ss2V9g33aeiJ15DZcdqrS_Use_the_attached_image_only_as__1788143277473.png',
-    label: 'lantern gate market',
+    id: 'village-market',
+    file: 'race-background-01-village-market.webp',
+    sourceAsset: 'scene1_1788633612334.webp',
+    label: 'village market street',
   },
   {
-    id: 'garden-market',
-    file: 'race-background-02-garden-market.webp',
-    sourceAsset: 'asset_HZMGGFNr63MnSKVN7o6SG4Si_Use_the_attached_image_only_as__1788143277473.png',
-    label: 'garden market',
+    id: 'tea-stall-crossing',
+    file: 'race-background-02-tea-stall-crossing.webp',
+    sourceAsset: 'scene2_1788633561855.webp',
+    label: 'tea stall crossing',
   },
   {
-    id: 'night-alley',
-    file: 'race-background-03-night-alley.webp',
-    sourceAsset: 'asset_5ja66x7rCi6QGmXdcfFp9PkV_Use_the_attached_image_only_as__1788143277473.png',
-    label: 'night alley',
+    id: 'evening-market',
+    file: 'race-background-03-evening-market.webp',
+    sourceAsset: 'scene3_1788634669324.webp',
+    label: 'evening market',
   },
   {
     id: 'lantern-crossing',
