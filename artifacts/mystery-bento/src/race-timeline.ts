@@ -54,8 +54,8 @@ export const RACE_RUNNER_MAX_SPREAD_PERCENT = 64;
 export const RACE_RUNNER_VISUAL_START_PERCENT = 14;
 export const RACE_RUNNER_VISUAL_MAX_DISTANCE = 90;
 export const RACE_OBSTACLE_CONTACT_WINDOW_PERCENT = 11;
-export const RACE_RUNNER_PRESENTATION_TOP_PX = 410;
-export const RACE_RUNNER_LANE_HEIGHT_PX = 78;
+export const RACE_RUNNER_PRESENTATION_TOP_PX = 510;
+export const RACE_RUNNER_LANE_HEIGHT_PX = 67;
 export const RACE_RUNNER_NORMALIZED_BASELINE_MAX_PX = 220;
 
 export const RACE_STAGE_OBSTACLE_INDICES: Record<Exclude<RaceTimelineStage, 'intro' | 'winner'>, number[]> = {

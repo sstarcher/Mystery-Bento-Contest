@@ -2154,7 +2154,6 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
                 ))}
               </div>
               <div className="race-course-road">
-                <div className="race-finish-line" aria-hidden="true" />
                 {race.obstacles.map((obstacle) => (
                   <span
                     className={`race-obstacle race-obstacle-${obstacle.kind}`}
