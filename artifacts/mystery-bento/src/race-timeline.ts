@@ -20,7 +20,7 @@ export const RACE_STAGE_DURATIONS: Record<RaceTimelineStage, number> = {
   warmup: 7000,
   matchup: 8500,
   finale: 10100,
-  winner: 15200,
+  winner: 10640, // 30% shorter than the previous 15.2s winner reveal hold
 };
 export const RACE_RACE_DURATION_MS = RACE_STAGE_DURATIONS.warmup
   + RACE_STAGE_DURATIONS.matchup
@@ -54,8 +54,8 @@ export const RACE_RUNNER_MAX_SPREAD_PERCENT = 64;
 export const RACE_RUNNER_VISUAL_START_PERCENT = 14;
 export const RACE_RUNNER_VISUAL_MAX_DISTANCE = 90;
 export const RACE_OBSTACLE_CONTACT_WINDOW_PERCENT = 11;
-export const RACE_RUNNER_PRESENTATION_TOP_PX = 490;
-export const RACE_RUNNER_LANE_HEIGHT_PX = 77;
+export const RACE_RUNNER_PRESENTATION_TOP_PX = 470;
+export const RACE_RUNNER_LANE_HEIGHT_PX = 87;
 export const RACE_RUNNER_NORMALIZED_BASELINE_MAX_PX = 220;
 
 export const RACE_STAGE_OBSTACLE_INDICES: Record<Exclude<RaceTimelineStage, 'intro' | 'winner'>, number[]> = {

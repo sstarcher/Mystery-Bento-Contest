@@ -863,8 +863,8 @@
 .race-course-viewport { --race-finish-anchor: 88%; height: 100%; border: 0; }
 /* Bento Dash presentation: oversized runners cluster in the lower half of the
    fixed canvas while the authored lane order and race positions stay intact. */
-.race-course-road, .race-runner-overlay { padding-top: 490px; }
-.race-lane, .race-runner-lane { height: 77px; }
+.race-course-road, .race-runner-overlay { padding-top: 470px; }
+.race-lane, .race-runner-lane { height: 87px; }
 .race-lane::before, .race-lane::after { display: none; }
 .race-runner { top: -64px; width: 216px; height: 216px; }
 .race-runner-sprite, .race-movement-sprite { width: 216px; height: 216px; }
