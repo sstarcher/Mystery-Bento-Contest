@@ -117,12 +117,12 @@ and browser-delivered runtime assets separate.
 
 | Location | Count | Purpose | Status |
 | --- | ---: | --- | --- |
-| `assets/source/images/` | 18 | Character, race-background, and obstacle art uploads | Source archive |
+| `assets/source/images/` | 19 | Character, race-background, and obstacle art uploads | Source archive |
 | `assets/source/audio/` | 85 | Original announcer recordings for active runtime families | Source archive |
 | `src/assets/derived/contestants/portraits/` | 12 | Opaque contestant portraits | Active imports |
 | `src/assets/derived/contestants/movement/` | 48 | 12 contestants × 4 transparent movement sheets | Active imports |
 | `src/assets/derived/curios/` | 33 | Three independent curio derivatives for 11 non-Pip contestants | Active imports |
-| `public/runtime/images/` | 27 | Race backgrounds, obstacle art, plates, keepsakes, and restaurant art | Active browser assets |
+| `public/runtime/images/` | 28 | Race backgrounds, obstacle art, plates, keepsakes, and restaurant art | Active browser assets |
 | `public/runtime/video/cooking/` | 12 | Winner cooking sprite sheets | Active browser assets |
 | `public/runtime/audio/` | 69 | 68 selected announcer clips plus one Pip listening preview | Active browser assets |
 | `assets/review/unused/` | 18 | Confirmed unused audio candidates awaiting review | Not shipped |
@@ -137,9 +137,9 @@ and browser-delivered runtime assets separate.
 - **12 cooking sheets**: transparent public sprite sheets used for winner
   cooking reveals. The sprite audit covers all 12 cooking sheets and all 48
   movement sheets.
-- **11 obstacle images**: transparent pixel-art runtime derivatives in
-  `public/runtime/images/obstacles/`. The tea-puddle and moon-reflection
-  behaviors intentionally reuse `tea-puddle-moon-reflection.png`.
+- **12 obstacle images**: transparent pixel-art runtime derivatives in
+  `public/runtime/images/obstacles/`, including separate tea-puddle and
+  moon-reflection art.
 - **6 race backgrounds**: `1600 × 686` opaque WebP derivatives of the six
   `6048 × 2592` source panoramas. They render in this fixed order:
   lantern gate market, garden market, night alley, lantern crossing, central

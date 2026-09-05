@@ -22,9 +22,8 @@ folder.
 - `asset_mqEP...` is the final moonlit-pavilion destination used for the finish
   crossing and winner state.
 
-`source/images/obstacles/` contains the 11 uploaded obstacle illustrations used
-by the race catalog. The tea-puddle and moon-reflection behaviors share the
-tea-puddle source image.
+`source/images/obstacles/` contains the 12 uploaded obstacle illustrations used
+by the race catalog. Tea-puddle and moon-reflection are separate source images.
 
 The extracted and optimized image files used by the app live in
 `src/assets/derived/contestants/`, grouped by role and named by contestant.
@@ -40,8 +39,8 @@ later in the pipeline.
 
 ## Image audit status
 
-- 18 source images are preserved here: one character sheet, six race
-  backgrounds, and 11 obstacle illustrations.
+- 19 source images are preserved here: one character sheet, six race
+  backgrounds, and 12 obstacle illustrations.
 - The app currently has 12 portraits, 48 movement sheets, 12 public cooking
   sheets, six
   race-background WebPs, six sushi plates, three Pip keepsakes, and 36 active
