@@ -15,6 +15,7 @@ import {
   RACE_LAST_CONTESTANT_PAUSE_MS,
   RACE_MATCHUP_WORLD_END_PERCENT,
   RACE_OBSTACLE_CONTACT_WINDOW_PERCENT,
+  RACE_RACE_DURATION_MS,
   RACE_RUNNER_MAX_SPREAD_PERCENT,
   RACE_RUNNER_SCREEN_MAX_PERCENT,
   RACE_RUNNER_SCREEN_MIN_PERCENT,
@@ -32,6 +33,7 @@ import {
   type RaceTimelineStage,
 } from './race-timeline';
 import { getMovementSpriteRenderStyle, movementSpriteNormalization } from './movement-sprite-normalization';
+import { getContinuousRunnerPosition } from './race-speed-model';
 
 const obstacles: RaceTimelineObstacle[] = [
   { id: 'napkin', position: 18 },
@@ -277,6 +279,92 @@ assert.equal(
         * Math.min(1, Math.max(0, elapsedMs / RACE_STAGE_DURATIONS.warmup)),
   ),
   'identical lane inputs should resolve contact timing deterministically',
+);
+
+const resolvedContest = {
+  winnerId: 'runner-b',
+  collectibleId: 'runner-b-curio',
+};
+const resolvedWinnerLane: RaceTimelineLane = {
+  positions: { intro: 9, warmup: 31, matchup: 55, finale: 78, winner: 82 },
+  encounters: {},
+};
+const stagedNonWinnerLane: RaceTimelineLane = {
+  positions: { intro: 11, warmup: 34, matchup: 58, finale: 84, winner: 94 },
+  encounters: {},
+};
+const resolvedWinnerProfile = {
+  startPosition: resolvedWinnerLane.positions.intro,
+  baseSpeedMultiplier: 1.02,
+  events: [],
+};
+const normalResolvedWinnerPosition = getContinuousRunnerPosition(
+  resolvedWinnerProfile,
+  RACE_RACE_DURATION_MS,
+  RACE_FINALE_WORLD_END_PERCENT,
+  RACE_RACE_DURATION_MS,
+);
+const reducedResolvedWinnerPosition = getRaceLaneProgressAtTime(
+  'winner',
+  resolvedWinnerLane,
+  obstacles,
+  0,
+  true,
+);
+const getFinishSnapshot = (prefersReducedMotion: boolean) => ({
+  winnerId: resolvedContest.winnerId,
+  collectibleId: resolvedContest.collectibleId,
+  finishCrossed: getRaceFinishCrossingOffset(prefersReducedMotion) >= 0,
+  winnerPosition: prefersReducedMotion
+    ? reducedResolvedWinnerPosition
+    : normalResolvedWinnerPosition,
+  worldTravel: getRaceWorldTravelPercentAtTime('winner', 0, prefersReducedMotion),
+});
+const normalFinishSnapshot = getFinishSnapshot(false);
+const reducedFinishSnapshot = getFinishSnapshot(true);
+assert.deepEqual(
+  {
+    winnerId: reducedFinishSnapshot.winnerId,
+    collectibleId: reducedFinishSnapshot.collectibleId,
+    finishCrossed: reducedFinishSnapshot.finishCrossed,
+  },
+  {
+    winnerId: normalFinishSnapshot.winnerId,
+    collectibleId: normalFinishSnapshot.collectibleId,
+    finishCrossed: normalFinishSnapshot.finishCrossed,
+  },
+  'reduced motion should preserve the resolved winner, finish state, and collectible result',
+);
+assert.equal(
+  reducedFinishSnapshot.winnerPosition,
+  resolvedWinnerLane.positions.winner,
+  'reduced motion should reveal the resolved winner at its authored finish position',
+);
+assert.equal(
+  getRaceLaneProgressAtTime('winner', stagedNonWinnerLane, obstacles, 0, true),
+  stagedNonWinnerLane.positions.winner,
+  'reduced motion should keep staged finish positions readable for every lane',
+);
+assert.equal(
+  reducedFinishSnapshot.worldTravel,
+  RACE_FINALE_WORLD_END_PERCENT,
+  'reduced motion should still reveal the completed course state',
+);
+const reducedStageSnapshots = (['warmup', 'matchup', 'finale'] as const).map((stage) => (
+  getRaceLaneProgressAtTime(stage, resolvedWinnerLane, obstacles, 0, true)
+));
+assert.deepEqual(
+  reducedStageSnapshots,
+  [
+    resolvedWinnerLane.positions.warmup,
+    resolvedWinnerLane.positions.matchup,
+    resolvedWinnerLane.positions.finale,
+  ],
+  'reduced motion should expose readable authored snapshots for every race stage',
+);
+assert.ok(
+  normalFinishSnapshot.winnerPosition >= 4 && normalFinishSnapshot.winnerPosition <= 96,
+  'normal motion should preserve a bounded continuous finish position',
 );
 
 const parseAnchors = (anchors: number[]) => anchors.map((anchor) => Number(anchor.toFixed(3)));

@@ -39,6 +39,12 @@ Visual spectacle should always have a readable staged fallback when reduced moti
 
 **How to apply:** Keep the important item, race stage, and winner state in the DOM and use CSS motion only to amplify those states.
 
+Reduced-motion presentation may change race timing and staged positions, but it must preserve the normal path's resolved winner, finish completion, and collectible result.
+
+**Why:** Accessibility presentation is a different view of the same contest, not a second contest resolution.
+
+**How to apply:** Resolve the contest once before motion begins, reuse its winner/reward identity in both paths, and test each reduced stage snapshot plus the final state against that shared resolution.
+
 The open-kitchen center is reserved for its current state: the Japanese return sign before the first contest, or the latest winner’s chef station afterward. Enlarged wall curios should remain on the side rails.
 
 **Why:** The wall curios were scaled up for readability, which can otherwise make the central kitchen story collide with the sign or chef.
