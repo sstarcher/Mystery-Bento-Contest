@@ -42,7 +42,7 @@ import saffyPlatingTweezers from './assets/derived/curios/saffy-plating-tweezers
 import saffyPresentationFan from './assets/derived/curios/saffy-presentation-fan.png';
 import { getMovementSpriteSheet, type MovementAction } from './movement-sprite-config';
 import { getMovementSpriteRenderStyle } from './movement-sprite-normalization';
-import { RACE_BACKGROUND_SEQUENCE } from './race-backgrounds';
+import { RACE_BACKGROUND_SEQUENCE, RACE_BACKGROUND_TRACK_WIDTH_PX } from './race-backgrounds';
 import { CURIO_ART_FIT_SCALE, getCurioArtProfile, type CurioArtProfile } from './curio-art-sizing';
 import {
   CURIO_SHELF_GRID,
@@ -2167,7 +2167,10 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
           <div className="race-course-viewport">
             <div
               className="race-world-track"
-              style={{ transform: `translateX(-${worldTravelPercent}%)` }}
+              style={{
+                width: `${RACE_BACKGROUND_TRACK_WIDTH_PX}px`,
+                transform: `translateX(-${worldTravelPercent}%)`,
+              }}
               data-world-travel-percent={worldTravelPercent.toFixed(3)}
             >
               <div className="race-scenery-track" aria-hidden="true">
@@ -2177,6 +2180,7 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
                     key={scene.id}
                     data-scene-id={scene.id}
                     data-destination={scene.isDestination || undefined}
+                    style={{ '--race-scene-aspect-ratio': scene.aspectRatio } as CSSProperties}
                   >
                     <img
                       className="race-scenery-image"

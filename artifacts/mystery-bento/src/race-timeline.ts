@@ -1,3 +1,8 @@
+import {
+  RACE_BACKGROUND_FINISH_TRAVEL_PERCENT,
+  RACE_BACKGROUND_TRACK_WIDTH_MULTIPLIER,
+} from './race-backgrounds';
+
 export type RaceTimelineStage = 'intro' | 'warmup' | 'matchup' | 'finale' | 'winner';
 export type RaceTimelineEncounterResult = 'clear' | 'slow' | 'surge' | 'reroute';
 export type RaceTimelineObstacle = { id: string; position: number };
@@ -39,8 +44,8 @@ export const RACE_STAGE_OFFSETS: Record<RaceTimelineStage, number> = {
 
 export const RACE_LAST_CONTESTANT_PAUSE_MS = 1000;
 
-export const RACE_WORLD_TRACK_WIDTH_MULTIPLIER = 6;
-export const RACE_FINALE_WORLD_END_PERCENT = 83.333;
+export const RACE_WORLD_TRACK_WIDTH_MULTIPLIER = RACE_BACKGROUND_TRACK_WIDTH_MULTIPLIER;
+export const RACE_FINALE_WORLD_END_PERCENT = RACE_BACKGROUND_FINISH_TRAVEL_PERCENT;
 export const RACE_WARMUP_WORLD_END_PERCENT = RACE_FINALE_WORLD_END_PERCENT
   * RACE_STAGE_DURATIONS.warmup
   / RACE_RACE_DURATION_MS;

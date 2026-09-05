@@ -464,8 +464,8 @@
 .race-course-viewport { --race-finish-anchor: 88%; position: relative; height: 324px; overflow: hidden; border: 2px solid rgba(245,201,104,.22); background: #3a2940; isolation: isolate; }
 .race-course-viewport::before { content: ''; position: absolute; inset: 0; z-index: 1; pointer-events: none; }
 .race-world-track { position: absolute; inset: 0 auto 0 0; z-index: 0; width: 600%; height: 100%; transform: translateX(0); }
-.race-scenery-track { position: absolute; inset: 0; z-index: 0; display: flex; width: 100%; }
-.race-scenery-panel { position: relative; flex: 0 0 calc(100% / 6); min-width: 0; overflow: hidden; }
+.race-scenery-track { position: absolute; inset: 0; z-index: 0; display: flex; width: max-content; }
+.race-scenery-panel { position: relative; flex: 0 0 auto; height: 100%; aspect-ratio: var(--race-scene-aspect-ratio); min-width: 0; overflow: hidden; }
 .race-scenery-image { position: absolute; inset: 0; display: block; width: 100%; height: 100%; object-fit: fill; object-position: center bottom; image-rendering: pixelated; user-select: none; }
 .race-course-road { position: absolute; inset: 0; z-index: 2; width: 100%; padding-top: 165px; }
 .race-lane { position: relative; height: 36px; }

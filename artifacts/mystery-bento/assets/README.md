@@ -34,13 +34,16 @@ The extracted and optimized image files used by the app live in
 
 The race uses reduced, pixel-crisp WebP derivatives from
 `public/runtime/images/race-backgrounds/`; source uploads remain available above
-for future editing and are not shipped to the browser.
+for future editing and are not shipped to the browser. The runtime scene
+panels now preserve each panorama's native aspect ratio, so wide uploads are
+given a wider segment of the course instead of being squeezed into a common
+frame.
 
-The active runtime race derivatives are `1600 × 686` opaque WebPs. The two new
-source panoramas are preserved at their uploaded dimensions, while the earlier
-source scenes remain available for future editing. The source character sheets
-are also opaque flattened uploads; transparent cutouts and sprite sheets are
-derived later in the pipeline.
+The active runtime race derivatives are reduced opaque WebPs with each scene's
+source aspect ratio preserved. The uploaded source panoramas remain at their
+original dimensions, while the earlier source scenes remain available for
+future editing. The source character sheets are also opaque flattened uploads;
+transparent cutouts and sprite sheets are derived later in the pipeline.
 
 ## Image audit status
 

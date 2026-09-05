@@ -141,10 +141,11 @@ and browser-delivered runtime assets separate.
 - **12 obstacle images**: transparent pixel-art runtime derivatives in
   `public/runtime/images/obstacles/`, including separate tea-puddle and
   moon-reflection art.
-- **6 race backgrounds**: `1600 × 686` opaque WebP derivatives. They render in
-  this fixed order: village market street, tea stall crossing, evening market,
-  lantern crossing, central stall, and moonlit pavilion destination. The
-  original uploaded panoramas remain preserved in the source archive.
+- **6 race backgrounds**: opaque WebP derivatives rendered at their source
+  proportions. They render in this fixed order: village market street, tea
+  stall crossing, evening market, lantern crossing, central stall, and
+  moonlit pavilion destination. The original uploaded panoramas remain
+  preserved in the source archive.
 - **6 sushi plates** and **3 Pip keepsakes**: transparent `2048 × 2048` and
   `160 × 160` PNGs respectively, under `public/runtime/images/`.
 - **Restaurant backdrop**: `public/runtime/images/restaurant/background.png`.

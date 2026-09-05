@@ -245,8 +245,8 @@ assert.equal(
 );
 assert.equal(
   getRaceWorldScreenAnchor(50, 40),
-  `${(50 - 40) * RACE_WORLD_TRACK_WIDTH_MULTIPLIER}.000%`,
-  'full-width race projection should use the six-panel world track',
+  `${((50 - 40) * RACE_WORLD_TRACK_WIDTH_MULTIPLIER).toFixed(3)}%`,
+  'full-width race projection should use the proportional panorama track',
 );
 
 const contactLane = lineups[0][0];
