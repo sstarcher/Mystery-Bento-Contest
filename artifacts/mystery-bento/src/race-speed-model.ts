@@ -13,14 +13,14 @@ export type ContinuousRunnerProfile = {
   events: RunnerSpeedEvent[];
 };
 
-export const RUNNER_SLOW_SPEED_MULTIPLIER = 0.68;
-export const RUNNER_REROUTE_SPEED_MULTIPLIER = 0.8;
-export const RUNNER_SURGE_SPEED_MULTIPLIER = 1.32;
-export const RUNNER_SLOW_DURATION_MS = 1500;
-export const RUNNER_REROUTE_DURATION_MS = 1050;
-export const RUNNER_SURGE_DURATION_MS = 1200;
+export const RUNNER_SLOW_SPEED_MULTIPLIER = 0.54;
+export const RUNNER_REROUTE_SPEED_MULTIPLIER = 0.68;
+export const RUNNER_SURGE_SPEED_MULTIPLIER = 1.4;
+export const RUNNER_SLOW_DURATION_MS = 3600;
+export const RUNNER_REROUTE_DURATION_MS = 3000;
+export const RUNNER_SURGE_DURATION_MS = 3200;
 export const RUNNER_WALK_THRESHOLD = 0.86;
-export const RUNNER_EVENT_DISTANCE_GAIN = 2.4;
+export const RUNNER_EVENT_DISTANCE_GAIN = 2.8;
 
 function getEventDuration(result: RunnerSpeedEventResult) {
   if (result === 'slow') return RUNNER_SLOW_DURATION_MS;
