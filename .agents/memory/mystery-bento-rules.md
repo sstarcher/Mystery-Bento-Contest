@@ -15,6 +15,12 @@ Contest results must be resolved once per contest session and reused by animatio
 
 **How to apply:** Resolve contestants, winner, event, and collectible choice before the visual sequence begins, then guard completion side effects against duplicate calls.
 
+Each new contest uses exactly three eligible personas and excludes the latest ledger winner from that roster.
+
+**Why:** Keeping the previous winner out creates a clear rematch-free handoff between stories while preserving a consistent three-lane race format.
+
+**How to apply:** Filter the most recent ledger winner before deterministic shuffling, then take three unique contestants; keep the resolved winner within that selected trio.
+
 The race-start handoff is authoritative for when movement begins, but post-handoff runner movement is continuous rather than stage-owned; narrative stages remain presentation beats.
 
 **Why:** A stage-driven walk/run switch made movement feel artificial: every racer walked during warm-up and ran during matchup regardless of obstacle impact. The course now travels at a stable reference pace while stat and obstacle modifiers move each runner relative to it.

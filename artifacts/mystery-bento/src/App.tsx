@@ -65,6 +65,7 @@ import {
   type RaceTimelineCheckpoint,
 } from './race-timeline';
 import { resolveRaceEncounterResult } from './race-momentum';
+import { selectContestants } from './contest-roster';
 import {
   getContinuousRunnerPosition,
   getRunnerBaseSpeedMultiplier,
@@ -2349,7 +2350,9 @@ function Home() {
     if (contestOpen || contestQueued.current) return;
     contestQueued.current = true;
     setLiveStatus(message);
-    window.setTimeout(launchContest, speedUpDurationMs(520));
+    // Open the overlay on the same turn as the meter action so the announcer
+    // can begin its first clip immediately after the dialog mounts.
+    window.setTimeout(launchContest, speedUpDurationMs(0));
   };
 
   const cancelHold = () => {
@@ -2404,7 +2407,7 @@ function Home() {
 
   const launchContest = () => {
     const rng = createRng(Date.now() ^ Math.floor(Math.random() * 0xffffffff));
-    const selected = shuffleWithRng(spriteSheetContestants, rng).slice(0, rng() > 0.62 ? 4 : 3);
+    const selected = selectContestants(spriteSheetContestants, lastWinner?.id, rng, 3);
     const outcome = resolveContest(selected, rng);
     contestOutcome.current = outcome;
     completionGuard.current = false;
@@ -2458,8 +2461,7 @@ function Home() {
       setAcknowledgement('The bento hums warmly…');
       setLiveStatus('The bento hums warmly. The Mystery Bento Meter is full.');
       setMeterPulse(true);
-      contestQueued.current = true;
-      window.setTimeout(launchContest, speedUpDurationMs(520));
+      queueContest('The bento hums warmly. The Mystery Bento Meter is full.');
     }, speedUpDurationMs(1500));
   };
   const handleMeterKeyDown = (event: KeyboardEvent<HTMLDivElement>) => { if ((event.key === 'Enter' || event.key === ' ') && !event.repeat) { event.preventDefault(); startHold(); } };
