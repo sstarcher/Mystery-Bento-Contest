@@ -315,8 +315,8 @@
 .displayed-curio { position: absolute; display: grid; place-items: center; width: 86px; height: 80px; color: rgba(248,231,198,.9); isolation: isolate; }
 .displayed-curio .curio-art-box { transform: scale(1.08); }
 .displayed-curio .curio-place-label { display: none; }
-.restaurant-curio-shelf-grid { position: absolute; top: 177px; left: 60.5%; right: 4.5%; display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); grid-template-rows: repeat(2, minmax(0, 1fr)); height: 230px; align-items: center; justify-items: center; transform: translateX(5px); pointer-events: none; }
-.restaurant-curio-shelf-grid .displayed-curio { position: relative; inset: auto; width: 78px; height: 82px; transform: translate(-42px, 10px) scale(.7); transform-origin: center center; }
+.restaurant-curio-shelf-stage { position: absolute; top: 177px; left: 60.5%; right: 4.5%; display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); grid-template-rows: repeat(2, minmax(0, 1fr)); height: 230px; align-items: center; justify-items: center; transform: translateX(5px); pointer-events: none; }
+.restaurant-curio-shelf-stage .displayed-curio { position: relative; inset: auto; width: 78px; height: 82px; transform: translate(-42px, 10px) scale(.7); transform-origin: center center; }
 .displayed-curio-hanging-tools .curio-art-box { transform: scale(1.2) rotate(5deg); }
 .displayed-curio-hanging-tools .curio-info-card { top: calc(100% + 13px); bottom: auto; transform: translate(-50%, -8px); }
 .displayed-curio-hanging-tools .curio-info-card::after { top: -9px; bottom: auto; transform: translateX(-50%) rotate(225deg); }
@@ -636,9 +636,9 @@
   .displayed-curio { width: 54px; height: 58px; }
   .displayed-curio .curio-art-box { transform: scale(.76); margin: -3px 0; }
   .displayed-curio .curio-award-marker { top: 3px; right: 1px; }
-  .restaurant-curio-shelf-grid { top: 119px; left: 75%; right: auto; width: 150%; height: 196px; }
-  .restaurant-curio-shelf-grid .displayed-curio { width: 50px; height: 54px; }
-  .restaurant-curio-shelf-grid .curio-art-box { transform: scale(.76); margin: -3px 0; }
+   .restaurant-curio-shelf-stage { top: 119px; left: 75%; right: auto; width: 150%; height: 196px; }
+   .restaurant-curio-shelf-stage .displayed-curio { width: 50px; height: 54px; }
+   .restaurant-curio-shelf-stage .curio-art-box { transform: scale(.76); margin: -3px 0; }
   .background-shelf { width: 118px; height: 70px; gap: 3px; padding: 19px 6px 8px; border-width: 2px; }
   .background-shelf::before { top: 5px; left: 7px; right: 7px; }
   .background-shelf::after { right: -5px; bottom: -7px; left: -5px; height: 6px; border-width: 2px; }

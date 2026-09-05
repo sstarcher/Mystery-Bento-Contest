@@ -45,6 +45,13 @@ import { getMovementSpriteRenderStyle } from './movement-sprite-normalization';
 import { RACE_BACKGROUND_SEQUENCE } from './race-backgrounds';
 import { CURIO_ART_FIT_SCALE, getCurioArtProfile, type CurioArtProfile } from './curio-art-sizing';
 import {
+  CURIO_SHELF_GRID,
+  curioPlacementsEqual,
+  normalizeCurioPlacements,
+  reconcileCurioPlacements,
+  type CurioShelfPlacementMap,
+} from './curio-shelf-placements';
+import {
   getFirstRunnerObstacleHitOffset as getTimelineFirstRunnerObstacleHitOffset,
   getRaceFinishCrossingOffset,
   getRaceAnnouncementRevealOffsets,
@@ -181,6 +188,7 @@ const queryClient = new QueryClient();
 const METER_KEY = 'mystery-bento-meter';
 const LEDGER_KEY = 'mystery-bento-ledger';
 const CURIO_KEY = 'mystery-bento-curios';
+const CURIO_PLACEMENTS_KEY = 'mystery-bento-curio-placements';
 const VOICE_ANNOUNCER_KEY = 'mystery-bento-voice-announcer';
 const MOTION_SPEEDUP = 1.08;
 const speedUpDurationMs = (durationMs: number) => Math.max(1, Math.round(durationMs / MOTION_SPEEDUP));
@@ -1163,12 +1171,13 @@ function CurioInfoCard({ item }: { item: Collectible }) {
   );
 }
 
-function CurioHotspot({ item, className }: { item: Collectible; className: string }) {
+function CurioHotspot({ item, className, style }: { item: Collectible; className: string; style?: CSSProperties }) {
   const isLatest = className.includes('displayed-curio-latest');
   return (
     <button
       type="button"
       className={`curio-hotspot ${className}`}
+      style={style}
       aria-label={`View curio information for ${item.title}`}
       aria-describedby={`curio-info-${item.id}`}
     >
@@ -1493,21 +1502,38 @@ function MovementSprite({
   );
 }
 
-function RestaurantCurioDisplays({ collectibles }: { collectibles: Collectible[] }) {
+function getRestaurantShelfItems(collectibles: Collectible[]) {
   const pocketWatch = showcaseCollectibles.find((item) => item.id === 'pip-pocket-watch');
   const hasPocketWatch = collectibles.some((item) => item.id === 'pip-pocket-watch');
   const shelfCollectibles = pocketWatch && !hasPocketWatch ? [pocketWatch, ...collectibles] : collectibles;
   const byZone = (zone: CurioDisplayZone) => shelfCollectibles.filter((item) => getCurioDisplayZone(item) === zone).slice(0, 2);
-  const latestCurioId = collectibles[0]?.id;
-  const displayClass = (baseClass: string, item: Collectible) => `${baseClass}${item.id === latestCurioId ? ' displayed-curio-latest' : ''}${item.id === 'pip-pocket-watch' && !hasPocketWatch ? ' displayed-curio-showcase' : ''}`;
-  const shelfItems = (['house-keeps', 'tea-tools', 'spare-plates', 'little-finds', 'hanging-tools'] as CurioDisplayZone[])
+  return (['house-keeps', 'tea-tools', 'spare-plates', 'little-finds', 'hanging-tools'] as CurioDisplayZone[])
     .flatMap((zone) => byZone(zone));
+}
+
+function RestaurantCurioDisplays({ collectibles, placements }: { collectibles: Collectible[]; placements: CurioShelfPlacementMap }) {
+  const hasPocketWatch = collectibles.some((item) => item.id === 'pip-pocket-watch');
+  const latestCurioId = collectibles[0]?.id;
+  const shelfItems = getRestaurantShelfItems(collectibles);
+  const displayClass = (baseClass: string, item: Collectible) => `${baseClass} displayed-curio-${getCurioDisplayZone(item)}${item.id === latestCurioId ? ' displayed-curio-latest' : ''}${item.id === 'pip-pocket-watch' && !hasPocketWatch ? ' displayed-curio-showcase' : ''}`;
   return (
     <div className="restaurant-curio-displays" aria-label="Curios displayed on the restaurant shelf">
-      <div className="restaurant-curio-shelf-grid">
-        {shelfItems.map((item) => (
-          <CurioHotspot item={item} className={displayClass('displayed-curio', item)} key={item.id} />
-        ))}
+      <div className="restaurant-curio-shelf-stage">
+        {shelfItems.map((item) => {
+          const placement = placements[item.id];
+          if (!placement) return null;
+          return (
+            <CurioHotspot
+              item={item}
+              className={displayClass('displayed-curio', item)}
+              key={item.id}
+              style={{
+                gridColumn: placement.cell % CURIO_SHELF_GRID.columns + 1,
+                gridRow: Math.floor(placement.cell / CURIO_SHELF_GRID.columns) + 1,
+              }}
+            />
+          );
+        })}
       </div>
     </div>
   );
@@ -2329,6 +2355,7 @@ function Home() {
   const [meter, setMeter] = useStoredState<MeterState>(METER_KEY, { progress: 0, lastAcknowledgement: 'Choose a morsel to begin.' });
   const [ledger, setLedger] = useStoredState<ContestLedgerEntry[]>(LEDGER_KEY, []);
   const [collectibles, setCollectibles] = useStoredState<Collectible[]>(CURIO_KEY, [], (saved) => saved.filter((item) => Boolean(item.imageSrc)));
+  const [curioPlacements, setCurioPlacements] = useStoredState<CurioShelfPlacementMap>(CURIO_PLACEMENTS_KEY, {}, normalizeCurioPlacements);
   const [acknowledgement, setAcknowledgement] = useState(meter.lastAcknowledgement);
   const [meterPulse, setMeterPulse] = useState(false);
   const [isHolding, setIsHolding] = useState(false);
@@ -2366,6 +2393,17 @@ function Home() {
     ?? lastWinner
     ?? spriteSheetContestants.find((persona) => persona.id === 'uma')
     ?? null;
+  const shelfCurioIds = useMemo(
+    () => getRestaurantShelfItems(collectibles).map((item) => item.id),
+    [collectibles],
+  );
+
+  useEffect(() => {
+    setCurioPlacements((current) => {
+      const next = reconcileCurioPlacements(shelfCurioIds, current);
+      return curioPlacementsEqual(current, next) ? current : next;
+    });
+  }, [setCurioPlacements, shelfCurioIds]);
 
   useEffect(() => {
     setCollectibles((current) => {
@@ -2602,6 +2640,7 @@ function Home() {
     setLiveStatus('Local memory cleared.');
     setLedger([]);
     setCollectibles([]);
+    setCurioPlacements({});
     setCurioView(null);
     contestQueued.current = false;
     completionGuard.current = false;
@@ -2622,7 +2661,7 @@ function Home() {
               </div>
             </div>
           )}
-          <RestaurantCurioDisplays collectibles={collectibles} />
+          <RestaurantCurioDisplays collectibles={collectibles} placements={curioPlacements} />
           <div className="scene-content">
             <div className="restaurant-top-zone">
               <RestaurantControls onOpenCurio={setCurioView} ledgerCount={ledger.length} curioCount={collectibles.length} />
