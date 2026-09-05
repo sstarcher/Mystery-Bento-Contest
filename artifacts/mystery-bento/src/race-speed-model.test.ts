@@ -69,6 +69,8 @@ assert.equal(
 const normalAtEnd = getContinuousRunnerPosition(baseProfile, raceDurationMs, courseTravelEnd, raceDurationMs);
 const slowAtEnd = getContinuousRunnerPosition(slowProfile, raceDurationMs, courseTravelEnd, raceDurationMs);
 const surgeAtEnd = getContinuousRunnerPosition(surgeProfile, raceDurationMs, courseTravelEnd, raceDurationMs);
+const normalDuringImpact = getContinuousRunnerPosition(baseProfile, 7_000, courseTravelEnd, raceDurationMs);
+const surgeDuringImpact = getContinuousRunnerPosition(surgeProfile, 7_000, courseTravelEnd, raceDurationMs);
 assert.ok(slowAtEnd < normalAtEnd, 'slow should leave the runner behind the reference pace');
 assert.ok(surgeAtEnd > normalAtEnd, 'surge should leave the runner ahead of the reference pace');
 assert.ok(
@@ -76,8 +78,12 @@ assert.ok(
   'slow obstacles should leave a clearly visible gap by the finish',
 );
 assert.ok(
-  surgeAtEnd - normalAtEnd >= 8,
-  'surge obstacles should create a clearly visible lead by the finish',
+  surgeDuringImpact - normalDuringImpact >= 8,
+  'surge obstacles should create a clearly visible lead during the active impact window',
+);
+assert.ok(
+  surgeAtEnd - normalAtEnd >= 4,
+  'surge obstacles should preserve a visible lead by the finish',
 );
 assert.ok(
   getContinuousRunnerPosition(baseProfile, 0, courseTravelEnd, raceDurationMs) === baseProfile.startPosition,

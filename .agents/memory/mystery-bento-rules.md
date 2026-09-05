@@ -98,3 +98,9 @@ For normal-motion race reactions, visible runner/obstacle contact is the authori
 **Why:** The scrolling course and bounded runner projection use different coordinate systems, so a logical world-position threshold can fire while the character still looks far from the artwork.
 
 **How to apply:** Derive contact from the rendered screen anchors for staged obstacles, keep outcomes deterministic, and retain the simulation-based fallback when motion is reduced.
+
+Obstacle speed effects should remain visibly consequential across the next race beat, not resolve almost immediately after contact.
+
+**Why:** Short, mild windows made the three runners visually bunch together for most of the course and weakened the readable cause-and-effect of hazards.
+
+**How to apply:** Tune the shared continuous speed model before changing per-obstacle logic; preserve multi-second slow/reroute/surge windows and assert both mid-impact separation and finish separation in the deterministic speed tests.
