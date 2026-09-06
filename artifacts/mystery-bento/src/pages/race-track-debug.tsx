@@ -18,21 +18,42 @@ const FALL_SEQUENCE_RUN_MS = 1800;
 const FALL_SEQUENCE_FALL_MS = 2100;
 const VICTORY_SEQUENCE_RUN_MS = 1800;
 
-type SampleTrackObstacle = {
+type SampleTrackObstacleOption = {
   id: string;
   label: string;
-  position: number;
   image: string;
+};
+
+type SampleTrackObstaclePlacement = {
+  position: number;
   offsetX?: number;
   offsetY?: number;
 };
 
-const SAMPLE_TRACK_OBSTACLES: SampleTrackObstacle[] = [
-  { id: 'sample-napkin-gust', label: 'Napkin gust', position: 18, image: 'napkin-gust.png', offsetX: 200, offsetY: 100 },
-  { id: 'sample-tea-puddle', label: 'Tea puddle', position: 40, image: 'tea-puddle.png' },
-  { id: 'sample-ribbon-tunnel', label: 'Ribbon tunnel', position: 62, image: 'ribbon-tunnel.png', offsetY: -100 },
-  { id: 'sample-bento-stack', label: 'Bento stack', position: 83, image: 'bento-stack.png', offsetX: 200 },
+type SampleTrackObstacle = SampleTrackObstacleOption & SampleTrackObstaclePlacement;
+
+const SAMPLE_TRACK_OBSTACLE_OPTIONS: SampleTrackObstacleOption[] = [
+  { id: 'napkin-gust', label: 'Napkin gust', image: 'napkin-gust.png' },
+  { id: 'tea-puddle', label: 'Tea puddle', image: 'tea-puddle.png' },
+  { id: 'wobble-stack', label: 'Wobble stack', image: 'wobble-stack.png' },
+  { id: 'moon-reflection', label: 'Moon reflection', image: 'moon-reflection.png' },
+  { id: 'broken-cart', label: 'Broken cart', image: 'broken-cart.png' },
+  { id: 'ribbon-tunnel', label: 'Ribbon tunnel', image: 'ribbon-tunnel.png' },
+  { id: 'cushion-pile', label: 'Cushion pile', image: 'cushion-pile.png' },
+  { id: 'flour-sacks', label: 'Flour sacks', image: 'flour-sacks.png' },
+  { id: 'crumb-trail', label: 'Crumb trail', image: 'crumb-trail.png' },
+  { id: 'garnish-gate', label: 'Garnish gate', image: 'garnish-gate.png' },
+  { id: 'steam-gadget', label: 'Steam gadget', image: 'steam-gadget.png' },
+  { id: 'bento-stack', label: 'Bento stack', image: 'bento-stack.png' },
 ];
+
+const SAMPLE_TRACK_OBSTACLE_PLACEMENTS: SampleTrackObstaclePlacement[] = [
+  { position: 18, offsetX: 200, offsetY: 80 },
+  { position: 40 },
+  { position: 62, offsetY: -50 },
+  { position: 83, offsetX: 200 },
+];
+const DEFAULT_SAMPLE_OBSTACLE_INDEXES = [0, 1, 5, 11];
 
 const spriteTestContestants = contestantDesigns.filter((contestant) => (
   getMovementSpriteSheet(contestant.id, 'run')
@@ -194,6 +215,34 @@ export default function RaceTrackDebugPage() {
   const viewportRef = useRef<HTMLDivElement>(null);
   const dragRef = useRef({ active: false, startX: 0, startScrollLeft: 0 });
   const [isDragging, setIsDragging] = useState(false);
+  const [sampleObstacleIndexes, setSampleObstacleIndexes] = useState(DEFAULT_SAMPLE_OBSTACLE_INDEXES);
+  const sampleTrackObstacles = useMemo(
+    () => SAMPLE_TRACK_OBSTACLE_PLACEMENTS.map((placement, positionIndex) => {
+      const option = SAMPLE_TRACK_OBSTACLE_OPTIONS[sampleObstacleIndexes[positionIndex] ?? 0] ?? SAMPLE_TRACK_OBSTACLE_OPTIONS[0];
+      return {
+        ...option,
+        ...placement,
+        id: `sample-${positionIndex + 1}-${option.id}`,
+      };
+    }),
+    [sampleObstacleIndexes],
+  );
+
+  const cycleObstacleAt = (positionIndex: number) => {
+    setSampleObstacleIndexes((current) => current.map((obstacleIndex, index) => (
+      index === positionIndex
+        ? (obstacleIndex + 1) % SAMPLE_TRACK_OBSTACLE_OPTIONS.length
+        : obstacleIndex
+    )));
+  };
+
+  const cycleAllObstacles = () => {
+    setSampleObstacleIndexes((current) => current.map((obstacleIndex) => (
+      (obstacleIndex + 1) % SAMPLE_TRACK_OBSTACLE_OPTIONS.length
+    )));
+  };
+
+  const resetSampleObstacles = () => setSampleObstacleIndexes(DEFAULT_SAMPLE_OBSTACLE_INDEXES);
 
   const scrollTo = (left: number, behavior: ScrollBehavior = 'smooth') => {
     viewportRef.current?.scrollTo({ left, behavior });
@@ -262,14 +311,14 @@ export default function RaceTrackDebugPage() {
         <div className="race-track-debug-obstacle-overview-heading">
           <div>
             <p className="race-track-debug-kicker">Course hazard map</p>
-            <h2 id="race-obstacle-overview-title">Sample obstacle placement</h2>
+            <h2 id="race-obstacle-overview-title">Obstacle position inspector</h2>
           </div>
-          <p>These checkpoints match the live race spacing.</p>
+          <p>Cycle every obstacle through each live race checkpoint.</p>
         </div>
         <div className="race-track-debug-obstacle-ruler">
           <span className="race-track-debug-obstacle-ruler-label is-start">START</span>
           <span className="race-track-debug-obstacle-ruler-line" aria-hidden="true" />
-          {SAMPLE_TRACK_OBSTACLES.map((obstacle) => (
+          {sampleTrackObstacles.map((obstacle) => (
             <span
               className="race-track-debug-obstacle-ruler-marker"
               key={obstacle.id}
@@ -281,6 +330,32 @@ export default function RaceTrackDebugPage() {
             </span>
           ))}
           <span className="race-track-debug-obstacle-ruler-label is-finish">FINISH</span>
+        </div>
+        <div className="race-track-debug-obstacle-controls">
+          <div className="race-track-debug-obstacle-controls-heading">
+            <span>Inspect each checkpoint</span>
+            <div>
+              <button type="button" onClick={cycleAllObstacles}>Cycle all</button>
+              <button type="button" onClick={resetSampleObstacles}>Reset sample set</button>
+            </div>
+          </div>
+          <div className="race-track-debug-obstacle-control-grid">
+            {sampleTrackObstacles.map((obstacle, index) => (
+              <div className="race-track-debug-obstacle-control" key={obstacle.position}>
+                <div>
+                  <span>{obstacle.position}% checkpoint</span>
+                  <strong>{obstacle.label}</strong>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => cycleObstacleAt(index)}
+                  aria-label={`Show next obstacle at ${obstacle.position}%`}
+                >
+                  Next
+                </button>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
@@ -333,7 +408,7 @@ export default function RaceTrackDebugPage() {
             );
           })}
           <div className="race-track-debug-obstacle-layer" aria-label="Sample obstacle placements">
-            {SAMPLE_TRACK_OBSTACLES.map((obstacle) => (
+            {sampleTrackObstacles.map((obstacle) => (
               <span
                 className="race-obstacle race-track-debug-obstacle"
                 data-position={`${obstacle.position}%`}
