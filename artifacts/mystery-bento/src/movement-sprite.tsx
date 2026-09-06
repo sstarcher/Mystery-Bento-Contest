@@ -2,10 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { getMovementSpriteSheet, type MovementAction } from './movement-sprite-config';
 import { getMovementFrameIndex, getVictoryFrameIndex } from './movement-sprite-actions';
 import { getMovementSpriteRenderStyle } from './movement-sprite-normalization';
-import { getRunnerSpriteCadenceMultiplier } from './race-speed-model';
-
-const MOTION_SPEEDUP = 1.08;
-const speedUpDurationMs = (durationMs: number) => Math.max(1, Math.round(durationMs / MOTION_SPEEDUP));
+import { getMovementFrameDurationMs } from './movement-sprite-cadence';
 
 export type MovementSpritePersona = {
   id: string;
@@ -95,19 +92,29 @@ export function MovementSprite({
 
   useEffect(() => {
     if (!spriteSheet || prefersReducedMotion || spriteSheet.frameCount < 2) return;
-    const cadenceMultiplier = isOneShot
-      ? 1
-      : getRunnerSpriteCadenceMultiplier(speedMultiplierRef.current);
-    const frameDurationMs = isOneShot
-      ? speedUpDurationMs(spriteSheet.frameDurationMs) / 2
-      : speedUpDurationMs(spriteSheet.frameDurationMs / cadenceMultiplier);
-    const timer = window.setInterval(() => {
-      setFrameIndex((current) => isOneShot
-        ? getMovementFrameIndex(current + 1, spriteSheet.frameCount, false)
-        : getMovementFrameIndex(current + 1, spriteSheet.frameCount, true));
-    }, frameDurationMs);
-    return () => window.clearInterval(timer);
-  }, [action, effectiveAction, prefersReducedMotion, spriteSheet, speedMultiplier]);
+    let timer: number | null = null;
+    let cancelled = false;
+    const scheduleNextFrame = () => {
+      if (cancelled) return;
+      const frameDurationMs = getMovementFrameDurationMs(
+        spriteSheet.frameDurationMs,
+        speedMultiplierRef.current,
+        isOneShot,
+      );
+      timer = window.setTimeout(() => {
+        if (cancelled) return;
+        setFrameIndex((current) => isOneShot
+          ? getMovementFrameIndex(current + 1, spriteSheet.frameCount, false)
+          : getMovementFrameIndex(current + 1, spriteSheet.frameCount, true));
+        scheduleNextFrame();
+      }, frameDurationMs);
+    };
+    scheduleNextFrame();
+    return () => {
+      cancelled = true;
+      if (timer !== null) window.clearTimeout(timer);
+    };
+  }, [action, effectiveAction, prefersReducedMotion, spriteSheet, isOneShot]);
 
   useEffect(() => {
     if (!spriteSheet || !isOneShot || !prefersReducedMotion) return;

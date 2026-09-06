@@ -9,6 +9,7 @@ import {
   movementActions,
   victorySpriteMetadata,
 } from './movement-sprite-actions';
+import { getMovementFrameDurationMs } from './movement-sprite-cadence';
 import { movementSpriteNormalization } from './movement-sprite-normalization';
 import {
   RACE_RUNNER_LANE_HEIGHT_PX,
@@ -217,8 +218,9 @@ assert.doesNotMatch(raceCss, /race-reaction-/);
 assert.match(appSource, /hasNegativeObstacleImpact\(encounter\?\.result\)/);
 assert.match(appSource, /result === 'slow' \|\| result === 'reroute'/);
 assert.match(appSource, /getRaceRunnerFinishAction\(finishCrossed, isWinner\)/);
-assert.match(appSource, /const runnerAction: MovementAction = finishAction/);
-assert.match(appSource, /action=\{runnerAction\}/);
+assert.match(appSource, /const RaceLiveRenderer = memo/);
+assert.match(appSource, /setPresentations\(frameState\.presentations\)/);
+assert.match(appSource, /translate3d\(\$\{presentation\.anchor/);
 assert.match(movementRendererSource, /if \(effectiveAction === 'victory'\) return 0/);
 assert.match(appSource, /const winningPersona = winner \?\? contestOutcome\.current\?\.winner/);
 assert.match(appSource, /const outcome = contestOutcome\.current \?\? resolveContest\(contestants, createRng\(Date\.now\(\)\)\)/);
@@ -230,6 +232,20 @@ assert.match(debugPageSource, /Run → victory/);
 assert.match(movementRendererSource, /getMovementFrameIndex\(current \+ 1, spriteSheet\.frameCount, false\)/);
 assert.match(movementRendererSource, /getVictoryFrameIndex\(frameIndex, spriteSheet\.frameCount, prefersReducedMotion\)/);
 assert.match(movementRendererSource, /getMovementSpriteRenderStyle\(spriteSheet\.normalization, scaleMultiplier\)/);
+assert.match(movementRendererSource, /speedMultiplierRef\.current/);
+assert.match(movementRendererSource, /window\.setTimeout/);
+assert.doesNotMatch(movementRendererSource, /window\.setInterval/);
+assert.doesNotMatch(movementRendererSource, /spriteSheet, speedMultiplier\]/);
+assert.equal(
+  getMovementFrameDurationMs(180, 0.58, false),
+  getMovementFrameDurationMs(180, 0.58, false),
+  'run cadence duration should be deterministic when the live speed is unchanged',
+);
+assert.notEqual(
+  getMovementFrameDurationMs(180, 0.58, false),
+  getMovementFrameDurationMs(180, 1.2, false),
+  'run cadence duration should still respond to a changed live speed',
+);
 assert.deepEqual(movementActions, ['idle', 'walk', 'run', 'jump', 'fall', 'victory']);
 const expectedVictoryGrid = { columns: 12, rows: 12 };
 const expectedVictoryFrameCounts: Record<string, number> = {

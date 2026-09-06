@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type CSSProperties, type KeyboardEvent, type MouseEvent, type PointerEvent, type ReactNode } from 'react';
+import { memo, useEffect, useMemo, useRef, useState, type CSSProperties, type KeyboardEvent, type MouseEvent, type PointerEvent, type ReactNode } from 'react';
 import { BookOpen, ChevronRight, LockKeyhole, RotateCcw, SkipForward, Sparkles, Volume2, VolumeX, X } from 'lucide-react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ErrorBoundary } from '@/components/error-boundary';
@@ -1579,6 +1579,290 @@ function Meter({ meter, onPointerStart, onPointerEnd, onMeterClick, onMeterKeyDo
   );
 }
 
+type RaceRunnerPresentation = {
+  anchor: number;
+  obstacleIndex: number;
+  action: MovementAction;
+  animationKey: string;
+  speedMultiplier: number;
+  reaction: RaceRunnerReaction;
+};
+
+type RaceLiveRendererProps = {
+  contestants: Persona[];
+  winner: Persona | null;
+  step: ContestStep;
+  race: RaceSimulation;
+  finishCrossed: boolean;
+  raceStartedAt: number | null;
+  prefersReducedMotion: boolean;
+  onFrameState: (obstacleIndexes: number[]) => void;
+};
+
+const RACE_CANVAS_WIDTH_PX = 1280;
+const RACE_RUNNER_WIDTH_PX = 216;
+
+const RaceLiveRenderer = memo(function RaceLiveRenderer({
+  contestants,
+  winner,
+  step,
+  race,
+  finishCrossed,
+  raceStartedAt,
+  prefersReducedMotion,
+  onFrameState,
+}: RaceLiveRendererProps) {
+  const worldTrackRef = useRef<HTMLDivElement | null>(null);
+  const runnerRefs = useRef<Array<HTMLDivElement | null>>([]);
+  const previousObstacleIndexes = useRef<number[] | null>(null);
+  const onFrameStateRef = useRef(onFrameState);
+  onFrameStateRef.current = onFrameState;
+  const raceLanes = useMemo(
+    () => contestants.map((_, index) => race.lanes.find((lane) => lane.personaId === contestants[index]?.id) ?? race.lanes[index]),
+    [contestants, race],
+  );
+  const introRunnerPositions = useMemo(
+    () => raceLanes.map((lane) => lane?.positions.intro ?? 5),
+    [raceLanes],
+  );
+  const stageRunnerAnchors = useMemo(() => ({
+    intro: getRaceRunnerScreenAnchors(introRunnerPositions, introRunnerPositions, RACE_FINISH_THRESHOLD_POSITION),
+    warmup: getRaceRunnerScreenAnchors(raceLanes.map((lane) => lane?.positions.warmup ?? 28), introRunnerPositions, RACE_FINISH_THRESHOLD_POSITION),
+    matchup: getRaceRunnerScreenAnchors(raceLanes.map((lane) => lane?.positions.matchup ?? 52), introRunnerPositions, RACE_FINISH_THRESHOLD_POSITION),
+    finale: getRaceRunnerScreenAnchors(raceLanes.map((lane) => lane?.positions.finale ?? 78), introRunnerPositions, RACE_FINISH_THRESHOLD_POSITION),
+  }), [introRunnerPositions, raceLanes]);
+
+  const getFramePresentation = (clockMs: number) => {
+    const getLaneProgress = (lane: RaceLaneSimulation | undefined) => {
+      if (!lane) return 0;
+      if (step === 'winner' || finishCrossed) return lane.positions.winner;
+      if (step === 'intro' || prefersReducedMotion) {
+        return getTimelineLaneProgressAtTime(
+          step,
+          lane,
+          race.obstacles,
+          clockMs - RACE_STAGE_OFFSETS[step],
+          prefersReducedMotion,
+        );
+      }
+      return getContinuousRunnerPosition(
+        {
+          startPosition: lane.positions.intro,
+          baseSpeedMultiplier: lane.baseSpeedMultiplier,
+          events: lane.speedEvents,
+        },
+        clockMs,
+        RACE_FINALE_WORLD_END_PERCENT,
+        RACE_RACE_DURATION_MS,
+      );
+    };
+    const worldTravelPercent = getRaceWorldTravelPercentAtTime(
+      step,
+      clockMs - RACE_STAGE_OFFSETS[step],
+      prefersReducedMotion,
+    );
+    const laneProgresses = raceLanes.map((lane) => getLaneProgress(lane));
+    const currentRunnerAnchors = getRaceRunnerScreenAnchors(
+      laneProgresses,
+      introRunnerPositions,
+      RACE_FINISH_THRESHOLD_POSITION,
+    );
+    const stageObstacleIndex = Math.min(race.obstacles.length - 1, Math.max(0, raceStepProgress[step] - 1));
+    const stageObstacleAnchors = race.obstacles
+      .map((obstacle, obstacleIndex) => ({
+        obstacleIndex,
+        anchor: Number.parseFloat(getRaceWorldScreenAnchor(obstacle.position, worldTravelPercent)),
+      }))
+      .filter(({ obstacleIndex }) => obstacleIndex >= stageObstacleIndex);
+    const getCurrentLaneObstacleIndex = (lane: RaceLaneSimulation | undefined, laneIndex: number) => {
+      if (!lane || step === 'intro' || step === 'winner') return -1;
+      const reachedIndex = race.obstacles.reduce((reached, obstacle, obstacleIndex) => (
+        laneProgresses[laneIndex] >= obstacle.position ? obstacleIndex : reached
+      ), -1);
+      if (prefersReducedMotion) return reachedIndex < stageObstacleIndex ? -1 : reachedIndex;
+      const runnerAnchor = currentRunnerAnchors[laneIndex];
+      if (typeof runnerAnchor !== 'number') return -1;
+      const contactStart = runnerAnchor - RACE_OBSTACLE_CONTACT_WINDOW_PERCENT;
+      const contactEnd = runnerAnchor + RACE_OBSTACLE_CONTACT_WINDOW_PERCENT;
+      const contactedObstacle = stageObstacleAnchors.find(({ anchor }) => anchor >= contactStart && anchor <= contactEnd);
+      return contactedObstacle?.obstacleIndex ?? -1;
+    };
+
+    const presentations = raceLanes.map((lane, index): RaceRunnerPresentation => {
+      const laneCurrentObstacleIndex = getCurrentLaneObstacleIndex(lane, index);
+      const laneCurrentObstacle = laneCurrentObstacleIndex >= 0 ? race.obstacles[laneCurrentObstacleIndex] : null;
+      const encounter = laneCurrentObstacle ? lane?.encounters[laneCurrentObstacle.id] : undefined;
+      const runnerProfile = {
+        startPosition: lane?.positions.intro ?? 0,
+        baseSpeedMultiplier: lane?.baseSpeedMultiplier ?? 1,
+        events: lane?.speedEvents ?? [],
+      };
+      const runnerSpeedMultiplier = getRunnerEffectiveSpeed(runnerProfile, clockMs);
+      const runnerReaction = laneCurrentObstacle && encounter
+        ? getRaceRunnerReaction(laneCurrentObstacle.kind, encounter.result)
+        : 'ready';
+      const isWinner = (winner?.id ?? race.winnerId) === contestants[index]?.id;
+      const finishAction = getRaceRunnerFinishAction(finishCrossed, isWinner);
+      const hasObstacleReaction = hasNegativeObstacleImpact(encounter?.result);
+      const runnerAction: MovementAction = finishAction
+        ?? (hasObstacleReaction
+          ? 'fall'
+          : step === 'intro'
+            ? 'idle'
+            : getRunnerMovementState(runnerProfile, clockMs));
+      return {
+        anchor: currentRunnerAnchors[index] ?? stageRunnerAnchors[step === 'winner' ? 'finale' : step][index] ?? 50,
+        obstacleIndex: laneCurrentObstacleIndex,
+        action: runnerAction,
+        animationKey: finishAction
+          ? `${finishAction}-${contestants[index]?.id}`
+          : hasObstacleReaction
+            ? `${step}-${laneCurrentObstacle?.id ?? 'reaction'}-${runnerReaction}`
+            : step,
+        speedMultiplier: finishAction ? 1 : runnerSpeedMultiplier,
+        reaction: runnerReaction,
+      };
+    });
+    return { worldTravelPercent, presentations };
+  };
+
+  const [presentations, setPresentations] = useState<RaceRunnerPresentation[]>(() => (
+    getFramePresentation(raceStartedAt ? Math.max(0, Date.now() - raceStartedAt) : 0).presentations
+  ));
+
+  useEffect(() => {
+    previousObstacleIndexes.current = null;
+    setPresentations(getFramePresentation(raceStartedAt ? Math.max(0, Date.now() - raceStartedAt) : 0).presentations);
+  }, [finishCrossed, prefersReducedMotion, raceStartedAt, step, winner]);
+
+  useEffect(() => {
+    const activeMotion = Boolean(
+      raceStartedAt
+      && !prefersReducedMotion
+      && step !== 'intro'
+      && step !== 'winner'
+      && !finishCrossed,
+    );
+    let frame = 0;
+    const applyFrame = () => {
+      const clockMs = raceStartedAt ? Math.max(0, Date.now() - raceStartedAt) : 0;
+      const frameState = getFramePresentation(clockMs);
+      if (worldTrackRef.current) {
+        worldTrackRef.current.style.transform = `translate3d(-${frameState.worldTravelPercent}%, 0, 0)`;
+        worldTrackRef.current.dataset.worldTravelPercent = frameState.worldTravelPercent.toFixed(3);
+      }
+      frameState.presentations.forEach((presentation, index) => {
+        const runner = runnerRefs.current[index];
+        if (!runner) return;
+        runner.style.transform = `translate3d(${presentation.anchor / 100 * RACE_CANVAS_WIDTH_PX - RACE_RUNNER_WIDTH_PX / 2}px, 0, 0)`;
+        runner.dataset.runnerAnchor = presentation.anchor.toFixed(3);
+      });
+      const obstacleIndexes = frameState.presentations.map(({ obstacleIndex }) => obstacleIndex);
+      const priorObstacleIndexes = previousObstacleIndexes.current;
+      if (!priorObstacleIndexes || obstacleIndexes.some((index, position) => index !== priorObstacleIndexes[position])) {
+        previousObstacleIndexes.current = obstacleIndexes;
+        setPresentations(frameState.presentations);
+        onFrameStateRef.current(obstacleIndexes);
+      }
+      if (activeMotion) frame = window.requestAnimationFrame(applyFrame);
+    };
+    applyFrame();
+    return () => window.cancelAnimationFrame(frame);
+  }, [finishCrossed, prefersReducedMotion, raceStartedAt, step, winner]);
+
+  return (
+    <div className="race-course-viewport">
+      <div
+        ref={worldTrackRef}
+        className="race-world-track"
+        style={{ width: `${RACE_BACKGROUND_TRACK_WIDTH_PX}px` }}
+        data-world-travel-percent="0.000"
+      >
+        <div className="race-scenery-track" aria-hidden="true">
+          {RACE_BACKGROUND_SEQUENCE.map((scene, index) => (
+            <div
+              className={`race-scenery-panel race-scenery-panel-${index}`}
+              key={scene.id}
+              data-scene-id={scene.id}
+              data-destination={scene.isDestination || undefined}
+              style={{ '--race-scene-aspect-ratio': scene.aspectRatio } as CSSProperties}
+            >
+              <img className="race-scenery-image" src={`${RACE_BACKGROUND_BASE}/${scene.file}`} alt="" draggable="false" />
+            </div>
+          ))}
+        </div>
+        <div className="race-course-road">
+          {race.obstacles.map((obstacle, obstacleIndex) => (
+            <span
+              className={`race-obstacle race-obstacle-${obstacle.kind}`}
+              style={{
+                left: getRaceObstacleLeftCss(obstacleIndex),
+                ...(getRaceObstacleBottomPx(obstacleIndex) === undefined
+                  ? {}
+                  : { bottom: `${getRaceObstacleBottomPx(obstacleIndex)}px` }),
+              }}
+              key={obstacle.id}
+              title={obstacle.label}
+              aria-hidden="true"
+            >
+              <span className="race-obstacle-art"><img src={obstacle.imageSrc} alt="" draggable="false" /></span>
+            </span>
+          ))}
+          {contestants.map((persona) => <div className="race-lane" key={persona.id} />)}
+        </div>
+        <div
+          className="race-finish-marker race-finish-marker-main"
+          style={{
+            '--race-finish-marker-angle': `${RACE_BACKGROUND_FINISH_MARKER_ANGLE_DEG}deg`,
+            '--race-finish-marker-road-length': `${RACE_BACKGROUND_FINISH_MARKER_ROAD_LENGTH_PX}px`,
+            '--race-finish-marker-road-top': `${RACE_BACKGROUND_FINISH_MARKER_ROAD_TOP_PX}px`,
+            left: `${RACE_BACKGROUND_FINISH_MARKER_X_PX}px`,
+          } as CSSProperties}
+          aria-label="Finish line"
+        />
+      </div>
+      <div className="race-runner-overlay">
+        {contestants.map((persona, index) => {
+          const presentation = presentations[index];
+          if (!presentation) return null;
+          const stageAnchors = stageRunnerAnchors[step === 'winner' ? 'finale' : step];
+          return (
+            <div
+              className="race-runner-lane"
+              key={persona.id}
+              data-persona-id={persona.id}
+              data-runner-reaction={presentation.reaction}
+            >
+              <div
+                className="race-runner"
+                ref={(element) => { runnerRefs.current[index] = element; }}
+                style={{
+                  '--race-intro-anchor': `${stageAnchors?.[index] ?? 50}%`,
+                  '--race-warmup-anchor': `${stageRunnerAnchors.warmup[index] ?? 50}%`,
+                  '--race-matchup-anchor': `${stageRunnerAnchors.matchup[index] ?? 50}%`,
+                  '--race-finale-anchor': `${stageRunnerAnchors.finale[index] ?? 50}%`,
+                  transform: `translate3d(${presentation.anchor / 100 * RACE_CANVAS_WIDTH_PX - RACE_RUNNER_WIDTH_PX / 2}px, 0, 0)`,
+                } as CSSProperties}
+              >
+                <span className="race-runner-sprite">
+                  <MovementSprite
+                    persona={persona}
+                    action={presentation.action}
+                    animationKey={presentation.animationKey}
+                    speedMultiplier={presentation.speedMultiplier}
+                    scaleMultiplier={persona.id === 'panko' ? 0.8 : undefined}
+                    prefersReducedMotion={prefersReducedMotion}
+                  />
+                </span>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+});
+
 function ContestOverlay({ contestants, winner, step, contestName, memorableEvent, race, finishLineVisible, finishCrossed, contestStartedAt, raceStartedAt, announcerResetKey, onAnnouncerBeat, onRaceStart, onSkip, onClose }: { contestants: Persona[]; winner: Persona | null; step: ContestStep; contestName: string; memorableEvent: string; race: RaceSimulation; finishLineVisible: boolean; finishCrossed: boolean; contestStartedAt: number | null; raceStartedAt: number | null; announcerResetKey: number; onAnnouncerBeat: (label: string) => void; onRaceStart: () => void; onSkip: () => void; onClose: () => void }) {
   const [showWinnerReveal, setShowWinnerReveal] = useState(false);
   const [announcedContestantCount, setAnnouncedContestantCount] = useState(0);
@@ -1586,7 +1870,6 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
   const [raceStartGraphicVisible, setRaceStartGraphicVisible] = useState(false);
   const [announcementStatus, setAnnouncementStatus] = useState('Tonight’s contestants are waiting behind the curtain.');
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(() => window.matchMedia('(prefers-reduced-motion: reduce)').matches);
-  const [raceClockMs, setRaceClockMs] = useState(() => contestStartedAt ? Math.max(0, Date.now() - contestStartedAt) : 0);
   const [voiceEnabled, setVoiceEnabled] = useState(() => {
     try {
       return window.localStorage.getItem(VOICE_ANNOUNCER_KEY) !== 'off';
@@ -1664,11 +1947,6 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
       offset: (introBeat?.offset ?? 0) + (offsets[index] ?? 0),
     }));
   }, [announcerSequence, contestants]);
-  const currentObstacleIndex = step === 'intro' ? -1 : Math.min(race.obstacles.length - 1, raceStepProgress[step] - 1);
-  const currentObstacle = currentObstacleIndex >= 0 ? race.obstacles[currentObstacleIndex] : null;
-  const currentObstacleCopy = currentObstacle
-    ? `${currentObstacle.label}: ${currentObstacle.description}`
-    : 'The route is being set. Four trouble spots are waiting beyond the starting lantern.';
   useEffect(() => {
     const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
     const updatePreference = () => setPrefersReducedMotion(mediaQuery.matches);
@@ -1676,19 +1954,6 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
     mediaQuery.addEventListener?.('change', updatePreference);
     return () => mediaQuery.removeEventListener?.('change', updatePreference);
   }, []);
-  useEffect(() => {
-    if (!raceStartedAt || prefersReducedMotion) {
-      setRaceClockMs(raceStartedAt ? Math.max(0, Date.now() - raceStartedAt) : 0);
-      return;
-    }
-    let frame = 0;
-    const tick = () => {
-      setRaceClockMs(Math.max(0, Date.now() - raceStartedAt));
-      frame = window.requestAnimationFrame(tick);
-    };
-    frame = window.requestAnimationFrame(tick);
-    return () => window.cancelAnimationFrame(frame);
-  }, [raceStartedAt, prefersReducedMotion]);
   useEffect(() => {
     if (finishLineVisible) setSpokenBeatLabel('Finish in sight');
   }, [finishLineVisible]);
@@ -1732,77 +1997,21 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
 
     return () => timers.forEach((timer) => window.clearTimeout(timer));
   }, [announcementTimeline, announcerSequence, contestStartedAt, contestants.length, step, voiceEnabled]);
-  const getLaneProgress = (lane: RaceLaneSimulation | undefined) => {
-    if (!lane) return 0;
-    if (step === 'winner' || finishCrossed) {
-      return lane.positions.winner;
-    }
-    if (step === 'intro' || prefersReducedMotion) {
-      return getTimelineLaneProgressAtTime(
-        step,
-        lane,
-        race.obstacles,
-        raceClockMs - RACE_STAGE_OFFSETS[step],
-        prefersReducedMotion,
-      );
-    }
-    return getContinuousRunnerPosition(
-      {
-        startPosition: lane.positions.intro,
-        baseSpeedMultiplier: lane.baseSpeedMultiplier,
-        events: lane.speedEvents,
-      },
-      raceClockMs,
-      RACE_FINALE_WORLD_END_PERCENT,
-      RACE_RACE_DURATION_MS,
-    );
+  const [raceContactState, setRaceContactState] = useState<number[]>(() => contestants.map(() => -1));
+  const raceFrameStateCallback = useRef<(obstacleIndexes: number[]) => void>(() => undefined);
+  raceFrameStateCallback.current = (obstacleIndexes) => {
+    setRaceContactState((current) => (
+      current.length === obstacleIndexes.length
+        && current.every((index, position) => index === obstacleIndexes[position])
+        ? current
+        : obstacleIndexes
+    ));
   };
-  const worldTravelPercent = getRaceWorldTravelPercentAtTime(
-    step,
-    raceClockMs - RACE_STAGE_OFFSETS[step],
-    prefersReducedMotion,
-  );
-  const raceLanes = contestants.map((_, index) => race.lanes.find((lane) => lane.personaId === contestants[index]?.id) ?? race.lanes[index]);
-  const introRunnerPositions = raceLanes.map((lane) => lane?.positions.intro ?? 5);
-  const stageRunnerAnchors = {
-    intro: getRaceRunnerScreenAnchors(introRunnerPositions, introRunnerPositions, RACE_FINISH_THRESHOLD_POSITION),
-    warmup: getRaceRunnerScreenAnchors(raceLanes.map((lane) => lane?.positions.warmup ?? 28), introRunnerPositions, RACE_FINISH_THRESHOLD_POSITION),
-    matchup: getRaceRunnerScreenAnchors(raceLanes.map((lane) => lane?.positions.matchup ?? 52), introRunnerPositions, RACE_FINISH_THRESHOLD_POSITION),
-    finale: getRaceRunnerScreenAnchors(raceLanes.map((lane) => lane?.positions.finale ?? 78), introRunnerPositions, RACE_FINISH_THRESHOLD_POSITION),
-  };
-  const continuousRunnerAnchors = getRaceRunnerScreenAnchors(
-    raceLanes.map((lane) => getLaneProgress(lane)),
-    introRunnerPositions,
-    RACE_FINISH_THRESHOLD_POSITION,
-  );
-  const currentRunnerAnchors = continuousRunnerAnchors;
-  const formatRunnerAnchor = (anchor: number | undefined) => `${(anchor ?? 50).toFixed(3)}%`;
-  const getReachedObstacleIndex = (lane: RaceLaneSimulation | undefined) => {
-    if (!lane || step === 'intro') return -1;
-    const progress = getLaneProgress(lane);
-    return race.obstacles.reduce((reachedIndex, obstacle, obstacleIndex) => (
-      progress >= obstacle.position ? obstacleIndex : reachedIndex
-    ), -1);
-  };
-  const getCurrentLaneObstacleIndex = (lane: RaceLaneSimulation | undefined, laneIndex: number) => {
-    const stageObstacleIndex = Math.min(race.obstacles.length - 1, Math.max(0, raceStepProgress[step] - 1));
-    if (step === 'intro' || step === 'winner') return -1;
-    const reachedIndex = getReachedObstacleIndex(lane);
-    if (prefersReducedMotion) return reachedIndex < stageObstacleIndex ? -1 : reachedIndex;
-
-    const runnerAnchor = currentRunnerAnchors[laneIndex];
-    if (typeof runnerAnchor !== 'number') return -1;
-    const contactStart = runnerAnchor - RACE_OBSTACLE_CONTACT_WINDOW_PERCENT;
-    const contactEnd = runnerAnchor + RACE_OBSTACLE_CONTACT_WINDOW_PERCENT;
-    const stageObstacleIndices = race.obstacles
-      .map((obstacle, obstacleIndex) => ({ obstacle, obstacleIndex }))
-      .filter(({ obstacleIndex }) => obstacleIndex >= stageObstacleIndex);
-    const contactedObstacle = stageObstacleIndices.find(({ obstacle }) => {
-      const obstacleAnchor = Number.parseFloat(getRaceWorldScreenAnchor(obstacle.position, worldTravelPercent));
-      return obstacleAnchor >= contactStart && obstacleAnchor <= contactEnd;
-    });
-    return contactedObstacle?.obstacleIndex ?? -1;
-  };
+  const currentObstacleIndex = step === 'intro' ? -1 : Math.min(race.obstacles.length - 1, raceStepProgress[step] - 1);
+  const currentObstacle = currentObstacleIndex >= 0 ? race.obstacles[currentObstacleIndex] : null;
+  const currentObstacleCopy = currentObstacle
+    ? `${currentObstacle.label}: ${currentObstacle.description}`
+    : 'The route is being set. Four trouble spots are waiting beyond the starting lantern.';
   const isAnnouncementPhase = step === 'intro' && !finishCrossed;
   const showRaceStartGraphic = isAnnouncementPhase && raceStartGraphicVisible;
   const displayedContestants = isAnnouncementPhase && announcementCardsVisible
@@ -2147,127 +2356,16 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
             </section>
           )}
           <div className="race-track-label font-mono-ui text-[9px] uppercase tracking-[.16em] text-[#bca99b]"><span>start</span><span>finish</span></div>
-          <div className="race-course-viewport">
-            <div
-              className="race-world-track"
-              style={{
-                width: `${RACE_BACKGROUND_TRACK_WIDTH_PX}px`,
-                transform: `translateX(-${worldTravelPercent}%)`,
-              }}
-              data-world-travel-percent={worldTravelPercent.toFixed(3)}
-            >
-              <div className="race-scenery-track" aria-hidden="true">
-                {RACE_BACKGROUND_SEQUENCE.map((scene, index) => (
-                  <div
-                    className={`race-scenery-panel race-scenery-panel-${index}`}
-                    key={scene.id}
-                    data-scene-id={scene.id}
-                    data-destination={scene.isDestination || undefined}
-                    style={{ '--race-scene-aspect-ratio': scene.aspectRatio } as CSSProperties}
-                  >
-                    <img
-                      className="race-scenery-image"
-                      src={`${RACE_BACKGROUND_BASE}/${scene.file}`}
-                      alt=""
-                      draggable="false"
-                    />
-                  </div>
-                ))}
-              </div>
-              <div className="race-course-road">
-                {race.obstacles.map((obstacle, obstacleIndex) => (
-                  <span
-                    className={`race-obstacle race-obstacle-${obstacle.kind}`}
-                    style={{
-                      left: getRaceObstacleLeftCss(obstacleIndex),
-                      ...(getRaceObstacleBottomPx(obstacleIndex) === undefined
-                        ? {}
-                        : { bottom: `${getRaceObstacleBottomPx(obstacleIndex)}px` }),
-                    }}
-                    key={obstacle.id}
-                    title={obstacle.label}
-                    aria-hidden="true"
-                  >
-                    <span className="race-obstacle-art">
-                      <img src={obstacle.imageSrc} alt="" draggable="false" />
-                    </span>
-                  </span>
-                ))}
-                {contestants.map((persona) => {
-                  return (
-                    <div className="race-lane" key={persona.id}>
-                    </div>
-                  );
-                })}
-              </div>
-              <div
-                className="race-finish-marker race-finish-marker-main"
-                style={{
-                  '--race-finish-marker-angle': `${RACE_BACKGROUND_FINISH_MARKER_ANGLE_DEG}deg`,
-                  '--race-finish-marker-road-length': `${RACE_BACKGROUND_FINISH_MARKER_ROAD_LENGTH_PX}px`,
-                  '--race-finish-marker-road-top': `${RACE_BACKGROUND_FINISH_MARKER_ROAD_TOP_PX}px`,
-                  left: `${RACE_BACKGROUND_FINISH_MARKER_X_PX}px`,
-                } as CSSProperties}
-                aria-label="Finish line"
-              />
-            </div>
-            <div className="race-runner-overlay">
-              {contestants.map((persona, index) => {
-                const lane = raceLanes[index];
-                const laneProgress = getLaneProgress(lane);
-                const laneCurrentObstacleIndex = getCurrentLaneObstacleIndex(lane, index);
-                const laneCurrentObstacle = laneCurrentObstacleIndex >= 0 ? race.obstacles[laneCurrentObstacleIndex] : null;
-                const encounter = laneCurrentObstacle ? lane?.encounters[laneCurrentObstacle.id] : undefined;
-                 const runnerProfile = {
-                   startPosition: lane?.positions.intro ?? 0,
-                   baseSpeedMultiplier: lane?.baseSpeedMultiplier ?? 1,
-                   events: lane?.speedEvents ?? [],
-                 };
-                 const runnerSpeedMultiplier = getRunnerEffectiveSpeed(runnerProfile, raceClockMs);
-                 const runnerReaction = laneCurrentObstacle && encounter ? getRaceRunnerReaction(laneCurrentObstacle.kind, encounter.result) : 'ready';
-                  const isWinner = (winner?.id ?? race.winnerId) === persona.id;
-                   const hasObstacleReaction = hasNegativeObstacleImpact(encounter?.result);
-                  const finishAction = getRaceRunnerFinishAction(finishCrossed, isWinner);
-                  const runnerAction: MovementAction = finishAction
-                    ?? (hasObstacleReaction
-                      ? 'fall'
-                      : step === 'intro'
-                        ? 'idle'
-                        : getRunnerMovementState(runnerProfile, raceClockMs));
-                   const movementAnimationKey = finishAction
-                     ? `${finishAction}-${persona.id}`
-                    : hasObstacleReaction
-                      ? `${step}-${laneCurrentObstacle?.id ?? 'reaction'}-${runnerReaction}`
-                      : step;
-                  const runnerScreenAnchor = formatRunnerAnchor(currentRunnerAnchors[index]);
-                 return (
-                   <div className="race-runner-lane" key={persona.id} data-persona-id={persona.id} data-runner-reaction={runnerReaction}>
-                    <div
-                       className="race-runner"
-                      style={{
-                        '--race-intro-anchor': formatRunnerAnchor(stageRunnerAnchors.intro[index]),
-                        '--race-warmup-anchor': formatRunnerAnchor(stageRunnerAnchors.warmup[index]),
-                        '--race-matchup-anchor': formatRunnerAnchor(stageRunnerAnchors.matchup[index]),
-                        '--race-finale-anchor': formatRunnerAnchor(stageRunnerAnchors.finale[index]),
-                        '--race-runner-anchor': runnerScreenAnchor,
-                      } as CSSProperties}
-                    >
-                      <span className="race-runner-sprite">
-                        <MovementSprite
-                          persona={persona}
-                          action={runnerAction}
-                          animationKey={movementAnimationKey}
-                           speedMultiplier={finishAction ? 1 : runnerSpeedMultiplier}
-                          scaleMultiplier={persona.id === 'panko' ? 0.8 : undefined}
-                          prefersReducedMotion={prefersReducedMotion}
-                        />
-                      </span>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
+           <RaceLiveRenderer
+             contestants={contestants}
+             winner={winner}
+             step={step}
+             race={race}
+             finishCrossed={finishCrossed}
+             raceStartedAt={raceStartedAt}
+             prefersReducedMotion={prefersReducedMotion}
+             onFrameState={(obstacleIndexes) => raceFrameStateCallback.current(obstacleIndexes)}
+           />
           {SHOW_RACE_COURSE_REPORT && (
             <>
           <div className="race-event-report" role="status" aria-live="polite">
@@ -2290,7 +2388,7 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
             <div className="race-encounter-row" aria-label="Contestant obstacle results">
               {contestants.map((persona, index) => {
                 const lane = race.lanes.find((candidate) => candidate.personaId === persona.id);
-                const laneCurrentObstacleIndex = getCurrentLaneObstacleIndex(lane, index);
+                 const laneCurrentObstacleIndex = raceContactState[index] ?? -1;
                 const laneCurrentObstacle = laneCurrentObstacleIndex >= 0 ? race.obstacles[laneCurrentObstacleIndex] : null;
                 const encounter = laneCurrentObstacle ? lane?.encounters[laneCurrentObstacle.id] : null;
                 return (

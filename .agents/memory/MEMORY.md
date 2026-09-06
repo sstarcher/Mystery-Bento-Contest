@@ -2,3 +2,4 @@
 - [Sprite sheet boundary audit](sprite-sheet-boundary-audit.md) — inspect silhouette continuity at nominal frame edges; source poses can cross cell boundaries.
 - [Movement sprite asset pipeline](movement-sprite-assets.md) — preserve high-resolution uploads but render transparent reduced sheets with explicit grids.
 - [Mystery Bento build environment](mystery-bento-build-environment.md) — direct Vite builds need PORT and BASE_PATH from the managed workflow.
+- [Race performance architecture](race-performance-architecture.md) — keep continuous motion in imperative transforms and React updates discrete race presentation changes only.
