@@ -1,5 +1,8 @@
 import {
+  RACE_BACKGROUND_CANVAS_WIDTH_PX,
   RACE_BACKGROUND_FINISH_TRAVEL_PERCENT,
+  RACE_BACKGROUND_FINISH_MARKER_X_PX,
+  RACE_BACKGROUND_TRACK_WIDTH_PX,
   RACE_BACKGROUND_TRACK_WIDTH_MULTIPLIER,
 } from './race-backgrounds';
 
@@ -64,6 +67,7 @@ export const RACE_RUNNER_PRESENTATION_TOP_PX = 470;
 export const RACE_RUNNER_OVERLAY_TOP_PX = 460;
 export const RACE_RUNNER_LANE_HEIGHT_PX = 87;
 export const RACE_RUNNER_NORMALIZED_BASELINE_MAX_PX = 220;
+export const RACE_FINISH_VISIBLE_FRACTION = 0.98;
 
 export const RACE_STAGE_OBSTACLE_INDICES: Record<Exclude<RaceTimelineStage, 'intro' | 'winner'>, number[]> = {
   warmup: [0],
@@ -79,6 +83,50 @@ export function getRaceStageObstacleIndices(stage: RaceTimelineStage, obstacleCo
 
 export function getRaceFinishCrossingOffset(prefersReducedMotion: boolean) {
   return prefersReducedMotion ? 0 : RACE_STAGE_DURATIONS.finale;
+}
+
+export function getRaceFinishVisibleOffset(prefersReducedMotion: boolean) {
+  return prefersReducedMotion
+    ? 0
+    : Math.round(
+      RACE_STAGE_DURATIONS.finale
+      * (RACE_FINISH_VISIBLE_FRACTION
+        * (RACE_FINALE_WORLD_END_PERCENT - RACE_FINALE_WORLD_START_PERCENT)
+        / (RACE_FINALE_WORLD_END_PERCENT - RACE_FINALE_WORLD_START_PERCENT)),
+    );
+}
+
+export function getRaceFinishHandoffProgress(
+  stage: RaceTimelineStage,
+  elapsedMs: number,
+  prefersReducedMotion: boolean,
+) {
+  if (stage === 'winner' || prefersReducedMotion) return 1;
+  if (stage !== 'finale') return 0;
+  const finishVisibleOffset = getRaceFinishVisibleOffset(false);
+  const crossingDuration = RACE_STAGE_DURATIONS.finale - finishVisibleOffset;
+  if (crossingDuration <= 0) return 1;
+  return Math.max(0, Math.min(1, (elapsedMs - finishVisibleOffset) / crossingDuration));
+}
+
+export function getRaceFinishMarkerScreenAnchor(worldTravelPercent: number) {
+  const markerScreenX = RACE_BACKGROUND_FINISH_MARKER_X_PX
+    - (worldTravelPercent / 100) * RACE_BACKGROUND_TRACK_WIDTH_PX;
+  return (markerScreenX / RACE_BACKGROUND_CANVAS_WIDTH_PX) * 100;
+}
+
+export function getRaceFinishHandoffAnchor(
+  startAnchor: number,
+  resolvedAnchor: number,
+  handoffProgress: number,
+  finishMarkerAnchor?: number,
+  isWinner = false,
+) {
+  const targetAnchor = isWinner && typeof finishMarkerAnchor === 'number'
+    ? finishMarkerAnchor
+    : resolvedAnchor;
+  const progress = Math.max(0, Math.min(1, handoffProgress));
+  return startAnchor + (targetAnchor - startAnchor) * progress;
 }
 
 export function getRaceRunnerFinishAction(

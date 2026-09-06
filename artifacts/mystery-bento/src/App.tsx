@@ -62,6 +62,10 @@ import {
 import {
   getFirstRunnerObstacleHitOffset as getTimelineFirstRunnerObstacleHitOffset,
   getRaceFinishCrossingOffset,
+  getRaceFinishHandoffAnchor,
+  getRaceFinishHandoffProgress,
+  getRaceFinishMarkerScreenAnchor,
+  getRaceFinishVisibleOffset,
   getRaceRunnerFinishAction,
   getRaceAnnouncementRevealOffsets,
   getRaceAnnouncementCompletionDelay,
@@ -72,7 +76,6 @@ import {
   getRaceWorldScreenAnchor,
   getRaceWorldTravelPercentAtTime,
   RACE_FINALE_WORLD_END_PERCENT,
-  RACE_FINALE_WORLD_START_PERCENT,
   RACE_LAST_CONTESTANT_PAUSE_MS,
   RACE_MATCHUP_WORLD_END_PERCENT,
   RACE_OBSTACLE_CONTACT_WINDOW_PERCENT,
@@ -510,17 +513,7 @@ const contestStepOffsets: Record<ContestStep, number> = {
   finale: contestDurations.intro + contestDurations.warmup + contestDurations.matchup,
   winner: contestDurations.intro + contestDurations.warmup + contestDurations.matchup + contestDurations.finale,
 };
-const RACE_FINISH_VISIBLE_FRACTION = 0.98;
 const RACE_FINISH_ANNOUNCEMENT_DELAY_MS = 120;
-const RACE_FINISH_VISIBLE_OFFSET_MS = Math.round(
-  contestDurations.finale
-  * (RACE_FINISH_VISIBLE_FRACTION * (RACE_FINALE_WORLD_END_PERCENT - RACE_FINALE_WORLD_START_PERCENT)
-    / (RACE_FINALE_WORLD_END_PERCENT - RACE_FINALE_WORLD_START_PERCENT)),
-);
-
-function getRaceFinishVisibleOffset(prefersReducedMotion: boolean) {
-  return prefersReducedMotion ? 0 : RACE_FINISH_VISIBLE_OFFSET_MS;
-}
 
 function getRaceFinishVisibleAt(startedAt: number, prefersReducedMotion: boolean) {
   return startedAt + RACE_STAGE_OFFSETS.finale + getRaceFinishVisibleOffset(prefersReducedMotion);
@@ -1689,10 +1682,46 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
     matchup: getRaceRunnerScreenAnchors(raceLanes.map((lane) => lane?.positions.matchup ?? 52), introRunnerPositions),
     finale: getRaceRunnerScreenAnchors(raceLanes.map((lane) => lane?.positions.finale ?? 78), introRunnerPositions),
   };
-  const currentRunnerAnchors = getRaceRunnerScreenAnchors(
+  const continuousRunnerAnchors = getRaceRunnerScreenAnchors(
     raceLanes.map((lane) => getLaneProgress(lane)),
     introRunnerPositions,
   );
+  const finishHandoffStartAnchors = getRaceRunnerScreenAnchors(
+    raceLanes.map((lane) => lane
+      ? getContinuousRunnerPosition(
+        {
+          startPosition: lane.positions.intro,
+          baseSpeedMultiplier: lane.baseSpeedMultiplier,
+          events: lane.speedEvents,
+        },
+        RACE_STAGE_OFFSETS.finale + getRaceFinishVisibleOffset(false),
+        RACE_FINALE_WORLD_END_PERCENT,
+        RACE_RACE_DURATION_MS,
+      )
+      : 0),
+    introRunnerPositions,
+  );
+  const resolvedFinishAnchors = getRaceRunnerScreenAnchors(
+    raceLanes.map((lane) => lane?.positions.winner ?? lane?.positions.finale ?? 78),
+    introRunnerPositions,
+  );
+  const finishHandoffProgress = getRaceFinishHandoffProgress(
+    step,
+    raceClockMs - RACE_STAGE_OFFSETS[step],
+    prefersReducedMotion,
+  );
+  const finishMarkerAnchor = getRaceFinishMarkerScreenAnchor(RACE_FINALE_WORLD_END_PERCENT);
+  const currentRunnerAnchors = continuousRunnerAnchors.map((anchor, index) => (
+    finishHandoffProgress > 0
+      ? getRaceFinishHandoffAnchor(
+        finishHandoffStartAnchors[index] ?? anchor,
+        resolvedFinishAnchors[index] ?? anchor,
+        finishHandoffProgress,
+        finishMarkerAnchor,
+        (winner?.id ?? race.winnerId) === contestants[index]?.id,
+      )
+      : anchor
+  ));
   const formatRunnerAnchor = (anchor: number | undefined) => `${(anchor ?? 50).toFixed(3)}%`;
   const getReachedObstacleIndex = (lane: RaceLaneSimulation | undefined) => {
     if (!lane || step === 'intro') return -1;
@@ -2151,9 +2180,7 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
                     : hasObstacleReaction
                       ? `${step}-${laneCurrentObstacle?.id ?? 'reaction'}-${runnerReaction}`
                       : step;
-                 const runnerScreenAnchor = isWinner && (step === 'winner' || finishCrossed)
-                   ? 'var(--race-finish-anchor)'
-                  : formatRunnerAnchor(currentRunnerAnchors[index]);
+                  const runnerScreenAnchor = formatRunnerAnchor(currentRunnerAnchors[index]);
                  return (
                    <div className="race-runner-lane" key={persona.id} data-persona-id={persona.id} data-runner-reaction={runnerReaction}>
                     <div
