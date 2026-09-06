@@ -40,16 +40,16 @@ export const RACE_BACKGROUND_SEQUENCE: RaceBackgroundScene[] = [
   {
     id: 'lantern-crossing',
     file: 'race-background-04-lantern-crossing.webp',
-    sourceAsset: 'scene4-updated_1788656562583.webp',
+    sourceAsset: 'scene4-updated-2_1788657345651.webp',
     label: 'bamboo lantern crossing',
-    aspectRatio: 6450 / 2593,
+    aspectRatio: 6441 / 2593,
   },
   {
     id: 'moonlit-pavilion',
     file: 'race-background-06-pavilion-destination.webp',
-    sourceAsset: 'scene5_1788656051116.webp',
+    sourceAsset: 'scene5-updated_1788657345651.webp',
     label: 'hilltop pavilion finish',
-    aspectRatio: 7172 / 2592,
+    aspectRatio: 7127 / 2593,
     isDestination: true,
   },
 ];
@@ -66,7 +66,7 @@ export const RACE_BACKGROUND_TRACK_WIDTH_MULTIPLIER =
 
 export const RACE_BACKGROUND_FINISH_SCREEN_ANCHOR_PERCENT = 88;
 export const RACE_BACKGROUND_FINISH_MARKER_OFFSET_PX = -200;
-export const RACE_BACKGROUND_FINISH_MARKER_ANGLE_DEG = 45;
+export const RACE_BACKGROUND_FINISH_MARKER_ANGLE_DEG = 90;
 export const RACE_BACKGROUND_FINISH_MARKER_X_PX = Math.round(
   RACE_BACKGROUND_TRACK_WIDTH_PX
   - RACE_BACKGROUND_CANVAS_WIDTH_PX
