@@ -2476,6 +2476,7 @@ function Home() {
     () => getRestaurantShelfItems(shelfPreviewCollectibles).map((item) => item.id),
     [shelfPreviewCollectibles],
   );
+  const showRestaurantCurios = ledger.length > 0 || Boolean(winner) || isCurioShelfDebug;
 
   useEffect(() => {
     setCurioPlacements((current) => {
@@ -2740,7 +2741,7 @@ function Home() {
               </div>
             </div>
           )}
-          <RestaurantCurioDisplays collectibles={shelfPreviewCollectibles} placements={curioPlacements} />
+          {showRestaurantCurios && <RestaurantCurioDisplays collectibles={shelfPreviewCollectibles} placements={curioPlacements} />}
           <div className="scene-content">
             <div className="restaurant-top-zone">
               <RestaurantControls onOpenCurio={setCurioView} ledgerCount={ledger.length} curioCount={collectibles.length} />
