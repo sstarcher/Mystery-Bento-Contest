@@ -111,6 +111,12 @@ For normal-motion race reactions, visible runner/obstacle contact is the authori
 
 **How to apply:** Derive contact from the rendered screen anchors for staged obstacles, keep outcomes deterministic, and retain the simulation-based fallback when motion is reduced.
 
+Obstacle callouts should announce the rendered obstacle's arrival at the viewport's right edge; reaction narration should remain attached to the first runner contact.
+
+**Why:** Spectators need advance notice of an approaching hazard, while the reaction line should still describe the actual encounter rather than the obstacle's entrance.
+
+**How to apply:** Schedule the reusable obstacle callout from the scrolling world-track entry point, then schedule the resolved reaction/result as a separate contact beat. Include shared horizontal obstacle offsets in the entry calculation.
+
 Obstacle speed effects should remain visibly consequential across the next race beat, not resolve almost immediately after contact.
 
 **Why:** Short, mild windows made the three runners visually bunch together for most of the course and weakened the readable cause-and-effect of hazards.

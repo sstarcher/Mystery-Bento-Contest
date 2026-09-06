@@ -72,6 +72,7 @@ export const RACE_RUNNER_LANE_HEIGHT_PX = 87;
 export const RACE_RUNNER_NORMALIZED_BASELINE_MAX_PX = 220;
 export const RACE_FINISH_VISIBLE_FRACTION = 0.98;
 export const RACE_FINISH_THRESHOLD_POSITION = RACE_BACKGROUND_FINISH_WORLD_POSITION;
+export const RACE_OBSTACLE_ENTRY_SCREEN_ANCHOR_PERCENT = 100;
 
 export const RACE_STAGE_OBSTACLE_INDICES: Record<Exclude<RaceTimelineStage, 'intro' | 'winner'>, number[]> = {
   warmup: [0],
@@ -131,6 +132,47 @@ export function getRaceWorldTravelPercentAtTime(stage: RaceTimelineStage, elapse
 
 export function getRaceWorldScreenAnchor(position: number, worldTravelPercent: number) {
   return `${(position * RACE_WORLD_TRACK_WIDTH_MULTIPLIER - worldTravelPercent * RACE_WORLD_TRACK_WIDTH_MULTIPLIER).toFixed(3)}%`;
+}
+
+export function getRaceObstacleEntryOffset(
+  stage: RaceTimelineStage,
+  obstacle: RaceTimelineObstacle,
+  prefersReducedMotion = false,
+  horizontalOffsetPx = 0,
+) {
+  if (stage === 'intro' || stage === 'winner' || prefersReducedMotion) return 0;
+
+  const stageDuration = RACE_STAGE_DURATIONS[stage];
+  const obstacleWorldPosition = obstacle.position
+    + (horizontalOffsetPx / RACE_BACKGROUND_TRACK_WIDTH_PX) * 100;
+  const getScreenAnchor = (stageElapsedMs: number) => Number.parseFloat(getRaceWorldScreenAnchor(
+    obstacleWorldPosition,
+    getRaceWorldTravelPercentAtTime(stage, stageElapsedMs, false),
+  ));
+  const startAnchor = getScreenAnchor(0);
+  if (startAnchor <= RACE_OBSTACLE_ENTRY_SCREEN_ANCHOR_PERCENT) return 0;
+  if (getScreenAnchor(stageDuration) > RACE_OBSTACLE_ENTRY_SCREEN_ANCHOR_PERCENT) {
+    return stageDuration;
+  }
+
+  // The obstacle is part of the scrolling world track. Solve for the first
+  // frame where its rendered anchor reaches the viewport's right edge instead
+  // of tying the callout to any runner's position or encounter result.
+  let low = 0;
+  let high = stageDuration;
+  for (let iteration = 0; iteration < 24; iteration += 1) {
+    const middle = (low + high) / 2;
+    if (getScreenAnchor(middle) <= RACE_OBSTACLE_ENTRY_SCREEN_ANCHOR_PERCENT) high = middle;
+    else low = middle;
+  }
+  let entryMs = Math.round(high);
+  while (
+    entryMs < stageDuration
+    && getScreenAnchor(entryMs) > RACE_OBSTACLE_ENTRY_SCREEN_ANCHOR_PERCENT
+  ) {
+    entryMs += 1;
+  }
+  return entryMs;
 }
 
 export function getRaceRunnerScreenAnchors(

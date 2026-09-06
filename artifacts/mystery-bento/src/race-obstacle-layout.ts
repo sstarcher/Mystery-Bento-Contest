@@ -24,6 +24,10 @@ export function getRaceObstacleLeftCss(index: number) {
   return `calc(${placement.position}% + ${placement.offsetX}px)`;
 }
 
+export function getRaceObstacleHorizontalOffsetPx(index: number) {
+  return getPlacement(index).offsetX ?? 0;
+}
+
 export function getRaceObstacleBottomPx(index: number) {
   const offsetY = getPlacement(index).offsetY;
   return typeof offsetY === 'number'

@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import {
   getFirstRunnerObstacleHitOffset,
+  getRaceObstacleEntryOffset,
   getRaceFinishMarkerScreenAnchor,
   getRaceFinishVisibleOffset,
   getRaceRunnerFinishAction,
@@ -17,6 +18,7 @@ import {
   RACE_LAST_CONTESTANT_PAUSE_MS,
   RACE_MATCHUP_WORLD_END_PERCENT,
   RACE_OBSTACLE_CONTACT_WINDOW_PERCENT,
+  RACE_OBSTACLE_ENTRY_SCREEN_ANCHOR_PERCENT,
   RACE_FINISH_THRESHOLD_POSITION,
   RACE_RACE_DURATION_MS,
   RACE_RUNNER_MAX_SPREAD_PERCENT,
@@ -258,6 +260,34 @@ assert.equal(
   getRaceWorldScreenAnchor(50, 40),
   `${((50 - 40) * RACE_WORLD_TRACK_WIDTH_MULTIPLIER).toFixed(3)}%`,
   'full-width race projection should use the proportional panorama track',
+);
+
+const entryObstacle = obstacles[0];
+const entryOffset = getRaceObstacleEntryOffset('warmup', entryObstacle, false);
+const entryAnchor = Number.parseFloat(getRaceWorldScreenAnchor(
+  entryObstacle.position,
+  getRaceWorldTravelPercentAtTime('warmup', entryOffset, false),
+));
+assert.ok(
+  Math.abs(entryAnchor - RACE_OBSTACLE_ENTRY_SCREEN_ANCHOR_PERCENT) <= 0.02,
+  'obstacle callout timing should begin when the obstacle reaches the right edge',
+);
+assert.ok(
+  entryOffset === 0
+    || Number.parseFloat(getRaceWorldScreenAnchor(
+      entryObstacle.position,
+      getRaceWorldTravelPercentAtTime('warmup', entryOffset - 1, false),
+    )) > RACE_OBSTACLE_ENTRY_SCREEN_ANCHOR_PERCENT,
+  'obstacle entry solving should choose the first right-edge crossing',
+);
+assert.ok(
+  getRaceObstacleEntryOffset('warmup', entryObstacle, false, 200) > entryOffset,
+  'horizontal obstacle offsets should delay right-edge narration consistently with rendered placement',
+);
+assert.equal(
+  getRaceObstacleEntryOffset('warmup', entryObstacle, true),
+  0,
+  'reduced-motion obstacle narration should use the staged checkpoint immediately',
 );
 
 const contactLane = lineups[0][0];

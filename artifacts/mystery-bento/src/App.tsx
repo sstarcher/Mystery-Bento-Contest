@@ -62,6 +62,7 @@ import {
 import { getCurioDebugState, selectRestaurantShelfCollectibles } from './curio-debug';
 import {
   getFirstRunnerObstacleHitOffset as getTimelineFirstRunnerObstacleHitOffset,
+  getRaceObstacleEntryOffset as getTimelineRaceObstacleEntryOffset,
   getRaceFinishVisibleOffset,
    RACE_FINISH_THRESHOLD_POSITION,
   getRaceRunnerFinishAction,
@@ -86,6 +87,7 @@ import {
 import { ensureRaceEncounterVariety, resolveRaceEncounterResult } from './race-momentum';
 import {
   getRaceObstacleBottomPx,
+  getRaceObstacleHorizontalOffsetPx,
   getRaceObstacleLeftCss,
   RACE_OBSTACLE_PLACEMENTS,
 } from './race-obstacle-layout';
@@ -670,14 +672,27 @@ function buildAnnouncerSequence(contestants: Persona[], race: RaceSimulation, pr
     const obstacleMilestones = obstacleIndices
       .map((obstacleIndex) => race.obstacles[obstacleIndex])
       .filter((obstacle): obstacle is RaceObstacle => Boolean(obstacle))
-      .map((obstacle) => ({
-        obstacle,
-        hitOffset: getTimelineFirstRunnerObstacleHitOffset(stage, obstacle, race.lanes, race.obstacles, prefersReducedMotion),
-        // The obstacle cue is a milestone call, not a broad lead-in. Starting it
-        // at the first resolved crossing keeps narration attached to the visual
-        // encounter; the deadline below prevents queueing it late.
-        offset: getTimelineFirstRunnerObstacleHitOffset(stage, obstacle, race.lanes, race.obstacles, prefersReducedMotion),
-      }));
+      .map((obstacle, obstacleOrder) => {
+        const obstacleIndex = obstacleIndices[obstacleOrder];
+        const hitOffset = getTimelineFirstRunnerObstacleHitOffset(
+          stage,
+          obstacle,
+          race.lanes,
+          race.obstacles,
+          prefersReducedMotion,
+        );
+        return {
+          obstacle,
+          hitOffset,
+          offset: hitOffset,
+          entryOffset: getTimelineRaceObstacleEntryOffset(
+            stage,
+            obstacle,
+            prefersReducedMotion,
+            getRaceObstacleHorizontalOffsetPx(obstacleIndex),
+          ),
+        };
+      });
     const firstObstacleOffset = obstacleMilestones[0]?.offset ?? stageDuration;
     const transition = stageAnnouncerClips[stage];
     if (transition) {
@@ -702,7 +717,7 @@ function buildAnnouncerSequence(contestants: Persona[], race: RaceSimulation, pr
         clips: [transition],
       });
     }
-    obstacleMilestones.forEach(({ obstacle, offset }, obstacleOrder) => {
+    obstacleMilestones.forEach(({ obstacle, entryOffset, hitOffset }, obstacleOrder) => {
       const leaderId = race.checkpointLeaders[obstacle.id]?.afterId;
       const leadLane = race.lanes.find((lane) => lane.personaId === leaderId)
         ?? [...race.lanes].sort((a, b) => {
@@ -716,24 +731,35 @@ function buildAnnouncerSequence(contestants: Persona[], race: RaceSimulation, pr
       const clips: AnnouncerClip[] = [
         obstacleAnnouncerClips[obstacle.kind]?.[0],
       ].filter((clip): clip is AnnouncerClip => Boolean(clip));
+      const reactionClips: AnnouncerClip[] = [];
       if (encounter) {
         if (encounter.result === 'clear') {
-          clips.push(cleanLineAnnounced && reaction !== 'ready' ? reactionAnnouncerClips[reaction] : resultAnnouncerClips.clear);
+          reactionClips.push(cleanLineAnnounced && reaction !== 'ready' ? reactionAnnouncerClips[reaction] : resultAnnouncerClips.clear);
           cleanLineAnnounced = true;
         } else {
-          clips.push(reaction === 'ready'
+          reactionClips.push(reaction === 'ready'
             ? resultAnnouncerClips[encounter.result]
             : reactionAnnouncerClips[reaction]);
         }
       }
       beats.push({
-        id: `obstacle-${obstacle.id}`,
+        id: `obstacle-callout-${obstacle.id}`,
         step: stage,
         label: `${obstacle.label} callout`,
-        offset,
-        deadlineOffset: obstacleMilestones[obstacleOrder + 1]?.offset ?? stageDuration,
+        offset: entryOffset,
+        deadlineOffset: obstacleMilestones[obstacleOrder + 1]?.entryOffset ?? stageDuration,
         clips,
       });
+      if (reactionClips.length) {
+        beats.push({
+          id: `obstacle-reaction-${obstacle.id}`,
+          step: stage,
+          label: `${obstacle.label} reaction`,
+          offset: hitOffset,
+          deadlineOffset: obstacleMilestones[obstacleOrder + 1]?.hitOffset ?? stageDuration,
+          clips: reactionClips,
+        });
+      }
     });
 
     const stageObstacleIds = obstacleIndices
