@@ -5,7 +5,7 @@ import {
 
 export type RaceTimelineStage = 'intro' | 'warmup' | 'matchup' | 'finale' | 'winner';
 export type RaceTimelineEncounterResult = 'clear' | 'slow' | 'surge' | 'reroute';
-export type RaceRunnerFinishAction = 'victory' | 'fall';
+export type RaceRunnerFinishAction = 'victory' | 'idle';
 export type RaceTimelineObstacle = { id: string; position: number };
 export type RaceTimelineLane = {
   positions: Record<RaceTimelineStage, number>;
@@ -86,7 +86,7 @@ export function getRaceRunnerFinishAction(
   isWinner: boolean,
 ): RaceRunnerFinishAction | undefined {
   if (!finishCrossed) return undefined;
-  return isWinner ? 'victory' : 'fall';
+  return isWinner ? 'victory' : 'idle';
 }
 
 export function getRaceWorldTravelPercentAtTime(stage: RaceTimelineStage, elapsedMs: number, prefersReducedMotion: boolean) {

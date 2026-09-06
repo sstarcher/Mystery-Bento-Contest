@@ -89,7 +89,7 @@ assert.ok(Math.abs(getRaceWorldTravelPercentAtTime('finale', 0, false) - RACE_MA
 assert.equal(getRaceFinishCrossingOffset(false), RACE_STAGE_DURATIONS.finale);
 assert.equal(getRaceRunnerFinishAction(false, true), undefined);
 assert.equal(getRaceRunnerFinishAction(true, true), 'victory');
-assert.equal(getRaceRunnerFinishAction(true, false), 'fall');
+assert.equal(getRaceRunnerFinishAction(true, false), 'idle');
 assert.equal(getRaceFinishCrossingOffset(true), 0);
 assert.deepEqual(
   getRaceAnnouncementRevealOffsets(640, [700, 820, 910], 80),

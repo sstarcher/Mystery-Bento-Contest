@@ -2300,8 +2300,8 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
                       : step === 'intro'
                         ? 'idle'
                         : getRunnerMovementState(runnerProfile, raceClockMs));
-                  const movementAnimationKey = finishAction
-                    ? `${isWinner ? 'victory' : 'finish-fall'}-${persona.id}`
+                   const movementAnimationKey = finishAction
+                     ? `${finishAction}-${persona.id}`
                     : hasObstacleReaction
                       ? `${step}-${laneCurrentObstacle?.id ?? 'reaction'}-${runnerReaction}`
                       : step;
