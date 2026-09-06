@@ -42,8 +42,7 @@ import saffyGarnishPlate from './assets/derived/curios/saffy-garnish-plate.png';
 import saffyPlatingTweezers from './assets/derived/curios/saffy-plating-tweezers.png';
 import saffyPresentationFan from './assets/derived/curios/saffy-presentation-fan.png';
 import { getMovementSpriteSheet, type MovementAction } from './movement-sprite-config';
-import { getMovementFrameIndex, getVictoryFrameIndex } from './movement-sprite-actions';
-import { getMovementSpriteRenderStyle } from './movement-sprite-normalization';
+import { MovementSprite } from './movement-sprite';
 import {
   RACE_BACKGROUND_FINISH_MARKER_ANGLE_DEG,
   RACE_BACKGROUND_FINISH_MARKER_ROAD_LENGTH_PX,
@@ -90,7 +89,6 @@ import {
   getRunnerBaseSpeedMultiplier,
   getRunnerEffectiveSpeed,
   getRunnerMovementState,
-  getRunnerSpriteCadenceMultiplier,
   type RunnerSpeedEvent,
 } from './race-speed-model';
 
@@ -1417,158 +1415,6 @@ function AnimatedChefSprite({ persona }: { persona: Persona }) {
     </span>
   );
 }
-
-function MovementSprite({
-  persona,
-  action,
-  prefersReducedMotion,
-  animationKey,
-  speedMultiplier = 1,
-}: {
-  persona: Persona;
-  action: MovementAction;
-  prefersReducedMotion: boolean;
-  animationKey?: string;
-  speedMultiplier?: number;
-}) {
-  const [displayAction, setDisplayAction] = useState<MovementAction>(action);
-  const [frameIndex, setFrameIndex] = useState(0);
-  const [completedOneShotKey, setCompletedOneShotKey] = useState<string | null>(null);
-  const [isHoldingFall, setIsHoldingFall] = useState(false);
-  const activeFallKey = useRef<string | null>(null);
-  const oneShotKey = animationKey ?? action;
-  const effectiveAction = action === 'victory'
-    ? 'victory'
-    : action === 'fall'
-    ? completedOneShotKey === oneShotKey && !isHoldingFall ? 'run' : 'fall'
-    : isHoldingFall
-      ? 'fall'
-      : action === 'jump' && completedOneShotKey === oneShotKey
-        ? 'run'
-        : displayAction;
-  const requestedSpriteSheet = getMovementSpriteSheet(persona.id, effectiveAction);
-  const spriteSheet = requestedSpriteSheet ?? getMovementSpriteSheet(persona.id, 'run');
-  const renderedAction = requestedSpriteSheet ? effectiveAction : 'run';
-  const isOneShot = requestedSpriteSheet !== undefined
-    && effectiveAction === 'fall'
-    && (action === 'fall' || isHoldingFall);
-  const previousSpriteSource = useRef<string | null>(null);
-  const previousFrameCount = useRef(1);
-  const speedMultiplierRef = useRef(speedMultiplier);
-  speedMultiplierRef.current = speedMultiplier;
-
-  useEffect(() => {
-    if (action === 'victory') {
-      activeFallKey.current = null;
-      setCompletedOneShotKey(null);
-      setIsHoldingFall(false);
-      setDisplayAction('victory');
-      setFrameIndex(0);
-      return;
-    }
-    if (action === 'fall') {
-      if (activeFallKey.current !== oneShotKey) {
-        activeFallKey.current = oneShotKey;
-        setCompletedOneShotKey(null);
-        setIsHoldingFall(true);
-        setDisplayAction('fall');
-        setFrameIndex(0);
-      }
-      return;
-    }
-    if (isHoldingFall) return;
-    activeFallKey.current = null;
-    setCompletedOneShotKey(null);
-    setDisplayAction(action);
-    if (action === 'jump') setFrameIndex(0);
-  }, [action, animationKey]);
-
-  useEffect(() => {
-    const priorSource = previousSpriteSource.current;
-    const priorFrameCount = previousFrameCount.current;
-    previousSpriteSource.current = spriteSheet?.src ?? null;
-    previousFrameCount.current = spriteSheet?.frameCount ?? 1;
-    setFrameIndex((current) => {
-      if (!spriteSheet) return 0;
-      if (effectiveAction === 'victory') return 0;
-      if (effectiveAction === 'jump' && priorSource !== spriteSheet.src) return 0;
-      if (!priorSource || priorSource === spriteSheet.src) return current % spriteSheet.frameCount;
-      return Math.floor((current / priorFrameCount) * spriteSheet.frameCount) % spriteSheet.frameCount;
-    });
-  }, [effectiveAction, spriteSheet]);
-
-  useEffect(() => {
-    if (!spriteSheet || prefersReducedMotion || spriteSheet.frameCount < 2) return;
-    const cadenceMultiplier = isOneShot
-      ? 1
-      : getRunnerSpriteCadenceMultiplier(speedMultiplierRef.current);
-    const frameDurationMs = isOneShot
-      ? speedUpDurationMs(spriteSheet.frameDurationMs) / 2
-      : speedUpDurationMs(spriteSheet.frameDurationMs / cadenceMultiplier);
-    const timer = window.setInterval(() => {
-      setFrameIndex((current) => isOneShot
-        ? getMovementFrameIndex(current + 1, spriteSheet.frameCount, false)
-        : getMovementFrameIndex(current + 1, spriteSheet.frameCount, true));
-    }, frameDurationMs);
-    return () => window.clearInterval(timer);
-  }, [action, effectiveAction, prefersReducedMotion, spriteSheet, speedMultiplier]);
-
-  useEffect(() => {
-    if (!spriteSheet || !isOneShot || !prefersReducedMotion) return;
-    setFrameIndex(spriteSheet.frameCount - 1);
-  }, [isOneShot, prefersReducedMotion, spriteSheet]);
-
-  useEffect(() => {
-    if (!spriteSheet || !isOneShot || frameIndex < spriteSheet.frameCount - 1) return;
-    setCompletedOneShotKey(activeFallKey.current ?? oneShotKey);
-    setIsHoldingFall(false);
-    setDisplayAction(action);
-    activeFallKey.current = null;
-  }, [action, frameIndex, isOneShot, oneShotKey, spriteSheet]);
-
-  if (!spriteSheet) return <PersonaPortrait persona={persona} />;
-
-  // Action changes reuse this component, so the previous action may have a
-  // frame index beyond the new sheet's occupied range for one render. Normalize
-  // it before painting to prevent a transient blank cell on any racer.
-  const isFreshVictory = action === 'victory'
-    && requestedSpriteSheet !== undefined
-    && displayAction !== 'victory';
-  const visibleFrameIndex = isFreshVictory
-    ? 0
-    : action === 'victory'
-      ? getVictoryFrameIndex(frameIndex, spriteSheet.frameCount, prefersReducedMotion)
-      : getMovementFrameIndex(frameIndex, spriteSheet.frameCount, true);
-  const column = visibleFrameIndex % spriteSheet.columns;
-  const row = Math.floor(visibleFrameIndex / spriteSheet.columns);
-  const backgroundPosition = `${spriteSheet.columns > 1 ? (column / (spriteSheet.columns - 1)) * 100 : 0}% ${spriteSheet.rows > 1 ? (row / (spriteSheet.rows - 1)) * 100 : 0}%`;
-  const renderStyle = getMovementSpriteRenderStyle(spriteSheet.normalization);
-
-  return (
-    <span
-      className="race-movement-sprite"
-      role="img"
-      aria-label={`${persona.name} ${renderedAction} movement`}
-      data-movement-action={renderedAction}
-      data-movement-frame={visibleFrameIndex}
-      data-movement-grid={`${spriteSheet.columns}x${spriteSheet.rows}`}
-      style={{ transform: renderStyle.spriteTransform }}
-    >
-      <span
-        className="race-movement-frame"
-        aria-hidden="true"
-        style={{
-          transform: renderStyle.frameTransform,
-          transformOrigin: renderStyle.frameTransformOrigin,
-          backgroundImage: `url(${spriteSheet.src})`,
-          backgroundSize: `${spriteSheet.columns * 100}% ${spriteSheet.rows * 100}%`,
-          backgroundPosition,
-        }}
-      />
-    </span>
-  );
-}
-
 function getRestaurantShelfItems(collectibles: Collectible[]) {
   const byZone = (zone: CurioDisplayZone) => collectibles.filter((item) => getCurioDisplayZone(item) === zone);
   return (['house-keeps', 'tea-tools', 'spare-plates', 'little-finds', 'hanging-tools'] as CurioDisplayZone[])
@@ -2201,6 +2047,7 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
                   <PersonaPortrait persona={persona} large />
                   <h4 className="font-display text-lg font-bold">{persona.name}</h4>
                   <p className="mt-1 min-h-10 text-xs leading-4 text-[#765752]">{persona.flavorText}</p>
+                  <div className="mt-3 font-mono-ui text-[9px] uppercase tracking-wider text-[#a34d43]">{index === displayedContestants.length - 1 ? 'just announced' : 'on the line'}</div>
                 </div>
               ))}
             </div>

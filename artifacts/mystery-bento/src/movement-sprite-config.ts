@@ -118,7 +118,7 @@ export const movementSpriteSheets: Record<string, MovementSet> = {
     run: sheet('bibi', 'run', bibiRun, 8, 4, 31),
     jump: sheet('bibi', 'jump', bibiJump, 8, 4, 31),
     fall: sheet('bibi', 'fall', bibiFall, 8, 7, 56, FALL_FRAME_DURATION_MS),
-    victory: sheet('bibi', 'victory', bibiVictory, 8, 8, 64),
+    victory: sheet('bibi', 'victory', bibiVictory, 12, 12, 143),
   },
   toro: {
     idle: sheet('toro', 'idle', toroIdle, 7, 7, 48),
@@ -126,7 +126,7 @@ export const movementSpriteSheets: Record<string, MovementSet> = {
     run: sheet('toro', 'run', toroRun, 7, 7, 48),
     jump: sheet('toro', 'jump', toroJump, 7, 4, 27),
     fall: sheet('toro', 'fall', toroFall, 8, 7, 56, FALL_FRAME_DURATION_MS),
-    victory: sheet('toro', 'victory', toroVictory, 8, 8, 64),
+    victory: sheet('toro', 'victory', toroVictory, 12, 12, 143),
   },
   kiku: {
     idle: sheet('kiku', 'idle', kikuIdle, 8, 4, 29),
@@ -134,7 +134,7 @@ export const movementSpriteSheets: Record<string, MovementSet> = {
     run: sheet('kiku', 'run', kikuRun, 8, 7, 54),
     jump: sheet('kiku', 'jump', kikuJump, 8, 4, 28),
     fall: sheet('kiku', 'fall', kikuFall, 8, 7, 56, FALL_FRAME_DURATION_MS),
-    victory: sheet('kiku', 'victory', kikuVictory, 8, 8, 64),
+    victory: sheet('kiku', 'victory', kikuVictory, 12, 12, 143),
   },
   miso: {
     idle: sheet('miso', 'idle', misoIdle, 8, 7, 53),
@@ -142,7 +142,7 @@ export const movementSpriteSheets: Record<string, MovementSet> = {
     run: sheet('miso', 'run', misoRun, 8, 7, 50),
     jump: sheet('miso', 'jump', misoJump, 8, 5, 33),
     fall: sheet('miso', 'fall', misoFall, 8, 7, 56, FALL_FRAME_DURATION_MS),
-    victory: sheet('miso', 'victory', misoVictory, 8, 8, 64),
+    victory: sheet('miso', 'victory', misoVictory, 12, 12, 144),
   },
   nori: {
     idle: sheet('nori', 'idle', noriIdle, 8, 4, 30),
@@ -150,7 +150,7 @@ export const movementSpriteSheets: Record<string, MovementSet> = {
     run: sheet('nori', 'run', noriRun, 8, 5, 33),
     jump: sheet('nori', 'jump', noriJump, 8, 5, 40),
     fall: sheet('nori', 'fall', noriFall, 8, 7, 56, FALL_FRAME_DURATION_MS),
-    victory: sheet('nori', 'victory', noriVictory, 8, 8, 64),
+    victory: sheet('nori', 'victory', noriVictory, 12, 12, 144),
   },
   panko: {
     idle: sheet('panko', 'idle', pankoIdle, 8, 5, 34),
@@ -158,7 +158,7 @@ export const movementSpriteSheets: Record<string, MovementSet> = {
     run: sheet('panko', 'run', pankoRun, 7, 7, 48),
     jump: sheet('panko', 'jump', pankoJump, 8, 5, 33),
     fall: sheet('panko', 'fall', pankoFall, 8, 7, 56, FALL_FRAME_DURATION_MS),
-    victory: sheet('panko', 'victory', pankoVictory, 8, 8, 64),
+    victory: sheet('panko', 'victory', pankoVictory, 12, 12, 143),
   },
   pip: {
     idle: sheet('pip', 'idle', pipIdle, 8, 7, 52),
@@ -166,7 +166,7 @@ export const movementSpriteSheets: Record<string, MovementSet> = {
     run: sheet('pip', 'run', pipRun, 8, 7, 50),
     jump: sheet('pip', 'jump', pipJump, 8, 4, 32),
     fall: sheet('pip', 'fall', pipFall, 8, 7, 56, FALL_FRAME_DURATION_MS),
-    victory: sheet('pip', 'victory', pipVictory, 8, 8, 64),
+    victory: sheet('pip', 'victory', pipVictory, 12, 12, 143),
   },
   rollo: {
     idle: sheet('rollo', 'idle', rolloIdle, 8, 6, 46),
@@ -174,7 +174,7 @@ export const movementSpriteSheets: Record<string, MovementSet> = {
     run: sheet('rollo', 'run', rolloRun, 8, 5, 37),
     jump: sheet('rollo', 'jump', rolloJump, 8, 5, 34),
     fall: sheet('rollo', 'fall', rolloFall, 8, 7, 56, FALL_FRAME_DURATION_MS),
-    victory: sheet('rollo', 'victory', rolloVictory, 8, 8, 64),
+    victory: sheet('rollo', 'victory', rolloVictory, 12, 12, 144),
   },
   saffy: {
     idle: sheet('saffy', 'idle', saffyIdle, 8, 5, 33),
@@ -182,7 +182,7 @@ export const movementSpriteSheets: Record<string, MovementSet> = {
     run: sheet('saffy', 'run', saffyRun, 8, 6, 47),
     jump: sheet('saffy', 'jump', saffyJump, 8, 4, 32),
     fall: sheet('saffy', 'fall', saffyFall, 8, 7, 56, FALL_FRAME_DURATION_MS),
-    victory: sheet('saffy', 'victory', saffyVictory, 8, 8, 64),
+    victory: sheet('saffy', 'victory', saffyVictory, 12, 12, 143),
   },
   tilda: {
     idle: sheet('tilda', 'idle', tildaIdle, 8, 5, 37),
@@ -190,7 +190,7 @@ export const movementSpriteSheets: Record<string, MovementSet> = {
     run: sheet('tilda', 'run', tildaRun, 8, 6, 42),
     jump: sheet('tilda', 'jump', tildaJump, 8, 5, 36),
     fall: sheet('tilda', 'fall', tildaFall, 8, 7, 56, FALL_FRAME_DURATION_MS),
-    victory: sheet('tilda', 'victory', tildaVictory, 8, 8, 64),
+    victory: sheet('tilda', 'victory', tildaVictory, 12, 12, 143),
   },
   uma: {
     idle: sheet('uma', 'idle', umaIdle, 8, 4, 31),
@@ -198,7 +198,7 @@ export const movementSpriteSheets: Record<string, MovementSet> = {
     run: sheet('uma', 'run', umaRun, 8, 4, 32),
     jump: sheet('uma', 'jump', umaJump, 8, 5, 35),
     fall: sheet('uma', 'fall', umaFall, 8, 7, 56, FALL_FRAME_DURATION_MS),
-    victory: sheet('uma', 'victory', umaVictory, 8, 8, 64),
+    victory: sheet('uma', 'victory', umaVictory, 12, 12, 143),
   },
   sencha: {
     idle: sheet('sencha', 'idle', senchaIdle, 8, 7, 50),
@@ -206,7 +206,7 @@ export const movementSpriteSheets: Record<string, MovementSet> = {
     run: sheet('sencha', 'run', senchaRun, 8, 6, 42),
     jump: sheet('sencha', 'jump', senchaJump, 8, 4, 32),
     fall: sheet('sencha', 'fall', senchaFall, 8, 7, 56, FALL_FRAME_DURATION_MS),
-    victory: sheet('sencha', 'victory', senchaVictory, 8, 8, 64),
+    victory: sheet('sencha', 'victory', senchaVictory, 12, 12, 144),
   },
 };
 

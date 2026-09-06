@@ -52,7 +52,7 @@ export const movementSpriteNormalization: Record<string, NormalizationSet> = {
     run: normalized(1.226, 22.1),
     jump: normalized(1.27, 15.5),
     fall: normalized(1.178, 14.9),
-    victory: normalized(0.762, -33.8),
+    victory: normalized(1.122, 19.7),
   },
   toro: {
     idle: normalized(1.039, 13.1),
@@ -60,7 +60,7 @@ export const movementSpriteNormalization: Record<string, NormalizationSet> = {
     run: normalized(1, 0),
     jump: normalized(1.082, 15.4),
     fall: normalized(1.294, 30.2),
-    victory: normalized(0.794, -21.1),
+    victory: normalized(1.052, 11.7),
   },
   kiku: {
     idle: normalized(1.104, 10.4),
@@ -68,7 +68,7 @@ export const movementSpriteNormalization: Record<string, NormalizationSet> = {
     run: normalized(1, 6.8),
     jump: normalized(1.385, 41.2),
     fall: normalized(1.118, 13.9),
-    victory: normalized(0.773, -37.1),
+    victory: normalized(1.008, -4.4),
   },
   miso: {
     idle: normalized(1, 0),
@@ -76,7 +76,7 @@ export const movementSpriteNormalization: Record<string, NormalizationSet> = {
     run: normalized(2.022, 105.2),
     jump: normalized(1.465, 43.4),
     fall: normalized(1.292, 30.4),
-    victory: normalized(0.798, -29.6),
+    victory: normalized(1.118, 5.4),
   },
   nori: {
     idle: normalized(1.051, 3.3),
@@ -84,7 +84,7 @@ export const movementSpriteNormalization: Record<string, NormalizationSet> = {
     run: normalized(1.187, 10.7),
     jump: normalized(1.353, 22.1),
     fall: normalized(1.095, 9.4),
-    victory: normalized(0.812, -30.4),
+    victory: normalized(1.163, 20.7),
   },
   panko: {
     idle: normalized(1, 0),
@@ -92,7 +92,7 @@ export const movementSpriteNormalization: Record<string, NormalizationSet> = {
     run: normalized(1.056, 1.6),
     jump: normalized(1.496, 26.9),
     fall: normalized(1.222, 21.8),
-    victory: normalized(0.809, -28.7),
+    victory: normalized(0.973, 4.2),
   },
   pip: {
     idle: normalized(1.304, 16.9),
@@ -100,7 +100,7 @@ export const movementSpriteNormalization: Record<string, NormalizationSet> = {
     run: normalized(1, 0),
     jump: normalized(1.132, 36),
     fall: normalized(1.032, 8.9),
-    victory: normalized(0.69, -33.8),
+    victory: normalized(1.013, -2.1),
   },
   rollo: {
     idle: normalized(1, 0),
@@ -108,7 +108,7 @@ export const movementSpriteNormalization: Record<string, NormalizationSet> = {
     run: normalized(1.116, 12.1),
     jump: normalized(1.312, 12.4),
     fall: normalized(0.954, -2.3),
-    victory: normalized(0.67, -36.9),
+    victory: normalized(0.781, -38),
   },
   saffy: {
     idle: normalized(1, 0),
@@ -116,7 +116,7 @@ export const movementSpriteNormalization: Record<string, NormalizationSet> = {
     run: normalized(1.352, 31.1),
     jump: normalized(1.441, 57.8),
     fall: normalized(1.371, 34.2),
-    victory: normalized(0.838, -23.7),
+    victory: normalized(1.132, 10.3),
   },
   tilda: {
     idle: normalized(1, 0),
@@ -124,7 +124,7 @@ export const movementSpriteNormalization: Record<string, NormalizationSet> = {
     run: normalized(1.14, 15.7),
     jump: normalized(1.171, 11),
     fall: normalized(1.171, 22.9),
-    victory: normalized(0.732, -28.5),
+    victory: normalized(1.045, 5.8),
   },
   uma: {
     idle: normalized(1, 0),
@@ -132,7 +132,7 @@ export const movementSpriteNormalization: Record<string, NormalizationSet> = {
     run: normalized(1.228, 25.7),
     jump: normalized(1.347, 51.1),
     fall: normalized(1.252, 26.7),
-    victory: normalized(0.812, -26.1),
+    victory: normalized(1.07, -2.2),
   },
   sencha: {
     idle: normalized(1, 0),
@@ -140,6 +140,6 @@ export const movementSpriteNormalization: Record<string, NormalizationSet> = {
     run: normalized(1.035, 3.8),
     jump: normalized(1.239, 22.7),
     fall: normalized(1.054, 5.4),
-    victory: normalized(0.744, -32.9),
+    victory: normalized(1.032, -4.1),
   },
 };

@@ -44,79 +44,79 @@ const movementSpriteSheets: SpriteSheetAudit[] = [
   { file: 'bibi-run.png', columns: 8, rows: 4, occupiedFrames: 31 },
   { file: 'bibi-jump.png', columns: 8, rows: 4, occupiedFrames: 31 },
   { file: 'bibi-fall.png', columns: 8, rows: 7, occupiedFrames: 56 },
-  { file: 'bibi-victory.png', columns: 8, rows: 8, occupiedFrames: 64 },
+  { file: 'bibi-victory.png', columns: 12, rows: 12, occupiedFrames: 143 },
   { file: 'toro-idle.png', columns: 7, rows: 7, occupiedFrames: 48 },
   { file: 'toro-walk.png', columns: 8, rows: 6, occupiedFrames: 43 },
   { file: 'toro-run.png', columns: 7, rows: 7, occupiedFrames: 48 },
   { file: 'toro-jump.png', columns: 7, rows: 4, occupiedFrames: 27 },
   { file: 'toro-fall.png', columns: 8, rows: 7, occupiedFrames: 56 },
-  { file: 'toro-victory.png', columns: 8, rows: 8, occupiedFrames: 64 },
+  { file: 'toro-victory.png', columns: 12, rows: 12, occupiedFrames: 143 },
   { file: 'kiku-idle.png', columns: 8, rows: 4, occupiedFrames: 29 },
   { file: 'kiku-walk.png', columns: 8, rows: 6, occupiedFrames: 47 },
   { file: 'kiku-run.png', columns: 8, rows: 7, occupiedFrames: 54 },
   { file: 'kiku-jump.png', columns: 8, rows: 4, occupiedFrames: 28 },
   { file: 'kiku-fall.png', columns: 8, rows: 7, occupiedFrames: 56 },
-  { file: 'kiku-victory.png', columns: 8, rows: 8, occupiedFrames: 64 },
+  { file: 'kiku-victory.png', columns: 12, rows: 12, occupiedFrames: 143 },
   { file: 'miso-idle.png', columns: 8, rows: 7, occupiedFrames: 53 },
   { file: 'miso-walk.png', columns: 8, rows: 7, occupiedFrames: 49 },
   { file: 'miso-run.png', columns: 8, rows: 7, occupiedFrames: 50 },
   { file: 'miso-jump.png', columns: 8, rows: 5, occupiedFrames: 33 },
   { file: 'miso-fall.png', columns: 8, rows: 7, occupiedFrames: 56 },
-  { file: 'miso-victory.png', columns: 8, rows: 8, occupiedFrames: 64 },
+  { file: 'miso-victory.png', columns: 12, rows: 12, occupiedFrames: 144 },
   { file: 'nori-idle.png', columns: 8, rows: 4, occupiedFrames: 30 },
   { file: 'nori-walk.png', columns: 8, rows: 7, occupiedFrames: 49 },
   { file: 'nori-run.png', columns: 8, rows: 5, occupiedFrames: 33 },
   { file: 'nori-jump.png', columns: 8, rows: 5, occupiedFrames: 40 },
   { file: 'nori-fall.png', columns: 8, rows: 7, occupiedFrames: 56 },
-  { file: 'nori-victory.png', columns: 8, rows: 8, occupiedFrames: 64 },
+  { file: 'nori-victory.png', columns: 12, rows: 12, occupiedFrames: 144 },
   { file: 'panko-idle.png', columns: 8, rows: 5, occupiedFrames: 34 },
   { file: 'panko-walk.png', columns: 8, rows: 7, occupiedFrames: 49 },
   { file: 'panko-run.png', columns: 7, rows: 7, occupiedFrames: 48 },
   { file: 'panko-jump.png', columns: 8, rows: 5, occupiedFrames: 33 },
   { file: 'panko-fall.png', columns: 8, rows: 7, occupiedFrames: 56 },
-  { file: 'panko-victory.png', columns: 8, rows: 8, occupiedFrames: 64 },
+  { file: 'panko-victory.png', columns: 12, rows: 12, occupiedFrames: 143 },
   { file: 'pip-idle.png', columns: 8, rows: 7, occupiedFrames: 52 },
   { file: 'pip-walk.png', columns: 8, rows: 6, occupiedFrames: 48 },
   { file: 'pip-run.png', columns: 8, rows: 7, occupiedFrames: 50 },
   { file: 'pip-jump.png', columns: 8, rows: 4, occupiedFrames: 32 },
   { file: 'pip-fall.png', columns: 8, rows: 7, occupiedFrames: 56 },
-  { file: 'pip-victory.png', columns: 8, rows: 8, occupiedFrames: 64 },
+  { file: 'pip-victory.png', columns: 12, rows: 12, occupiedFrames: 143 },
   { file: 'rollo-idle.png', columns: 8, rows: 6, occupiedFrames: 46 },
   { file: 'rollo-walk.png', columns: 8, rows: 6, occupiedFrames: 46 },
   { file: 'rollo-run.png', columns: 8, rows: 5, occupiedFrames: 37 },
   { file: 'rollo-jump.png', columns: 8, rows: 5, occupiedFrames: 34 },
   { file: 'rollo-fall.png', columns: 8, rows: 7, occupiedFrames: 56 },
-  { file: 'rollo-victory.png', columns: 8, rows: 8, occupiedFrames: 64 },
+  { file: 'rollo-victory.png', columns: 12, rows: 12, occupiedFrames: 144 },
   { file: 'saffy-idle.png', columns: 8, rows: 5, occupiedFrames: 33 },
   { file: 'saffy-walk.png', columns: 8, rows: 5, occupiedFrames: 34 },
   { file: 'saffy-run.png', columns: 8, rows: 6, occupiedFrames: 47 },
   { file: 'saffy-jump.png', columns: 8, rows: 4, occupiedFrames: 32 },
   { file: 'saffy-fall.png', columns: 8, rows: 7, occupiedFrames: 56 },
-  { file: 'saffy-victory.png', columns: 8, rows: 8, occupiedFrames: 64 },
+  { file: 'saffy-victory.png', columns: 12, rows: 12, occupiedFrames: 143 },
   { file: 'tilda-idle.png', columns: 8, rows: 5, occupiedFrames: 37 },
   { file: 'tilda-walk.png', columns: 8, rows: 6, occupiedFrames: 42 },
   { file: 'tilda-run.png', columns: 8, rows: 6, occupiedFrames: 42 },
   { file: 'tilda-jump.png', columns: 8, rows: 5, occupiedFrames: 36 },
   { file: 'tilda-fall.png', columns: 8, rows: 7, occupiedFrames: 56 },
-  { file: 'tilda-victory.png', columns: 8, rows: 8, occupiedFrames: 64 },
+  { file: 'tilda-victory.png', columns: 12, rows: 12, occupiedFrames: 143 },
   { file: 'uma-idle.png', columns: 8, rows: 4, occupiedFrames: 31 },
   { file: 'uma-walk.png', columns: 8, rows: 7, occupiedFrames: 51 },
   { file: 'uma-run.png', columns: 8, rows: 4, occupiedFrames: 32 },
   { file: 'uma-jump.png', columns: 8, rows: 5, occupiedFrames: 35 },
   { file: 'uma-fall.png', columns: 8, rows: 7, occupiedFrames: 56 },
-  { file: 'uma-victory.png', columns: 8, rows: 8, occupiedFrames: 64 },
+  { file: 'uma-victory.png', columns: 12, rows: 12, occupiedFrames: 143 },
   { file: 'sencha-idle.png', columns: 8, rows: 7, occupiedFrames: 50 },
   { file: 'sencha-walk.png', columns: 8, rows: 7, occupiedFrames: 51 },
   { file: 'sencha-run.png', columns: 8, rows: 6, occupiedFrames: 42 },
   { file: 'sencha-jump.png', columns: 8, rows: 4, occupiedFrames: 32 },
   { file: 'sencha-fall.png', columns: 8, rows: 7, occupiedFrames: 56 },
-  { file: 'sencha-victory.png', columns: 8, rows: 8, occupiedFrames: 64 },
+  { file: 'sencha-victory.png', columns: 12, rows: 12, occupiedFrames: 144 },
 ];
 const movementSheetsByFile = new Map(movementSpriteSheets.map((sheet) => [sheet.file, sheet]));
 
 const runtimeAssetPath = (file: string) => fileURLToPath(new URL(`../public/runtime/video/cooking/${file}`, import.meta.url));
 const movementRuntimeAssetPath = (file: string) => fileURLToPath(new URL(`./assets/derived/contestants/movement/${file}`, import.meta.url));
-const normalizedMovementMetrics = new Map<string, { height: number; baseline: number }[]>();
+const normalizedMovementMetrics = new Map<string, { action: MovementAction; height: number; baseline: number }[]>();
 
 for (const sheet of [...spriteSheets, ...movementSpriteSheets]) {
   const file = movementSpriteSheets.includes(sheet)
@@ -166,12 +166,14 @@ for (const sheet of [...spriteSheets, ...movementSpriteSheets]) {
         `${sheet.file}: silhouette reaches a frame boundary`,
       );
     }
-    const normalizedHeight = median(boxes.map(([, height]) => height * normalization!.scale));
+    const normalizedHeight = median(boxes.map(([, height]) => (
+      height * (216 / frameSize) * normalization!.scale
+    )));
     const normalizedBaseline = median(boxes.map(([, height, , y]) => (
       216 + ((y + height) / frameSize * 216 - 216) * normalization!.scale + normalization!.baselineOffset
     )));
     const personaMetrics = normalizedMovementMetrics.get(personaId) ?? [];
-    personaMetrics.push({ height: normalizedHeight, baseline: normalizedBaseline });
+    personaMetrics.push({ action, height: normalizedHeight, baseline: normalizedBaseline });
     normalizedMovementMetrics.set(personaId, personaMetrics);
     assert.ok(normalizedHeight > 120, `${sheet.file}: normalized silhouette is unexpectedly small`);
     assert.ok(normalizedBaseline > 140 && normalizedBaseline < 220, `${sheet.file}: normalized baseline is outside the runner frame`);
@@ -179,11 +181,19 @@ for (const sheet of [...spriteSheets, ...movementSpriteSheets]) {
 }
 
 for (const [personaId, metrics] of normalizedMovementMetrics) {
-  const heights = metrics.map(({ height }) => height);
+  const regularMetrics = metrics.filter(({ action }) => action !== 'victory');
+  const regularHeights = regularMetrics.map(({ height }) => height);
+  const victoryMetric = metrics.find(({ action }) => action === 'victory');
   const baselines = metrics.map(({ baseline }) => baseline);
   assert.ok(
-    Math.max(...heights) - Math.min(...heights) <= 8,
+    Math.max(...regularHeights) - Math.min(...regularHeights) <= 8,
     `${personaId}: normalized action scale drifted by more than 8 rendered pixels`,
+  );
+  assert.ok(victoryMetric, `${personaId}: victory normalization metrics are missing`);
+  const regularMedianHeight = regularHeights.slice().sort((a, b) => a - b)[Math.floor(regularHeights.length / 2)];
+  assert.ok(
+    Math.abs(victoryMetric!.height - regularMedianHeight * 1.1) <= 4,
+    `${personaId}: victory pose should be 10% larger than its regular movement pose`,
   );
   assert.ok(
     Math.max(...baselines) - Math.min(...baselines) <= 3,
@@ -194,6 +204,8 @@ for (const [personaId, metrics] of normalizedMovementMetrics) {
 const raceCss = readFileSync(fileURLToPath(new URL('./index.css', import.meta.url)), 'utf8');
 const appSource = readFileSync(fileURLToPath(new URL('./App.tsx', import.meta.url)), 'utf8');
 const movementConfigSource = readFileSync(fileURLToPath(new URL('./movement-sprite-config.ts', import.meta.url)), 'utf8');
+const movementRendererSource = readFileSync(fileURLToPath(new URL('./movement-sprite.tsx', import.meta.url)), 'utf8');
+const debugPageSource = readFileSync(fileURLToPath(new URL('./pages/race-track-debug.tsx', import.meta.url)), 'utf8');
 assert.match(raceCss, new RegExp(`\\.race-course-road \\{ padding-top: ${RACE_RUNNER_PRESENTATION_TOP_PX}px; \\}`));
 assert.match(raceCss, new RegExp(`\\.race-runner-overlay \\{ padding-top: ${RACE_RUNNER_OVERLAY_TOP_PX}px; \\}`));
 assert.match(raceCss, new RegExp(`\\.race-lane, \\.race-runner-lane \\{ height: ${RACE_RUNNER_LANE_HEIGHT_PX}px;`));
@@ -203,17 +215,43 @@ assert.match(appSource, /result === 'slow' \|\| result === 'reroute'/);
 assert.match(appSource, /getRaceRunnerFinishAction\(finishCrossed, isWinner\)/);
 assert.match(appSource, /const runnerAction: MovementAction = finishAction/);
 assert.match(appSource, /action=\{runnerAction\}/);
-assert.match(appSource, /if \(effectiveAction === 'victory'\) return 0/);
+assert.match(movementRendererSource, /if \(effectiveAction === 'victory'\) return 0/);
 assert.match(appSource, /const winningPersona = winner \?\? contestOutcome\.current\?\.winner/);
 assert.match(appSource, /const outcome = contestOutcome\.current \?\? resolveContest\(contestants, createRng\(Date\.now\(\)\)\)/);
+assert.match(debugPageSource, /race-sprite-test-strip/);
+assert.match(debugPageSource, /sequence="fall"/);
+assert.match(debugPageSource, /sequence="victory"/);
+assert.match(debugPageSource, /Run → fall → run/);
+assert.match(debugPageSource, /Run → victory/);
+assert.match(movementRendererSource, /getMovementFrameIndex\(current \+ 1, spriteSheet\.frameCount, false\)/);
+assert.match(movementRendererSource, /getVictoryFrameIndex\(frameIndex, spriteSheet\.frameCount, prefersReducedMotion\)/);
+assert.match(movementRendererSource, /getMovementSpriteRenderStyle\(spriteSheet\.normalization\)/);
 assert.deepEqual(movementActions, ['idle', 'walk', 'run', 'jump', 'fall', 'victory']);
+const expectedVictoryGrid = { columns: 12, rows: 12 };
+const expectedVictoryFrameCounts: Record<string, number> = {
+  bibi: 143,
+  toro: 143,
+  kiku: 143,
+  miso: 144,
+  nori: 144,
+  panko: 143,
+  pip: 143,
+  rollo: 144,
+  saffy: 143,
+  tilda: 143,
+  uma: 143,
+  sencha: 144,
+};
 for (const [personaId, metadata] of Object.entries(victorySpriteMetadata)) {
-  assert.equal(metadata.columns, 8, `${personaId}: victory sheet should use an 8-column grid`);
-  assert.equal(metadata.rows, 8, `${personaId}: victory sheet should use an 8-row grid`);
-  assert.equal(metadata.frameCount, 64, `${personaId}: victory sheet should expose all authored frames`);
+  assert.deepEqual(
+    { columns: metadata.columns, rows: metadata.rows },
+    expectedVictoryGrid,
+    `${personaId}: victory sheet grid must isolate each authored pose`,
+  );
+  assert.equal(metadata.frameCount, expectedVictoryFrameCounts[personaId], `${personaId}: victory frame count must stop before any padded cell`);
   assert.match(
     movementConfigSource,
-    new RegExp(`victory: sheet\\('${personaId}', 'victory', ${personaId}Victory, 8, 8, 64\\)`),
+    new RegExp(`victory: sheet\\('${personaId}', 'victory', ${personaId}Victory, 12, 12, ${metadata.frameCount}\\)`),
     `${personaId}: victory sheet is not registered to its own persona`,
   );
   const asset = movementSheetsByFile.get(metadata.file);

@@ -1,4 +1,7 @@
-import { useRef, useState, type CSSProperties, type KeyboardEvent as ReactKeyboardEvent, type PointerEvent as ReactPointerEvent } from 'react';
+import { useEffect, useMemo, useRef, useState, type CSSProperties, type KeyboardEvent as ReactKeyboardEvent, type PointerEvent as ReactPointerEvent } from 'react';
+import { contestantDesigns } from '../contestant-design-config';
+import { MovementSprite } from '../movement-sprite';
+import { getMovementSpriteSheet, type MovementAction } from '../movement-sprite-config';
 import {
   RACE_BACKGROUND_CANVAS_HEIGHT_PX,
   RACE_BACKGROUND_FINISH_MARKER_ANGLE_DEG,
@@ -10,6 +13,165 @@ import {
 } from '../race-backgrounds';
 
 const RACE_BACKGROUND_BASE = `${import.meta.env.BASE_URL}runtime/images/race-backgrounds`;
+const FALL_SEQUENCE_RUN_MS = 1800;
+const FALL_SEQUENCE_FALL_MS = 2100;
+const VICTORY_SEQUENCE_RUN_MS = 1800;
+
+const spriteTestContestants = contestantDesigns.filter((contestant) => (
+  getMovementSpriteSheet(contestant.id, 'run')
+  && getMovementSpriteSheet(contestant.id, 'fall')
+  && getMovementSpriteSheet(contestant.id, 'victory')
+));
+
+type SpriteTestPersona = (typeof spriteTestContestants)[number];
+
+function usePrefersReducedMotion() {
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(
+    () => window.matchMedia('(prefers-reduced-motion: reduce)').matches,
+  );
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const onChange = () => setPrefersReducedMotion(mediaQuery.matches);
+    onChange();
+    mediaQuery.addEventListener('change', onChange);
+    return () => mediaQuery.removeEventListener('change', onChange);
+  }, []);
+
+  return prefersReducedMotion;
+}
+
+function SpriteTestLane({
+  sequence,
+  contestant,
+  prefersReducedMotion,
+}: {
+  sequence: 'fall' | 'victory';
+  contestant: SpriteTestPersona;
+  prefersReducedMotion: boolean;
+}) {
+  const [replayKey, setReplayKey] = useState(0);
+  const [elapsedMs, setElapsedMs] = useState(0);
+
+  useEffect(() => {
+    const startedAt = performance.now();
+    setElapsedMs(0);
+    const timer = window.setInterval(() => setElapsedMs(performance.now() - startedAt), 50);
+    return () => window.clearInterval(timer);
+  }, [replayKey]);
+
+  const phase = sequence === 'fall'
+    ? elapsedMs < FALL_SEQUENCE_RUN_MS
+      ? 'run'
+      : elapsedMs < FALL_SEQUENCE_RUN_MS + FALL_SEQUENCE_FALL_MS
+        ? 'fall'
+        : 'run'
+    : elapsedMs < VICTORY_SEQUENCE_RUN_MS ? 'run' : 'victory';
+  const action: MovementAction = phase;
+  const phaseLabel = sequence === 'fall'
+    ? phase === 'fall' ? 'Full fall reaction' : phase === 'run' && elapsedMs >= FALL_SEQUENCE_RUN_MS + FALL_SEQUENCE_FALL_MS ? 'Running again' : 'Running'
+    : phase === 'victory' ? 'Looping victory' : 'Running';
+  const sequenceLabel = sequence === 'fall' ? 'Run → fall → run' : 'Run → victory';
+
+  return (
+    <article className={`race-sprite-test-card race-sprite-test-card-${sequence}`} data-sprite-test-sequence={sequence}>
+      <div className="race-sprite-test-card-header">
+        <div>
+          <p className="race-sprite-test-sequence">{sequence === 'fall' ? 'Recovery handoff' : 'Finish handoff'}</p>
+          <h3>{sequenceLabel}</h3>
+        </div>
+        <button
+          type="button"
+          className="race-sprite-test-replay"
+          onClick={() => setReplayKey((current) => current + 1)}
+          aria-label={`Replay ${sequenceLabel} for ${contestant.name}`}
+        >
+          Replay
+        </button>
+      </div>
+      <div className="race-sprite-test-status" role="status" aria-live="polite">
+        <span>Current phase</span>
+        <strong>{phaseLabel}</strong>
+      </div>
+      <div className="race-sprite-test-stage">
+        <div className="race-sprite-test-ground" aria-hidden="true" />
+        <div className="race-sprite-test-runner" aria-label={`${contestant.name}, ${phaseLabel}`}>
+          <MovementSprite
+            persona={contestant}
+            action={action}
+            animationKey={`${sequence}-${replayKey}`}
+            prefersReducedMotion={prefersReducedMotion}
+          />
+        </div>
+      </div>
+      <p className="race-sprite-test-caption">
+        <strong>{contestant.name}</strong>
+        <span>{sequence === 'fall' ? 'Run, complete the fall sheet, then return to run.' : 'Run, then hold the looping victory sheet.'}</span>
+      </p>
+    </article>
+  );
+}
+
+function SpriteTestStrip() {
+  const prefersReducedMotion = usePrefersReducedMotion();
+  const [fallPersonaId, setFallPersonaId] = useState('pip');
+  const [victoryPersonaId, setVictoryPersonaId] = useState('sencha');
+  const fallPersona = useMemo(
+    () => spriteTestContestants.find((contestant) => contestant.id === fallPersonaId) ?? spriteTestContestants[0],
+    [fallPersonaId],
+  );
+  const victoryPersona = useMemo(
+    () => spriteTestContestants.find((contestant) => contestant.id === victoryPersonaId) ?? spriteTestContestants[1] ?? spriteTestContestants[0],
+    [victoryPersonaId],
+  );
+
+  if (!fallPersona || !victoryPersona) return null;
+
+  return (
+    <section className="race-sprite-test-strip" aria-labelledby="race-sprite-test-heading">
+      <div className="race-sprite-test-intro">
+        <div>
+          <p className="race-track-debug-kicker">Movement sheet check</p>
+          <h2 id="race-sprite-test-heading">Race sprite test strip</h2>
+          <p>Compare persona-specific transparent sheets, action handoffs, and shared baseline normalization without leaving the track context.</p>
+        </div>
+        <p className="race-sprite-test-motion-note">
+          {prefersReducedMotion ? 'Reduced motion: stable readable poses' : 'Animation preview: discrete authored frames'}
+        </p>
+      </div>
+      <div className="race-sprite-test-controls">
+        <label>
+          <span>Run → fall → run contestant</span>
+          <select
+            value={fallPersona.id}
+            onChange={(event) => setFallPersonaId(event.target.value)}
+            aria-label="Contestant for the run, fall, run sequence"
+          >
+            {spriteTestContestants.map((contestant) => (
+              <option value={contestant.id} key={contestant.id}>{contestant.name}</option>
+            ))}
+          </select>
+        </label>
+        <label>
+          <span>Run → victory contestant</span>
+          <select
+            value={victoryPersona.id}
+            onChange={(event) => setVictoryPersonaId(event.target.value)}
+            aria-label="Contestant for the run, victory sequence"
+          >
+            {spriteTestContestants.map((contestant) => (
+              <option value={contestant.id} key={contestant.id}>{contestant.name}</option>
+            ))}
+          </select>
+        </label>
+      </div>
+      <div className="race-sprite-test-cards">
+        <SpriteTestLane sequence="fall" contestant={fallPersona} prefersReducedMotion={prefersReducedMotion} />
+        <SpriteTestLane sequence="victory" contestant={victoryPersona} prefersReducedMotion={prefersReducedMotion} />
+      </div>
+    </section>
+  );
+}
 
 export default function RaceTrackDebugPage() {
   const viewportRef = useRef<HTMLDivElement>(null);
@@ -133,6 +295,7 @@ export default function RaceTrackDebugPage() {
       <p className="race-track-debug-help">
         Click the panorama to focus it. Use <kbd>←</kbd> <kbd>→</kbd>, <kbd>Home</kbd>, or <kbd>End</kbd> to pan with the keyboard.
       </p>
+      <SpriteTestStrip />
     </main>
   );
 }
