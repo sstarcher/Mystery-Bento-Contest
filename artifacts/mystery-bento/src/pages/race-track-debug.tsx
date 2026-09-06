@@ -134,6 +134,7 @@ function SpriteTestLane({
             persona={contestant}
             action={action}
             animationKey={`${sequence}-${replayKey}`}
+            scaleMultiplier={contestant.id === 'panko' ? 0.64 : undefined}
             prefersReducedMotion={prefersReducedMotion}
           />
         </div>

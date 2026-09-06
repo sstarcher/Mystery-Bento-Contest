@@ -225,7 +225,7 @@ assert.match(debugPageSource, /Run → fall → run/);
 assert.match(debugPageSource, /Run → victory/);
 assert.match(movementRendererSource, /getMovementFrameIndex\(current \+ 1, spriteSheet\.frameCount, false\)/);
 assert.match(movementRendererSource, /getVictoryFrameIndex\(frameIndex, spriteSheet\.frameCount, prefersReducedMotion\)/);
-assert.match(movementRendererSource, /getMovementSpriteRenderStyle\(spriteSheet\.normalization\)/);
+assert.match(movementRendererSource, /getMovementSpriteRenderStyle\(spriteSheet\.normalization, scaleMultiplier\)/);
 assert.deepEqual(movementActions, ['idle', 'walk', 'run', 'jump', 'fall', 'victory']);
 const expectedVictoryGrid = { columns: 12, rows: 12 };
 const expectedVictoryFrameCounts: Record<string, number> = {
