@@ -15,9 +15,11 @@ server, database, accounts, or environment secrets.
 - `pnpm --filter @workspace/mystery-bento run verify:curios` — verify image-only
   curio coverage and sizing
 - `pnpm --filter @workspace/mystery-bento run verify:race` — verify deterministic
-  race timing and momentum
+  race timing, momentum, and live/Track obstacle-layout synchronization
 - `pnpm --filter @workspace/mystery-bento run verify:sprites` — verify movement
   and cooking sprite-sheet boundaries
+- `pnpm --filter @workspace/mystery-bento run verify:assets` — verify canonical
+  asset counts, imports, runtime URLs, and review-queue boundaries
 
 ## Stack
 
@@ -31,6 +33,8 @@ server, database, accounts, or environment secrets.
 ## Where things live
 
 - `artifacts/mystery-bento/src/App.tsx` — the complete conveyor, meter, contest, collectible, and ledger experience.
+- `artifacts/mystery-bento/src/race-obstacle-layout.ts` — the shared four-checkpoint
+  layout consumed by the live race and Track inspector.
 - `artifacts/mystery-bento/src/index.css` — the lacquer-and-parchment visual system, pixel illustrations, and motion/reduced-motion rules.
 - `artifacts/mystery-bento/README.md` — canonical run guide, player behavior,
   asset map, and image audit.
@@ -43,12 +47,17 @@ server, database, accounts, or environment secrets.
 
 - The first version is frontend-only; localStorage is intentional because the experience is personal and does not require accounts or a server.
 - Contest outcomes are resolved once at launch with a seeded RNG so the animated, skipped, and reduced-motion paths share the same result.
+- The first contestant to reach the marker-derived finish threshold wins; all
+  lanes are frozen at that crossing snapshot rather than being moved to
+  synthetic finish anchors.
+- Live race obstacles and Track inspector obstacles consume one shared placement
+  module and are covered by the race verification suite.
 - The meter long-press is implemented as a focusable progressbar with pointer and keyboard support, while its visual guidance remains intentionally hidden.
 
 ## Product
 
 - Select one of four illustrated morsels to charge the Mystery Bento Meter by a randomized 7–16%.
-- Watch a short, spectator-only Persona Contest with six original kitchen personas.
+- Watch a short, spectator-only Persona Contest with twelve original kitchen personas.
 - Collect cosmetic curios and review recent winners in the Kitchen Curio Shelf and Contest Ledger.
 - Progress, history, and collectibles survive reload in the same browser.
 
@@ -60,6 +69,9 @@ _Populate as you build — explicit user instructions worth remembering across s
 
 - Contest completion is guarded so Skip scene and the automatic result path cannot award duplicate collectibles or ledger rows.
 - Reduced-motion mode keeps the same contest result and side effects but replaces the moving race with readable staged updates.
+- The Track inspector is a visual review surface, not a second source of race data;
+  checkpoint positions and obstacle offsets must remain in
+  `race-obstacle-layout.ts`.
 - Active image assets are checked into the artifact's source and public folders;
   no API or database is needed to load the experience.
 

@@ -44,6 +44,16 @@ The contest is resolved once per launch with seeded deterministic data. The
 animated, skipped, muted, unavailable-audio, and reduced-motion paths reuse the
 same winner, race events, collectible, and ledger entry.
 
+### Race resolution contract
+
+The race simulation advances each contestant continuously toward the
+marker-derived finish threshold at approximately `98.706%` of the course. The
+first contestant to reach that threshold is the winner. At that exact crossing
+time, the app snapshots every lane, freezes all runners at those positions,
+plays the winner's victory animation, and switches every non-winner to idle.
+Skip Scene and reduced-motion mode use the same resolved crossing snapshot; they
+do not interpolate runners to a separate finish endpoint.
+
 ## Hidden meter gesture
 
 The long-press interaction is intentionally not advertised in the visual UI.
@@ -79,6 +89,10 @@ Shelf or Contest Ledger to reset this browser's saved progress.
   the counter, 12 movement sprite sets for the race, and cooking sprite sheets
   for the winner reveal. Course obstacles appear once per obstacle position
   rather than once in every contestant lane.
+- The four obstacle checkpoints are shared by the live race and Track inspector:
+  18%, 40%, 62%, and 83%. Their horizontal and vertical presentation offsets
+  come from `src/race-obstacle-layout.ts`, so the two views cannot drift apart
+  silently.
 - Uma Udon is the enlarged and right-shifted fallback for the restaurant chef
   presentation.
 - Curio art is rendered through one square art-box contract with a shared
@@ -162,6 +176,12 @@ the restaurant header) to inspect the complete race panorama without starting
 a contest. Drag left and right, use the scrollbar, or focus the track and use
 the arrow keys.
 
+The inspector cycles obstacle art while preserving the live course layout. The
+first obstacle is intentionally lowered, and the other shared offsets are
+visualized in the same positions used by the live race. The
+`race-obstacle-layout.test.ts` check fails if the four checkpoint positions or
+their horizontal/vertical offsets change unexpectedly.
+
 ### Asset review queue
 
 The review queue is intentionally separate from active source and runtime
@@ -217,7 +237,8 @@ pnpm --filter @workspace/mystery-bento run build
 ```
 
 `verify:curios` checks all 36 image-backed variants, shared sizing, and the
-absence of legacy glyph paths. `verify:sprites` checks 60 runtime sheets for
+absence of legacy glyph paths. `verify:race` also checks the shared live/Track
+obstacle layout. `verify:sprites` checks 84 runtime sheets for
 valid grids, occupied frames, transparent padding, and frame-boundary safety.
 `verify:assets` scans active source imports and browser runtime URLs, checks
 that referenced files exist in the canonical folders, rejects legacy asset
