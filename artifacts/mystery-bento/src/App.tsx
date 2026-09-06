@@ -59,6 +59,7 @@ import {
   reconcileCurioPlacements,
   type CurioShelfPlacementMap,
 } from './curio-shelf-placements';
+import { getCurioDebugState, selectRestaurantShelfCollectibles } from './curio-debug';
 import {
   getFirstRunnerObstacleHitOffset as getTimelineFirstRunnerObstacleHitOffset,
   getRaceFinishVisibleOffset,
@@ -1460,13 +1461,13 @@ function AnimatedChefSprite({ persona }: { persona: Persona }) {
     </span>
   );
 }
-function getRestaurantShelfItems(collectibles: Collectible[]) {
+function getRestaurantShelfItems(collectibles: readonly Collectible[]) {
   const byZone = (zone: CurioDisplayZone) => collectibles.filter((item) => getCurioDisplayZone(item) === zone);
   return (['house-keeps', 'tea-tools', 'spare-plates', 'little-finds', 'hanging-tools'] as CurioDisplayZone[])
     .flatMap((zone) => byZone(zone));
 }
 
-function RestaurantCurioDisplays({ collectibles, placements }: { collectibles: Collectible[]; placements: CurioShelfPlacementMap }) {
+function RestaurantCurioDisplays({ collectibles, placements }: { collectibles: readonly Collectible[]; placements: CurioShelfPlacementMap }) {
   const latestCurioId = collectibles[0]?.id;
   const shelfItems = getRestaurantShelfItems(collectibles);
   const displayClass = (baseClass: string, item: Collectible) => `${baseClass} displayed-curio-${getCurioDisplayZone(item)}${item.id === latestCurioId ? ' displayed-curio-latest' : ''}`;
@@ -1503,7 +1504,21 @@ function PersonaPortrait({ persona, large = false }: { persona: Persona; large?:
   );
 }
 
-function RestaurantControls({ onOpenCurio, ledgerCount, curioCount }: { onOpenCurio: (view: 'shelf' | 'ledger') => void; ledgerCount: number; curioCount: number }) {
+function RestaurantControls({
+  onOpenCurio,
+  ledgerCount,
+  curioCount,
+  isDebugMode,
+  isCurioShowcaseEnabled,
+  onCurioShowcaseChange,
+}: {
+  onOpenCurio: (view: 'shelf' | 'ledger') => void;
+  ledgerCount: number;
+  curioCount: number;
+  isDebugMode: boolean;
+  isCurioShowcaseEnabled: boolean;
+  onCurioShowcaseChange: (enabled: boolean) => void;
+}) {
   return (
     <div className="restaurant-controls">
       <div className="restaurant-brand-lockup">
@@ -1520,7 +1535,21 @@ function RestaurantControls({ onOpenCurio, ledgerCount, curioCount }: { onOpenCu
         <button type="button" onClick={() => onOpenCurio('ledger')} className="curio-button" data-testid="button-open-ledger">
           <BookOpen className="h-3.5 w-3.5 text-[#f5c968]" aria-hidden="true" /><span>Ledger</span><span className="font-mono-ui text-[#f5c968]">{ledgerCount}</span>
         </button>
-        <a className="curio-button track-debug-nav-link" href={`${import.meta.env.BASE_URL}race-track-debug`}>Track</a>
+        {isDebugMode && (
+          <>
+            <label className="curio-debug-control" data-testid="debug-curio-showcase-control">
+              <input
+                type="checkbox"
+                checked={isCurioShowcaseEnabled}
+                onChange={(event) => onCurioShowcaseChange(event.currentTarget.checked)}
+                data-testid="toggle-curio-showcase"
+              />
+              <span>Full curio showcase</span>
+              <span className="curio-debug-control-state">{isCurioShowcaseEnabled ? 'on' : 'off'}</span>
+            </label>
+            <a className="curio-button track-debug-nav-link" href={`${import.meta.env.BASE_URL}race-track-debug`} data-testid="link-track-debug">Track</a>
+          </>
+        )}
       </nav>
     </div>
   );
@@ -2335,7 +2364,8 @@ function Home() {
   const [contestants, setContestants] = useState<Persona[]>([]);
   const [winner, setWinner] = useState<Persona | null>(null);
   const [liveStatus, setLiveStatus] = useState(acknowledgement);
-  const isCurioShelfDebug = new URLSearchParams(window.location.search).get('debug') === 'curio-shelf';
+  const { isDebugMode, initialShowcaseEnabled } = getCurioDebugState(window.location.search);
+  const [isCurioShowcaseEnabled, setIsCurioShowcaseEnabled] = useState(initialShowcaseEnabled);
   const holdTimer = useRef<number | null>(null);
   const contestTimer = useRef<number | null>(null);
   const finishTransitionTimer = useRef<number | null>(null);
@@ -2360,21 +2390,35 @@ function Home() {
     ?? lastWinner
     ?? null;
   const shelfPreviewCollectibles = useMemo(
-    () => isCurioShelfDebug ? showcaseCollectibles.slice(0, CURIO_SHELF_GRID.cellCount) : collectibles,
-    [collectibles, isCurioShelfDebug],
+    () => selectRestaurantShelfCollectibles(collectibles, showcaseCollectibles, {
+      isDebugMode,
+      showcaseEnabled: isCurioShowcaseEnabled,
+      maxItems: CURIO_SHELF_GRID.cellCount,
+    }),
+    [collectibles, isCurioShowcaseEnabled, isDebugMode],
   );
-  const shelfCurioIds = useMemo(
+  const earnedShelfCurioIds = useMemo(
+    () => getRestaurantShelfItems(collectibles).map((item) => item.id),
+    [collectibles],
+  );
+  const previewShelfCurioIds = useMemo(
     () => getRestaurantShelfItems(shelfPreviewCollectibles).map((item) => item.id),
     [shelfPreviewCollectibles],
   );
-  const showRestaurantCurios = ledger.length > 0 || Boolean(winner) || isCurioShelfDebug;
+  const previewCurioPlacements = useMemo(
+    () => isCurioShowcaseEnabled
+      ? reconcileCurioPlacements(previewShelfCurioIds, curioPlacements, () => 0.37)
+      : curioPlacements,
+    [curioPlacements, isCurioShowcaseEnabled, previewShelfCurioIds],
+  );
+  const showRestaurantCurios = collectibles.length > 0 || ledger.length > 0 || Boolean(winner) || isCurioShowcaseEnabled;
 
   useEffect(() => {
     setCurioPlacements((current) => {
-      const next = reconcileCurioPlacements(shelfCurioIds, current);
+      const next = reconcileCurioPlacements(earnedShelfCurioIds, current);
       return curioPlacementsEqual(current, next) ? current : next;
     });
-  }, [setCurioPlacements, shelfCurioIds]);
+  }, [earnedShelfCurioIds, setCurioPlacements]);
 
   useEffect(() => {
     setCollectibles((current) => {
@@ -2632,10 +2676,17 @@ function Home() {
               </div>
             </div>
           )}
-          {showRestaurantCurios && <RestaurantCurioDisplays collectibles={shelfPreviewCollectibles} placements={curioPlacements} />}
+          {showRestaurantCurios && <RestaurantCurioDisplays collectibles={shelfPreviewCollectibles} placements={previewCurioPlacements} />}
           <div className="scene-content">
             <div className="restaurant-top-zone">
-              <RestaurantControls onOpenCurio={setCurioView} ledgerCount={ledger.length} curioCount={collectibles.length} />
+              <RestaurantControls
+                onOpenCurio={setCurioView}
+                ledgerCount={ledger.length}
+                curioCount={collectibles.length}
+                isDebugMode={isDebugMode}
+                isCurioShowcaseEnabled={isCurioShowcaseEnabled}
+                onCurioShowcaseChange={setIsCurioShowcaseEnabled}
+              />
               <div className="restaurant-meter-bay">
                 <div className="lantern relative" aria-hidden="true" />
                 <div className="font-mono-ui text-[9px] uppercase tracking-[.14em] text-[#f5c968]">after-hours service</div>
