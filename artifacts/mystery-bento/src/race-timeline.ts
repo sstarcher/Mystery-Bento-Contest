@@ -81,10 +81,6 @@ export function getRaceStageObstacleIndices(stage: RaceTimelineStage, obstacleCo
     .filter((index) => index < obstacleCount);
 }
 
-export function getRaceFinishCrossingOffset(prefersReducedMotion: boolean) {
-  return prefersReducedMotion ? 0 : RACE_STAGE_DURATIONS.finale;
-}
-
 export function getRaceFinishVisibleOffset(prefersReducedMotion: boolean) {
   return prefersReducedMotion
     ? 0
@@ -96,37 +92,10 @@ export function getRaceFinishVisibleOffset(prefersReducedMotion: boolean) {
     );
 }
 
-export function getRaceFinishHandoffProgress(
-  stage: RaceTimelineStage,
-  elapsedMs: number,
-  prefersReducedMotion: boolean,
-) {
-  if (stage === 'winner' || prefersReducedMotion) return 1;
-  if (stage !== 'finale') return 0;
-  const finishVisibleOffset = getRaceFinishVisibleOffset(false);
-  const crossingDuration = RACE_STAGE_DURATIONS.finale - finishVisibleOffset;
-  if (crossingDuration <= 0) return 1;
-  return Math.max(0, Math.min(1, (elapsedMs - finishVisibleOffset) / crossingDuration));
-}
-
 export function getRaceFinishMarkerScreenAnchor(worldTravelPercent: number) {
   const markerScreenX = RACE_BACKGROUND_FINISH_MARKER_X_PX
     - (worldTravelPercent / 100) * RACE_BACKGROUND_TRACK_WIDTH_PX;
   return (markerScreenX / RACE_BACKGROUND_CANVAS_WIDTH_PX) * 100;
-}
-
-export function getRaceFinishHandoffAnchor(
-  startAnchor: number,
-  resolvedAnchor: number,
-  handoffProgress: number,
-  finishMarkerAnchor?: number,
-  isWinner = false,
-) {
-  const targetAnchor = isWinner && typeof finishMarkerAnchor === 'number'
-    ? finishMarkerAnchor
-    : resolvedAnchor;
-  const progress = Math.max(0, Math.min(1, handoffProgress));
-  return startAnchor + (targetAnchor - startAnchor) * progress;
 }
 
 export function getRaceRunnerFinishAction(

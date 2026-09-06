@@ -3,6 +3,7 @@ import {
   getContinuousRunnerPosition,
   getRunnerBaseSpeedMultiplier,
   getRunnerEffectiveSpeed,
+  getRunnerFinishCrossingTime,
   getRunnerMovementState,
   getRunnerSpriteCadenceMultiplier,
   type ContinuousRunnerProfile,
@@ -99,6 +100,22 @@ assert.ok(
 assert.ok(
   getContinuousRunnerPosition(baseProfile, 0, courseTravelEnd, raceDurationMs) === baseProfile.startPosition,
   'continuous movement should start at the authored starting position',
+);
+const finishThreshold = 88;
+const baseFinishCrossingTime = getRunnerFinishCrossingTime(
+  baseProfile,
+  finishThreshold,
+  courseTravelEnd,
+  raceDurationMs,
+);
+assert.notEqual(baseFinishCrossingTime, null, 'the baseline runner should cross the finish threshold');
+assert.ok(
+  getContinuousRunnerPosition(baseProfile, baseFinishCrossingTime ?? 0, courseTravelEnd, raceDurationMs) >= finishThreshold,
+  'the crossing snapshot should reach the finish threshold',
+);
+assert.ok(
+  getContinuousRunnerPosition(baseProfile, (baseFinishCrossingTime ?? 1) - 1, courseTravelEnd, raceDurationMs) < finishThreshold,
+  'the first crossing should not be resolved before the threshold is reached',
 );
 
 console.log('Race speed model verification passed: stat pace, slow recovery, and surge distance are deterministic.');

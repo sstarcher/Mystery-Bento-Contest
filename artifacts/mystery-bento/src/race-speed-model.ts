@@ -90,3 +90,41 @@ export function getContinuousRunnerPosition(
   }, 0);
   return clamp(profile.startPosition + baseTravel + eventTravel, 4, 96);
 }
+
+export function getRunnerFinishCrossingTime(
+  profile: ContinuousRunnerProfile,
+  finishThresholdPosition: number,
+  courseTravelEndPosition: number,
+  raceDurationMs: number,
+) {
+  const startPosition = getContinuousRunnerPosition(
+    profile,
+    0,
+    courseTravelEndPosition,
+    raceDurationMs,
+  );
+  if (startPosition >= finishThresholdPosition) return 0;
+
+  const endPosition = getContinuousRunnerPosition(
+    profile,
+    raceDurationMs,
+    courseTravelEndPosition,
+    raceDurationMs,
+  );
+  if (endPosition < finishThresholdPosition) return null;
+
+  let low = 0;
+  let high = raceDurationMs;
+  for (let iteration = 0; iteration < 32; iteration += 1) {
+    const middle = (low + high) / 2;
+    const position = getContinuousRunnerPosition(
+      profile,
+      middle,
+      courseTravelEndPosition,
+      raceDurationMs,
+    );
+    if (position >= finishThresholdPosition) high = middle;
+    else low = middle;
+  }
+  return Math.ceil(high);
+}

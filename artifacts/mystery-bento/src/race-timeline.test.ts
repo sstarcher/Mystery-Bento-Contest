@@ -1,9 +1,6 @@
 import assert from 'node:assert/strict';
 import {
   getFirstRunnerObstacleHitOffset,
-  getRaceFinishCrossingOffset,
-  getRaceFinishHandoffAnchor,
-  getRaceFinishHandoffProgress,
   getRaceFinishMarkerScreenAnchor,
   getRaceFinishVisibleOffset,
   getRaceRunnerFinishAction,
@@ -90,56 +87,13 @@ assert.ok(Math.abs(getRaceWorldTravelPercentAtTime('matchup', RACE_STAGE_DURATIO
 assert.ok(Math.abs(getRaceWorldTravelPercentAtTime('finale', RACE_STAGE_DURATIONS.finale, false) - RACE_FINALE_WORLD_END_PERCENT) < 1e-9);
 assert.ok(Math.abs(getRaceWorldTravelPercentAtTime('matchup', 0, false) - RACE_WARMUP_WORLD_END_PERCENT) < 1e-9);
 assert.ok(Math.abs(getRaceWorldTravelPercentAtTime('finale', 0, false) - RACE_MATCHUP_WORLD_END_PERCENT) < 1e-9);
-assert.equal(getRaceFinishCrossingOffset(false), RACE_STAGE_DURATIONS.finale);
 assert.equal(getRaceRunnerFinishAction(false, true), undefined);
 assert.equal(getRaceRunnerFinishAction(true, true), 'victory');
 assert.equal(getRaceRunnerFinishAction(true, false), 'idle');
-assert.equal(getRaceFinishCrossingOffset(true), 0);
 assert.equal(getRaceFinishVisibleOffset(true), 0);
 assert.ok(
   Math.abs(getRaceFinishMarkerScreenAnchor(RACE_FINALE_WORLD_END_PERCENT) - 88) < 0.05,
   'the finish marker projection should land on the authored finish anchor at the completed world travel',
-);
-const finishVisibleOffset = getRaceFinishVisibleOffset(false);
-const finishHandoffSamples = [
-  finishVisibleOffset - 1,
-  finishVisibleOffset,
-  Math.round((finishVisibleOffset + RACE_STAGE_DURATIONS.finale) / 2),
-  RACE_STAGE_DURATIONS.finale,
-].map((elapsedMs) => getRaceFinishHandoffProgress('finale', elapsedMs, false));
-const finishMarkerAnchor = getRaceFinishMarkerScreenAnchor(RACE_FINALE_WORLD_END_PERCENT);
-const winnerFinishAnchors = finishHandoffSamples.map((progress) => (
-  getRaceFinishHandoffAnchor(61, 65, progress, finishMarkerAnchor, true)
-));
-assert.ok(
-  finishHandoffSamples.every((progress, index) => index === 0 || progress >= finishHandoffSamples[index - 1]),
-  'finish handoff progress should be monotonic after the marker becomes visible',
-);
-assert.ok(
-  winnerFinishAnchors.every((anchor, index) => index === 0 || anchor >= winnerFinishAnchors[index - 1]),
-  'winner finish anchors should remain monotonic through the marker crossing',
-);
-assert.equal(finishHandoffSamples[1], 0, 'the finish handoff should start at the visible-marker boundary');
-assert.equal(finishHandoffSamples.at(-1), 1, 'the finish handoff should complete at the finale boundary');
-assert.equal(
-  getRaceFinishHandoffProgress('finale', 0, true),
-  1,
-  'reduced motion should resolve the complete finish handoff without a frame loop',
-);
-assert.equal(
-  getRaceFinishHandoffAnchor(61, 65, 0),
-  61,
-  'finish handoff should begin at the runner’s continuous projection',
-);
-assert.equal(
-  getRaceFinishHandoffAnchor(61, 65, 1, 88, true),
-  88,
-  'the winner should resolve to the rendered finish marker anchor',
-);
-assert.equal(
-  getRaceFinishHandoffAnchor(61, 65, 1, 88, false),
-  65,
-  'non-winners should resolve to their authored finish projection',
 );
 assert.deepEqual(
   getRaceAnnouncementRevealOffsets(640, [700, 820, 910], 80),
@@ -382,7 +336,7 @@ const reducedResolvedWinnerPosition = getRaceLaneProgressAtTime(
 const getFinishSnapshot = (prefersReducedMotion: boolean) => ({
   winnerId: resolvedContest.winnerId,
   collectibleId: resolvedContest.collectibleId,
-  finishCrossed: getRaceFinishCrossingOffset(prefersReducedMotion) >= 0,
+  finishCrossed: true,
   winnerPosition: prefersReducedMotion
     ? reducedResolvedWinnerPosition
     : normalResolvedWinnerPosition,
