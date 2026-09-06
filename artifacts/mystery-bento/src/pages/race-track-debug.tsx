@@ -18,12 +18,21 @@ const FALL_SEQUENCE_RUN_MS = 1800;
 const FALL_SEQUENCE_FALL_MS = 2100;
 const VICTORY_SEQUENCE_RUN_MS = 1800;
 
-const SAMPLE_TRACK_OBSTACLES = [
-  { id: 'sample-napkin-gust', label: 'Napkin gust', position: 18, image: 'napkin-gust.png' },
+type SampleTrackObstacle = {
+  id: string;
+  label: string;
+  position: number;
+  image: string;
+  offsetX?: number;
+  offsetY?: number;
+};
+
+const SAMPLE_TRACK_OBSTACLES: SampleTrackObstacle[] = [
+  { id: 'sample-napkin-gust', label: 'Napkin gust', position: 18, image: 'napkin-gust.png', offsetX: 200, offsetY: 100 },
   { id: 'sample-tea-puddle', label: 'Tea puddle', position: 40, image: 'tea-puddle.png' },
-  { id: 'sample-ribbon-tunnel', label: 'Ribbon tunnel', position: 62, image: 'ribbon-tunnel.png' },
-  { id: 'sample-bento-stack', label: 'Bento stack', position: 83, image: 'bento-stack.png' },
-] as const;
+  { id: 'sample-ribbon-tunnel', label: 'Ribbon tunnel', position: 62, image: 'ribbon-tunnel.png', offsetY: -100 },
+  { id: 'sample-bento-stack', label: 'Bento stack', position: 83, image: 'bento-stack.png', offsetX: 200 },
+];
 
 const spriteTestContestants = contestantDesigns.filter((contestant) => (
   getMovementSpriteSheet(contestant.id, 'run')
@@ -329,7 +338,10 @@ export default function RaceTrackDebugPage() {
                 className="race-obstacle race-track-debug-obstacle"
                 data-position={`${obstacle.position}%`}
                 key={obstacle.id}
-                style={{ left: `${obstacle.position}%` }}
+                style={{
+                  left: obstacle.offsetX ? `calc(${obstacle.position}% + ${obstacle.offsetX}px)` : `${obstacle.position}%`,
+                  bottom: obstacle.offsetY ? `${210 - obstacle.offsetY}px` : undefined,
+                }}
               >
                 <span className="race-obstacle-art">
                   <img src={`${RACE_OBSTACLE_BASE}/${obstacle.image}`} alt={obstacle.label} draggable="false" />
