@@ -391,7 +391,7 @@
 .plate-display .food-name { position: absolute; top: 17px; left: 50%; z-index: 2; transform: translateX(-50%); }
 .food-plate-image { display: block; width: 76.8px; height: 52.48px; max-width: none; object-fit: contain; image-rendering: pixelated; filter: drop-shadow(5px 6px 0 rgba(14, 8, 20, .3)); transform: translateY(7px); }
 .food-plate-image-compact { width: 53.76px; height: 36.736px; }
-.food-plate-image-sapporo { transform: translateY(7px) scale(1.28); }
+.food-plate-image-sapporo { transform: translateY(7px); }
 .food-plate-image[src$="sushi-plate-rolls.png"] { transform: translate(12px, 7px); }
 .plate { width: 108px; height: 68px; display: grid; place-items: center; background: #fff1cf; border: 3px solid #32243d; border-radius: 50%; box-shadow: inset 0 -7px 0 #d8bd87, 5px 6px 0 rgba(14, 8, 20, .34); transform: rotate(-5deg); }
 .plate::before { content: ''; position: absolute; width: 85px; height: 47px; border: 2px solid rgba(163, 77, 67, .38); border-radius: 50%; }
