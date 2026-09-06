@@ -2213,7 +2213,7 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
                           action={runnerAction}
                           animationKey={movementAnimationKey}
                           speedMultiplier={runnerSpeedMultiplier}
-                          scaleMultiplier={persona.id === 'panko' ? 0.8 : undefined}
+                          scaleMultiplier={persona.id === 'panko' ? 0.64 : undefined}
                           prefersReducedMotion={prefersReducedMotion}
                         />
                       </span>
