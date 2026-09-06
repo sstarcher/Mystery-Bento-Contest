@@ -940,7 +940,15 @@ function clampRacePosition(value: number) {
   return Math.min(100, Math.max(4, value));
 }
 
-function buildRaceSimulation(contestants: Persona[], rng: () => number): RaceSimulation {
+type RaceResolutionOptions = {
+  startingOffsets?: number[];
+};
+
+function buildRaceSimulation(
+  contestants: Persona[],
+  rng: () => number,
+  { startingOffsets = [] }: RaceResolutionOptions = {},
+): RaceSimulation {
   const fallbackKinds = shuffleWithRng(
     (Object.keys(raceObstacleCatalog) as RaceObstacleKind[])
       .filter((kind) => !DISABLED_RACE_OBSTACLE_KINDS.has(kind)),
@@ -973,11 +981,11 @@ function buildRaceSimulation(contestants: Persona[], rng: () => number): RaceSim
   });
 
   type WorkingRaceLane = RaceLaneSimulation & { persona: Persona; progress: number };
-  const lanes: WorkingRaceLane[] = contestants.map((persona) => {
+  const lanes: WorkingRaceLane[] = contestants.map((persona, index) => {
     const startingStagger = (persona.traits.speed - 50) * 0.11
       + (persona.traits.chaos - 50) * 0.07
       + rng() * 8 - 4;
-    let progress = 6 + persona.traits.speed * 0.06 + startingStagger;
+    let progress = 6 + persona.traits.speed * 0.06 + startingStagger + (startingOffsets[index] ?? 0);
     const baseSpeedMultiplier = getRunnerBaseSpeedMultiplier(persona.traits.speed);
     const lane: WorkingRaceLane = {
       persona,
@@ -1184,11 +1192,15 @@ function buildRaceSimulation(contestants: Persona[], rng: () => number): RaceSim
   };
 }
 
-function resolveContest(contestants: Persona[], rng: () => number): ContestOutcome {
+function resolveContest(
+  contestants: Persona[],
+  rng: () => number,
+  options: RaceResolutionOptions = {},
+): ContestOutcome {
   if (contestants.some((contestant) => !spriteSheetContestants.some((persona) => persona.id === contestant.id))) {
     throw new Error('A contest roster contains a contestant without a cooking sprite sheet.');
   }
-  const race = buildRaceSimulation(contestants, rng);
+  const race = buildRaceSimulation(contestants, rng, options);
   const winner = contestants.find((persona) => persona.id === race.winnerId) ?? contestants[0] ?? spriteSheetContestants[0];
   if (!winner) throw new Error('Cannot resolve a contest without a sprite-sheet contestant.');
   return {
@@ -1876,6 +1888,7 @@ const RaceLiveRenderer = memo(function RaceLiveRenderer({
               className="race-runner-lane"
               key={persona.id}
               data-persona-id={persona.id}
+              data-obstacle-index={presentation.obstacleIndex}
               data-runner-reaction={presentation.reaction}
             >
               <div
@@ -2418,7 +2431,20 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
             </div>
           </section>
         ) : (
-        <div className={`contest-race contest-race-${step}`} data-finish-visible={finishLineVisible || undefined} data-finish-crossed={finishCrossed || undefined} aria-label="Animated contest race">
+        <div
+          className={`contest-race contest-race-${step}`}
+          data-finish-visible={finishLineVisible || undefined}
+          data-finish-crossed={finishCrossed || undefined}
+          data-race-winner-id={race.winnerId}
+          data-race-initial-order={JSON.stringify(race.lanes
+            .slice()
+            .sort((a, b) => b.positions.intro - a.positions.intro)
+            .map((lane) => lane.personaId))}
+          data-race-initial-gap={Math.max(...race.lanes.map((lane) => lane.positions.intro)) - Math.min(...race.lanes.map((lane) => lane.positions.intro))}
+          data-race-checkpoint-leaders={JSON.stringify(race.checkpointLeaders)}
+          data-race-lead-changes={JSON.stringify(race.leadChanges)}
+          aria-label="Animated contest race"
+        >
           {showRaceStartGraphic && (
             <section className="contest-start-graphic" aria-labelledby="contest-start-title">
               <div className="contest-start-graphic-lantern" aria-hidden="true">✦</div>
@@ -2546,6 +2572,7 @@ function Home() {
   const [winner, setWinner] = useState<Persona | null>(null);
   const [liveStatus, setLiveStatus] = useState(acknowledgement);
   const { isDebugMode, initialShowcaseEnabled } = getCurioDebugState(window.location.search);
+  const raceCheckMode = useMemo(() => new URLSearchParams(window.location.search).get('raceCheck'), []);
   const [isCurioShowcaseEnabled, setIsCurioShowcaseEnabled] = useState(initialShowcaseEnabled);
   const holdTimer = useRef<number | null>(null);
   const contestTimer = useRef<number | null>(null);
@@ -2673,9 +2700,19 @@ function Home() {
   finishContestRef.current = finishContest;
 
   const launchContest = () => {
-    const rng = createRng(Date.now() ^ Math.floor(Math.random() * 0xffffffff));
-    const selected = selectContestants(spriteSheetContestants, lastWinner?.id, rng, 3);
-    const outcome = resolveContest(selected, rng);
+    const isRaceReversalCheck = raceCheckMode === '109';
+    const seed = isRaceReversalCheck ? 1 : Date.now() ^ Math.floor(Math.random() * 0xffffffff);
+    const rng = createRng(seed);
+    const selected = isRaceReversalCheck
+      ? ['pip', 'sencha', 'nori']
+        .map((id) => spriteSheetContestants.find((persona) => persona.id === id))
+        .filter((persona): persona is Persona => Boolean(persona))
+      : selectContestants(spriteSheetContestants, lastWinner?.id, rng, 3);
+    const outcome = resolveContest(
+      selected,
+      rng,
+      isRaceReversalCheck ? { startingOffsets: [6, 0, 0] } : undefined,
+    );
     contestOutcome.current = outcome;
     completionGuard.current = false;
     contestIntroStartedAt.current = Date.now();
