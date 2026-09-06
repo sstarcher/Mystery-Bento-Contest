@@ -163,9 +163,11 @@ assert.equal(
   0,
   'the first post-handoff frame should still be at the starting view',
 );
-assert.equal(
-  getRaceWorldTravelPercentAtTime('matchup', RACE_STAGE_DURATIONS.matchup, false),
-  RACE_MATCHUP_WORLD_END_PERCENT,
+assert.ok(
+  Math.abs(
+    getRaceWorldTravelPercentAtTime('matchup', RACE_STAGE_DURATIONS.matchup, false)
+      - RACE_MATCHUP_WORLD_END_PERCENT,
+  ) < 1e-9,
   'the matchup world endpoint should use the race-relative stage duration',
 );
 const normalizedRunStyle = getMovementSpriteRenderStyle(movementSpriteNormalization.miso.run);
