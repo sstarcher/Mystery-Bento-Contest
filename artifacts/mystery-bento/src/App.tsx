@@ -2464,7 +2464,6 @@ function Home() {
   }, [ledger]);
   const activeChef = spriteSheetContestants.find((persona) => persona.id === winner?.id)
     ?? lastWinner
-    ?? spriteSheetContestants.find((persona) => persona.id === 'uma')
     ?? null;
   const shelfPreviewCollectibles = useMemo(
     () => isCurioShelfDebug ? showcaseCollectibles.slice(0, CURIO_SHELF_GRID.cellCount) : collectibles,
