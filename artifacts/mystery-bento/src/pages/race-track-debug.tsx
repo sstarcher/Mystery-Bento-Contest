@@ -2,6 +2,8 @@ import { useRef, useState, type CSSProperties, type KeyboardEvent as ReactKeyboa
 import {
   RACE_BACKGROUND_CANVAS_HEIGHT_PX,
   RACE_BACKGROUND_FINISH_MARKER_ANGLE_DEG,
+  RACE_BACKGROUND_FINISH_MARKER_ROAD_LENGTH_PX,
+  RACE_BACKGROUND_FINISH_MARKER_ROAD_TOP_PX,
   RACE_BACKGROUND_FINISH_MARKER_X_PX,
   RACE_BACKGROUND_SEQUENCE,
   RACE_BACKGROUND_TRACK_WIDTH_PX,
@@ -96,6 +98,8 @@ export default function RaceTrackDebugPage() {
             className="race-track-debug-finish-marker"
             style={{
               '--race-finish-marker-angle': `${RACE_BACKGROUND_FINISH_MARKER_ANGLE_DEG}deg`,
+              '--race-finish-marker-road-length': `${RACE_BACKGROUND_FINISH_MARKER_ROAD_LENGTH_PX}px`,
+              '--race-finish-marker-road-top': `${RACE_BACKGROUND_FINISH_MARKER_ROAD_TOP_PX}px`,
               left: `${RACE_BACKGROUND_FINISH_MARKER_X_PX}px`,
             } as CSSProperties}
             aria-label="Simulation finish line"
