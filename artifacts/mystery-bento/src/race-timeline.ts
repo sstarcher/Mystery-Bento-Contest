@@ -323,6 +323,7 @@ export function getRaceRunnerObstacleContactOffset(
   getRunnerPositionAtRaceTime: (elapsedMs: number) => number,
   prefersReducedMotion = false,
   contactWindowPercent = RACE_OBSTACLE_CONTACT_WINDOW_PERCENT,
+  horizontalOffsetPx = 0,
 ) {
   const milestone = getRaceStageObstacleMilestones(stage, lane, obstacles)
     .find((candidate) => candidate.obstacle.id === obstacle.id);
@@ -331,6 +332,8 @@ export function getRaceRunnerObstacleContactOffset(
 
   const stageOffset = RACE_STAGE_OFFSETS[stage];
   const runnerStartPosition = lane.positions.intro;
+  const obstacleWorldPosition = obstacle.position
+    + (horizontalOffsetPx / RACE_BACKGROUND_TRACK_WIDTH_PX) * 100;
   const getObstacleToRunnerDistance = (stageElapsedMs: number) => {
     const runnerPosition = getRunnerPositionAtRaceTime(stageOffset + stageElapsedMs);
     const runnerAnchor = getRaceRunnerScreenAnchors(
@@ -339,7 +342,7 @@ export function getRaceRunnerObstacleContactOffset(
       RACE_FINISH_THRESHOLD_POSITION,
     )[0] ?? RACE_RUNNER_VISUAL_START_PERCENT;
     const worldTravelPercent = getRaceWorldTravelPercentAtTime(stage, stageElapsedMs, false);
-    const obstacleAnchor = Number.parseFloat(getRaceWorldScreenAnchor(obstacle.position, worldTravelPercent));
+    const obstacleAnchor = Number.parseFloat(getRaceWorldScreenAnchor(obstacleWorldPosition, worldTravelPercent));
     return obstacleAnchor - runnerAnchor;
   };
 
@@ -373,10 +376,27 @@ export function getFirstRunnerObstacleHitOffset(
   lanes: RaceTimelineLane[],
   obstacles: RaceTimelineObstacle[],
   prefersReducedMotion = false,
+  horizontalOffsetPx = 0,
 ) {
   if (prefersReducedMotion) return 0;
-  const offsets = lanes.map((lane) => getRaceStageObstacleMilestones(stage, lane, obstacles)
-    .find((milestone) => milestone.obstacle.id === obstacle.id)?.offset ?? RACE_STAGE_DURATIONS[stage]);
+  const adjustedPosition = obstacle.position
+    + (horizontalOffsetPx / RACE_BACKGROUND_TRACK_WIDTH_PX) * 100;
+  const offsets = lanes.map((lane) => {
+    if (horizontalOffsetPx === 0) {
+      return getRaceStageObstacleMilestones(stage, lane, obstacles)
+        .find((milestone) => milestone.obstacle.id === obstacle.id)?.offset
+        ?? RACE_STAGE_DURATIONS[stage];
+    }
+    const checkpoint = lane.checkpoints?.find((candidate) => candidate.obstacleId === obstacle.id);
+    return getRunnerObstacleHitOffset(
+      stage,
+      {
+        ...obstacle,
+        position: adjustedPosition,
+      },
+      lane,
+    );
+  });
   return Math.min(...offsets, RACE_STAGE_DURATIONS[stage]);
 }
 

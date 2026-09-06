@@ -117,6 +117,12 @@ Obstacle callouts should announce the rendered obstacle's arrival at the viewpor
 
 **How to apply:** Schedule the reusable obstacle callout from the scrolling world-track entry point, then schedule the resolved reaction/result as a separate contact beat. Include shared horizontal obstacle offsets in the entry calculation.
 
+Rendered obstacle offsets must be shared by entry timing, contact solving, and live contact anchors; obstacle callouts and reactions should retry around optional announcer lines instead of being dropped.
+
+**Why:** A right-shifted hazard can otherwise trigger its reaction before the artwork arrives, while serialized stage or pace clips can erase a required callout; reduced motion also needs explicit spacing for multiple finale hazards.
+
+**How to apply:** Keep obstacle beats ahead of optional narration, derive normal contact from the adjusted rendered anchor, and give reduced-motion finale hazards separate staged slots before the finish.
+
 Obstacle speed effects should remain visibly consequential across the next race beat, not resolve almost immediately after contact.
 
 **Why:** Short, mild windows made the three runners visually bunch together for most of the course and weakened the readable cause-and-effect of hazards.

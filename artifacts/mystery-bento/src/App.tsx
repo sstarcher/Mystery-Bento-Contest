@@ -61,7 +61,6 @@ import {
 } from './curio-shelf-placements';
 import { getCurioDebugState, selectRestaurantShelfCollectibles } from './curio-debug';
 import {
-  getFirstRunnerObstacleHitOffset as getTimelineFirstRunnerObstacleHitOffset,
   getRaceObstacleEntryOffset as getTimelineRaceObstacleEntryOffset,
   getRaceFinishVisibleOffset,
    RACE_FINISH_THRESHOLD_POSITION,
@@ -527,7 +526,7 @@ function getRaceFinishCrossingAt(
 ) {
   return startedAt + (
     prefersReducedMotion
-      ? RACE_STAGE_OFFSETS.finale
+      ? RACE_STAGE_OFFSETS.finale + RACE_STAGE_DURATIONS.finale
       : race.finishCrossingMs
   );
 }
@@ -537,7 +536,11 @@ function getRaceFinishVisibleAt(
   race: RaceSimulation,
   prefersReducedMotion: boolean,
 ) {
-  const plannedVisibleAt = startedAt + RACE_STAGE_OFFSETS.finale + getRaceFinishVisibleOffset(prefersReducedMotion);
+  const plannedVisibleAt = startedAt + RACE_STAGE_OFFSETS.finale + (
+    prefersReducedMotion
+      ? RACE_STAGE_DURATIONS.finale
+      : getRaceFinishVisibleOffset(prefersReducedMotion)
+  );
   return Math.min(plannedVisibleAt, getRaceFinishCrossingAt(startedAt, race, prefersReducedMotion));
 }
 const contestNextStep: Partial<Record<ContestStep, ContestStep>> = {
@@ -674,23 +677,32 @@ function buildAnnouncerSequence(contestants: Persona[], race: RaceSimulation, pr
       .filter((obstacle): obstacle is RaceObstacle => Boolean(obstacle))
       .map((obstacle, obstacleOrder) => {
         const obstacleIndex = obstacleIndices[obstacleOrder];
-        const hitOffset = getTimelineFirstRunnerObstacleHitOffset(
-          stage,
-          obstacle,
-          race.lanes,
-          race.obstacles,
-          prefersReducedMotion,
-        );
-        return {
-          obstacle,
-          hitOffset,
-          offset: hitOffset,
-          entryOffset: getTimelineRaceObstacleEntryOffset(
+        const hitOffset = prefersReducedMotion
+          ? 0
+          : Math.min(
+            ...race.lanes.map((lane) => (
+              (lane.speedEvents.find((event) => event.obstacleId === obstacle.id)?.triggerMs
+                ?? (RACE_STAGE_OFFSETS[stage] + stageDuration))
+              - RACE_STAGE_OFFSETS[stage]
+            )),
+            stageDuration,
+          );
+        const entryOffset = prefersReducedMotion
+          ? obstacleOrder * 4_200
+          : getTimelineRaceObstacleEntryOffset(
             stage,
             obstacle,
-            prefersReducedMotion,
+            false,
             getRaceObstacleHorizontalOffsetPx(obstacleIndex),
-          ),
+          );
+        const orderedHitOffset = prefersReducedMotion
+          ? Math.min(stageDuration, entryOffset + 2_400)
+          : Math.min(stageDuration, Math.max(hitOffset, entryOffset + 2_400));
+        return {
+          obstacle,
+          hitOffset: orderedHitOffset,
+          offset: orderedHitOffset,
+          entryOffset,
         };
       });
     const firstObstacleOffset = obstacleMilestones[0]?.offset ?? stageDuration;
@@ -1111,6 +1123,9 @@ function buildRaceSimulation(contestants: Persona[], rng: () => number): RaceSim
           RACE_FINALE_WORLD_END_PERCENT,
           RACE_RACE_DURATION_MS,
         ),
+        false,
+        undefined,
+        getRaceObstacleHorizontalOffsetPx(obstacleIndex),
       );
       speedEvents.push({
         obstacleId: obstacle.id,
@@ -1697,7 +1712,11 @@ const RaceLiveRenderer = memo(function RaceLiveRenderer({
     const stageObstacleAnchors = race.obstacles
       .map((obstacle, obstacleIndex) => ({
         obstacleIndex,
-        anchor: Number.parseFloat(getRaceWorldScreenAnchor(obstacle.position, worldTravelPercent)),
+        anchor: Number.parseFloat(getRaceWorldScreenAnchor(
+          obstacle.position
+            + (getRaceObstacleHorizontalOffsetPx(obstacleIndex) / RACE_BACKGROUND_TRACK_WIDTH_PX) * 100,
+          worldTravelPercent,
+        )),
       }))
       .filter(({ obstacleIndex }) => obstacleIndex >= stageObstacleIndex);
     const getCurrentLaneObstacleIndex = (lane: RaceLaneSimulation | undefined, laneIndex: number) => {
@@ -2113,6 +2132,7 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
       .sort((a, b) => a.offset - b.offset);
     const timers: number[] = [];
     const pendingBeatIds = new Set(beats.map(({ beat }) => beat.id));
+    const beatOffsets = new Map(beats.map(({ beat, offset }) => [beat.id, offset]));
     let cancelled = false;
     let activeBeat: { beat: AnnouncerBeat; clipIndex: number } | null = null;
     const metadataAudio = new Map<string, HTMLAudioElement>();
@@ -2194,6 +2214,19 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
       const startAt = Math.max(now, announcerAudioReadyAt.current);
       return startAt + clipDurationMs(clip) <= deadlineFor(beat);
     }
+
+    const isObstacleBeat = (beat: AnnouncerBeat) => (
+      beat.id.startsWith('obstacle-callout-')
+      || beat.id.startsWith('obstacle-reaction-')
+    );
+    const hasPendingEarlierObstacleCallout = (beat: AnnouncerBeat) => {
+      const beatOffset = beatOffsets.get(beat.id) ?? Number.POSITIVE_INFINITY;
+      return beats.some(({ beat: candidate, offset }) => (
+        candidate.id.startsWith('obstacle-callout-')
+        && pendingBeatIds.has(candidate.id)
+        && offset <= beatOffset
+      ));
+    };
 
     function playClip(beat: AnnouncerBeat, clipIndex: number) {
       if (cancelled || !voiceEnabled || activeBeat?.beat !== beat) return;
@@ -2293,9 +2326,23 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
         pendingBeatIds.delete(beat.id);
         return;
       }
+      // Stage and pace lines are optional context. Do not let them occupy
+      // the announcer while an earlier obstacle is waiting for its entry
+      // callout; the callout is what establishes the spectator's timeline.
+      if (!isObstacleBeat(beat) && hasPendingEarlierObstacleCallout(beat)) {
+        pendingBeatIds.delete(beat.id);
+        return;
+      }
       // Beats never wait in a queue: a busy announcer or a missed deadline
       // means this optional line is skipped so the visual race stays primary.
       if (activeBeat || pendingAudio.current || Date.now() > deadlineFor(beat)) {
+        // Hazard callouts and contact reactions are the race's ordered beats.
+        // Retry them while the announcer is busy instead of letting a stage
+        // transition or a preceding line erase the obstacle story.
+        if (isObstacleBeat(beat) && Date.now() <= deadlineFor(beat)) {
+          schedule(() => startBeat(beat), 120);
+          return;
+        }
         if (beat.id === 'race-start' && Date.now() <= deadlineFor(beat)) {
           schedule(() => startBeat(beat), 120);
           return;

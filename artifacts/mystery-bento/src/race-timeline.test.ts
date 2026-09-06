@@ -334,6 +334,22 @@ assert.equal(
   ),
   'identical lane inputs should resolve contact timing deterministically',
 );
+const shiftedContactOffset = getRaceRunnerObstacleContactOffset(
+  'warmup',
+  contactObstacle,
+  contactLane,
+  obstacles,
+  (elapsedMs) => contactLane.positions.intro
+    + (contactLane.positions.warmup - contactLane.positions.intro)
+      * Math.min(1, Math.max(0, elapsedMs / RACE_STAGE_DURATIONS.warmup)),
+  false,
+  RACE_OBSTACLE_CONTACT_WINDOW_PERCENT,
+  200,
+);
+assert.ok(
+  shiftedContactOffset > contactOffset,
+  'rendered horizontal obstacle offsets should delay contact timing with the visible hazard',
+);
 
 const resolvedContest = {
   winnerId: 'runner-b',
