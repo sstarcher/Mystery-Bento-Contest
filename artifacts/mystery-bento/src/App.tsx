@@ -2202,7 +2202,6 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
                   <PersonaPortrait persona={persona} large />
                   <h4 className="font-display text-lg font-bold">{persona.name}</h4>
                   <p className="mt-1 min-h-10 text-xs leading-4 text-[#765752]">{persona.flavorText}</p>
-                  <div className="mt-3 font-mono-ui text-[9px] uppercase tracking-wider text-[#a34d43]">{index === displayedContestants.length - 1 ? 'just announced' : 'on the line'}</div>
                 </div>
               ))}
             </div>
