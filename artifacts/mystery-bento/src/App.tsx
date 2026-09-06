@@ -1570,19 +1570,15 @@ function MovementSprite({
 }
 
 function getRestaurantShelfItems(collectibles: Collectible[]) {
-  const pocketWatch = showcaseCollectibles.find((item) => item.id === 'pip-pocket-watch');
-  const hasPocketWatch = collectibles.some((item) => item.id === 'pip-pocket-watch');
-  const shelfCollectibles = pocketWatch && !hasPocketWatch ? [pocketWatch, ...collectibles] : collectibles;
-  const byZone = (zone: CurioDisplayZone) => shelfCollectibles.filter((item) => getCurioDisplayZone(item) === zone);
+  const byZone = (zone: CurioDisplayZone) => collectibles.filter((item) => getCurioDisplayZone(item) === zone);
   return (['house-keeps', 'tea-tools', 'spare-plates', 'little-finds', 'hanging-tools'] as CurioDisplayZone[])
     .flatMap((zone) => byZone(zone));
 }
 
 function RestaurantCurioDisplays({ collectibles, placements }: { collectibles: Collectible[]; placements: CurioShelfPlacementMap }) {
-  const hasPocketWatch = collectibles.some((item) => item.id === 'pip-pocket-watch');
   const latestCurioId = collectibles[0]?.id;
   const shelfItems = getRestaurantShelfItems(collectibles);
-  const displayClass = (baseClass: string, item: Collectible) => `${baseClass} displayed-curio-${getCurioDisplayZone(item)}${item.id === latestCurioId ? ' displayed-curio-latest' : ''}${item.id === 'pip-pocket-watch' && !hasPocketWatch ? ' displayed-curio-showcase' : ''}`;
+  const displayClass = (baseClass: string, item: Collectible) => `${baseClass} displayed-curio-${getCurioDisplayZone(item)}${item.id === latestCurioId ? ' displayed-curio-latest' : ''}`;
   return (
     <div className="restaurant-curio-displays" aria-label="Curios displayed on the restaurant shelf">
       <div className="restaurant-curio-shelf-stage">
