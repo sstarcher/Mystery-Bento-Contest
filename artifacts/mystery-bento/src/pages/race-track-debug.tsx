@@ -249,6 +249,32 @@ export default function RaceTrackDebugPage() {
         </div>
       </header>
 
+      <section className="race-track-debug-obstacle-overview" aria-labelledby="race-obstacle-overview-title">
+        <div className="race-track-debug-obstacle-overview-heading">
+          <div>
+            <p className="race-track-debug-kicker">Course hazard map</p>
+            <h2 id="race-obstacle-overview-title">Sample obstacle placement</h2>
+          </div>
+          <p>These checkpoints match the live race spacing.</p>
+        </div>
+        <div className="race-track-debug-obstacle-ruler">
+          <span className="race-track-debug-obstacle-ruler-label is-start">START</span>
+          <span className="race-track-debug-obstacle-ruler-line" aria-hidden="true" />
+          {SAMPLE_TRACK_OBSTACLES.map((obstacle) => (
+            <span
+              className="race-track-debug-obstacle-ruler-marker"
+              key={obstacle.id}
+              style={{ left: `${obstacle.position}%` }}
+            >
+              <img src={`${RACE_OBSTACLE_BASE}/${obstacle.image}`} alt="" draggable="false" />
+              <strong>{obstacle.position}%</strong>
+              <span>{obstacle.label}</span>
+            </span>
+          ))}
+          <span className="race-track-debug-obstacle-ruler-label is-finish">FINISH</span>
+        </div>
+      </section>
+
       <section
         ref={viewportRef}
         className={`race-track-debug-viewport${isDragging ? ' is-dragging' : ''}`}
