@@ -1,6 +1,7 @@
-import { useRef, useState, type KeyboardEvent as ReactKeyboardEvent, type PointerEvent as ReactPointerEvent } from 'react';
+import { useRef, useState, type CSSProperties, type KeyboardEvent as ReactKeyboardEvent, type PointerEvent as ReactPointerEvent } from 'react';
 import {
   RACE_BACKGROUND_CANVAS_HEIGHT_PX,
+  RACE_BACKGROUND_FINISH_MARKER_ANGLE_DEG,
   RACE_BACKGROUND_FINISH_MARKER_X_PX,
   RACE_BACKGROUND_SEQUENCE,
   RACE_BACKGROUND_TRACK_WIDTH_PX,
@@ -93,7 +94,10 @@ export default function RaceTrackDebugPage() {
         >
           <div
             className="race-track-debug-finish-marker"
-            style={{ left: `${RACE_BACKGROUND_FINISH_MARKER_X_PX}px` }}
+            style={{
+              '--race-finish-marker-angle': `${RACE_BACKGROUND_FINISH_MARKER_ANGLE_DEG}deg`,
+              left: `${RACE_BACKGROUND_FINISH_MARKER_X_PX}px`,
+            } as CSSProperties}
             aria-label="Simulation finish line"
           >
             <span>SIM FINISH</span>

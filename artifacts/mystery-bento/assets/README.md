@@ -18,16 +18,16 @@ folder.
 
 - The original high-resolution race scenes are preserved here. The active
   deterministic course order starts with `scene1_...`, `scene2_...`,
-  `scene3-updated_...`, `scene4_...`, then `scene5_...`.
+  `scene3-updated_...`, `scene4-updated_...`, then `scene5_...`.
 - The earlier lantern-gate and garden-market uploads remain preserved as
   inactive source material.
 - The previous transparent-edge `scene1_...` upload remains preserved as
   inactive source material; the opaque `scene1-small_...` upload is now active.
 - The previous uncropped `scene2_...` upload also remains preserved as inactive
   source material; the cropped `scene2-cropped_...` upload is now active.
-- The previous `scene3-evening-market_...` and `asset_DLD...` uploads remain
-  preserved as inactive source material; the latest scene 3 and scene 4
-  uploads are now active.
+- The previous `scene3-evening-market_...`, `asset_DLD...`, and
+  `scene4_...` uploads remain preserved as inactive source material; the
+  latest scene 3 and scene 4 uploads are now active.
 - The former scene 5 `asset_JLEx...` upload remains preserved as inactive source
   material after being removed from the active course.
 - The previous `asset_mqEP...` destination remains preserved as inactive source
@@ -56,7 +56,7 @@ transparent cutouts and sprite sheets are derived later in the pipeline.
 
 ## Image audit status
 
-- 52 source images are preserved here: one character sheet, 15 race
+- 53 source images are preserved here: one character sheet, 16 race
   backgrounds, 12 obstacle illustrations, and 24 runner-action sheets.
 - The app currently has 12 portraits, 72 movement sheets, 12 public cooking
   sheets, five
