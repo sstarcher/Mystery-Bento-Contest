@@ -90,6 +90,7 @@ import {
   getRunnerBaseSpeedMultiplier,
   getRunnerEffectiveSpeed,
   getRunnerMovementState,
+  getRunnerSpriteCadenceMultiplier,
   type RunnerSpeedEvent,
 } from './race-speed-model';
 
@@ -1497,7 +1498,7 @@ function MovementSprite({
     if (!spriteSheet || prefersReducedMotion || spriteSheet.frameCount < 2) return;
     const cadenceMultiplier = isOneShot
       ? 1
-      : Math.min(1.35, Math.max(0.72, speedMultiplierRef.current));
+      : getRunnerSpriteCadenceMultiplier(speedMultiplierRef.current);
     const frameDurationMs = isOneShot
       ? speedUpDurationMs(spriteSheet.frameDurationMs) / 2
       : speedUpDurationMs(spriteSheet.frameDurationMs / cadenceMultiplier);
@@ -1507,7 +1508,7 @@ function MovementSprite({
         : getMovementFrameIndex(current + 1, spriteSheet.frameCount, true));
     }, frameDurationMs);
     return () => window.clearInterval(timer);
-  }, [action, effectiveAction, prefersReducedMotion, spriteSheet]);
+  }, [action, effectiveAction, prefersReducedMotion, spriteSheet, speedMultiplier]);
 
   useEffect(() => {
     if (!spriteSheet || !isOneShot || !prefersReducedMotion) return;

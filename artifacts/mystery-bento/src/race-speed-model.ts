@@ -19,7 +19,8 @@ export const RUNNER_SURGE_SPEED_MULTIPLIER = 1.4;
 export const RUNNER_SLOW_DURATION_MS = 3600;
 export const RUNNER_REROUTE_DURATION_MS = 3000;
 export const RUNNER_SURGE_DURATION_MS = 3200;
-export const RUNNER_WALK_THRESHOLD = 0.86;
+export const RUNNER_SPRITE_SLOW_SPEED_THRESHOLD = 1;
+export const RUNNER_SLOW_FRAME_CADENCE_FLOOR = 0.58;
 export const RUNNER_EVENT_DISTANCE_GAIN = 2.8;
 
 function getEventDuration(result: RunnerSpeedEventResult) {
@@ -56,8 +57,17 @@ export function getRunnerEffectiveSpeed(profile: ContinuousRunnerProfile, elapse
   return profile.baseSpeedMultiplier * eventMultiplier;
 }
 
-export function getRunnerMovementState(profile: ContinuousRunnerProfile, elapsedMs: number): RunnerMovementState {
-  return getRunnerEffectiveSpeed(profile, elapsedMs) < RUNNER_WALK_THRESHOLD ? 'walk' : 'run';
+export function getRunnerMovementState(_profile: ContinuousRunnerProfile, _elapsedMs: number): RunnerMovementState {
+  // Keep the authored run silhouette during slowdowns; playback cadence, not
+  // the sprite sheet, communicates reduced speed.
+  return 'run';
+}
+
+export function getRunnerSpriteCadenceMultiplier(speedMultiplier: number) {
+  const normalizedSpeed = Math.max(0, speedMultiplier);
+  return normalizedSpeed < RUNNER_SPRITE_SLOW_SPEED_THRESHOLD
+    ? Math.max(RUNNER_SLOW_FRAME_CADENCE_FLOOR, normalizedSpeed)
+    : Math.min(1.35, normalizedSpeed);
 }
 
 export function getContinuousRunnerPosition(

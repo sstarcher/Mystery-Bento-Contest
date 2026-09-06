@@ -4,6 +4,7 @@ import {
   getRunnerBaseSpeedMultiplier,
   getRunnerEffectiveSpeed,
   getRunnerMovementState,
+  getRunnerSpriteCadenceMultiplier,
   type ContinuousRunnerProfile,
 } from './race-speed-model';
 
@@ -44,10 +45,20 @@ const rerouteProfile: ContinuousRunnerProfile = {
 };
 
 assert.equal(getRunnerMovementState(baseProfile, 2_000), 'run');
-assert.equal(getRunnerMovementState(slowProfile, 4_500), 'walk');
-assert.equal(getRunnerMovementState(slowProfile, 7_599), 'walk');
+assert.equal(getRunnerMovementState(slowProfile, 4_500), 'run');
+assert.equal(getRunnerMovementState(slowProfile, 7_599), 'run');
 assert.equal(getRunnerMovementState(slowProfile, 7_600), 'run');
 assert.equal(getRunnerMovementState(surgeProfile, 4_500), 'run');
+assert.equal(
+  getRunnerSpriteCadenceMultiplier(getRunnerEffectiveSpeed(slowProfile, 4_500)),
+  0.58,
+  'slowdowns should use the run sheet at a visibly slower frame cadence',
+);
+assert.equal(
+  getRunnerSpriteCadenceMultiplier(getRunnerEffectiveSpeed(baseProfile, 2_000)),
+  getRunnerEffectiveSpeed(baseProfile, 2_000),
+  'normal run cadence should track the effective speed',
+);
 assert.ok(
   getRunnerEffectiveSpeed(surgeProfile, 4_500) > getRunnerEffectiveSpeed(baseProfile, 4_500),
   'surge should temporarily increase effective speed',
