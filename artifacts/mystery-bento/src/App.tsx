@@ -1127,7 +1127,8 @@ function useStoredState<T>(key: string, fallback: T, normalize: (value: T) => T 
 
 function FoodPlateArt({ item, selection = false }: { item: FoodItem; selection?: boolean }) {
   const compact = item.id === 'shrimp-temaki' || item.id === 'garden-maki';
-  return <img className={`food-plate-image${compact ? ' food-plate-image-compact' : ''}${selection ? ' food-plate-image-selection' : ''}`} src={item.imageSrc} alt="" aria-hidden="true" />;
+  const beer = item.id === 'sapporo-beer';
+  return <img className={`food-plate-image${compact ? ' food-plate-image-compact' : ''}${beer ? ' food-plate-image-sapporo' : ''}${selection ? ' food-plate-image-selection' : ''}`} src={item.imageSrc} alt="" aria-hidden="true" />;
 }
 
 function FoodSelectionSplash({ item }: { item: FoodItem }) {
