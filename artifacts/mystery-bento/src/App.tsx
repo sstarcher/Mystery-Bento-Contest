@@ -44,7 +44,14 @@ import saffyPresentationFan from './assets/derived/curios/saffy-presentation-fan
 import { getMovementSpriteSheet, type MovementAction } from './movement-sprite-config';
 import { getMovementFrameIndex, getVictoryFrameIndex } from './movement-sprite-actions';
 import { getMovementSpriteRenderStyle } from './movement-sprite-normalization';
-import { RACE_BACKGROUND_SEQUENCE, RACE_BACKGROUND_TRACK_WIDTH_PX } from './race-backgrounds';
+import {
+  RACE_BACKGROUND_FINISH_MARKER_ANGLE_DEG,
+  RACE_BACKGROUND_FINISH_MARKER_ROAD_LENGTH_PX,
+  RACE_BACKGROUND_FINISH_MARKER_ROAD_TOP_PX,
+  RACE_BACKGROUND_FINISH_MARKER_X_PX,
+  RACE_BACKGROUND_SEQUENCE,
+  RACE_BACKGROUND_TRACK_WIDTH_PX,
+} from './race-backgrounds';
 import { CURIO_ART_FIT_SCALE, getCurioArtProfile, type CurioArtProfile } from './curio-art-sizing';
 import {
   CURIO_SHELF_GRID,
@@ -2194,9 +2201,6 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
                   <PersonaPortrait persona={persona} large />
                   <h4 className="font-display text-lg font-bold">{persona.name}</h4>
                   <p className="mt-1 min-h-10 text-xs leading-4 text-[#765752]">{persona.flavorText}</p>
-                  <div className="mt-3 flex justify-center gap-1" aria-label={`${persona.name} contest traits`}>
-                    {[persona.traits.speed, persona.traits.focus, persona.traits.luck].map((trait, traitIndex) => <span key={traitIndex} className={`h-1.5 w-5 ${trait > 75 ? 'bg-[#37745c]' : 'bg-[#d8b879]'}`} />)}
-                  </div>
                   <div className="mt-3 font-mono-ui text-[9px] uppercase tracking-wider text-[#a34d43]">{index === displayedContestants.length - 1 ? 'just announced' : 'on the line'}</div>
                 </div>
               ))}
@@ -2262,6 +2266,16 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
                   );
                 })}
               </div>
+              <div
+                className="race-finish-marker race-finish-marker-main"
+                style={{
+                  '--race-finish-marker-angle': `${RACE_BACKGROUND_FINISH_MARKER_ANGLE_DEG}deg`,
+                  '--race-finish-marker-road-length': `${RACE_BACKGROUND_FINISH_MARKER_ROAD_LENGTH_PX}px`,
+                  '--race-finish-marker-road-top': `${RACE_BACKGROUND_FINISH_MARKER_ROAD_TOP_PX}px`,
+                  left: `${RACE_BACKGROUND_FINISH_MARKER_X_PX}px`,
+                } as CSSProperties}
+                aria-label="Finish line"
+              />
             </div>
             <div className="race-runner-overlay">
               {contestants.map((persona, index) => {

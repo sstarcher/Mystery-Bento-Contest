@@ -95,7 +95,7 @@ export default function RaceTrackDebugPage() {
           style={{ width: `${RACE_BACKGROUND_TRACK_WIDTH_PX}px`, height: `${RACE_BACKGROUND_CANVAS_HEIGHT_PX}px` }}
         >
           <div
-            className="race-track-debug-finish-marker"
+            className="race-finish-marker race-track-debug-finish-marker"
             style={{
               '--race-finish-marker-angle': `${RACE_BACKGROUND_FINISH_MARKER_ANGLE_DEG}deg`,
               '--race-finish-marker-road-length': `${RACE_BACKGROUND_FINISH_MARKER_ROAD_LENGTH_PX}px`,
