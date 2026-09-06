@@ -2441,6 +2441,7 @@ function Home() {
   const [contestants, setContestants] = useState<Persona[]>([]);
   const [winner, setWinner] = useState<Persona | null>(null);
   const [liveStatus, setLiveStatus] = useState(acknowledgement);
+  const isCurioShelfDebug = new URLSearchParams(window.location.search).get('debug') === 'curio-shelf';
   const holdTimer = useRef<number | null>(null);
   const contestTimer = useRef<number | null>(null);
   const finishTransitionTimer = useRef<number | null>(null);
@@ -2465,9 +2466,13 @@ function Home() {
     ?? lastWinner
     ?? spriteSheetContestants.find((persona) => persona.id === 'uma')
     ?? null;
+  const shelfPreviewCollectibles = useMemo(
+    () => isCurioShelfDebug ? showcaseCollectibles.slice(0, CURIO_SHELF_GRID.cellCount) : collectibles,
+    [collectibles, isCurioShelfDebug],
+  );
   const shelfCurioIds = useMemo(
-    () => getRestaurantShelfItems(collectibles).map((item) => item.id),
-    [collectibles],
+    () => getRestaurantShelfItems(shelfPreviewCollectibles).map((item) => item.id),
+    [shelfPreviewCollectibles],
   );
 
   useEffect(() => {
@@ -2733,7 +2738,7 @@ function Home() {
               </div>
             </div>
           )}
-          <RestaurantCurioDisplays collectibles={collectibles} placements={curioPlacements} />
+          <RestaurantCurioDisplays collectibles={shelfPreviewCollectibles} placements={curioPlacements} />
           <div className="scene-content">
             <div className="restaurant-top-zone">
               <RestaurantControls onOpenCurio={setCurioView} ledgerCount={ledger.length} curioCount={collectibles.length} />
