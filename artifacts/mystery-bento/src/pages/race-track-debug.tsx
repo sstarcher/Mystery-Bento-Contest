@@ -13,9 +13,17 @@ import {
 } from '../race-backgrounds';
 
 const RACE_BACKGROUND_BASE = `${import.meta.env.BASE_URL}runtime/images/race-backgrounds`;
+const RACE_OBSTACLE_BASE = `${import.meta.env.BASE_URL}runtime/images/obstacles`;
 const FALL_SEQUENCE_RUN_MS = 1800;
 const FALL_SEQUENCE_FALL_MS = 2100;
 const VICTORY_SEQUENCE_RUN_MS = 1800;
+
+const SAMPLE_TRACK_OBSTACLES = [
+  { id: 'sample-napkin-gust', label: 'Napkin gust', position: 18, image: 'napkin-gust.png' },
+  { id: 'sample-tea-puddle', label: 'Tea puddle', position: 40, image: 'tea-puddle.png' },
+  { id: 'sample-ribbon-tunnel', label: 'Ribbon tunnel', position: 62, image: 'ribbon-tunnel.png' },
+  { id: 'sample-bento-stack', label: 'Bento stack', position: 83, image: 'bento-stack.png' },
+] as const;
 
 const spriteTestContestants = contestantDesigns.filter((contestant) => (
   getMovementSpriteSheet(contestant.id, 'run')
@@ -289,12 +297,33 @@ export default function RaceTrackDebugPage() {
               </article>
             );
           })}
+          <div className="race-track-debug-obstacle-layer" aria-label="Sample obstacle placements">
+            {SAMPLE_TRACK_OBSTACLES.map((obstacle) => (
+              <span
+                className="race-obstacle race-track-debug-obstacle"
+                data-position={`${obstacle.position}%`}
+                key={obstacle.id}
+                style={{ left: `${obstacle.position}%` }}
+              >
+                <span className="race-obstacle-art">
+                  <img src={`${RACE_OBSTACLE_BASE}/${obstacle.image}`} alt={obstacle.label} draggable="false" />
+                </span>
+                <span className="race-track-debug-obstacle-label">
+                  <strong>{obstacle.position}%</strong>
+                  <span>{obstacle.label}</span>
+                </span>
+              </span>
+            ))}
+          </div>
         </div>
       </section>
 
       <p className="race-track-debug-help">
         Click the panorama to focus it. Use <kbd>←</kbd> <kbd>→</kbd>, <kbd>Home</kbd>, or <kbd>End</kbd> to pan with the keyboard.
       </p>
+       <p className="race-track-debug-obstacle-note">
+         Sample obstacle layout: four hazards spaced at the live race checkpoints — 18%, 40%, 62%, and 83% of the course.
+       </p>
       <SpriteTestStrip />
     </main>
   );
