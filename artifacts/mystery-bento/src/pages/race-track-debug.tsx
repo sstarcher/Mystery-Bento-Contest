@@ -35,14 +35,10 @@ type SampleTrackObstacle = SampleTrackObstacleOption & SampleTrackObstaclePlacem
 const SAMPLE_TRACK_OBSTACLE_OPTIONS: SampleTrackObstacleOption[] = [
   { id: 'napkin-gust', label: 'Napkin gust', image: 'napkin-gust.png' },
   { id: 'tea-puddle', label: 'Tea puddle', image: 'tea-puddle.png' },
-  { id: 'wobble-stack', label: 'Wobble stack', image: 'wobble-stack.png' },
   { id: 'moon-reflection', label: 'Moon reflection', image: 'moon-reflection.png' },
-  { id: 'broken-cart', label: 'Broken cart', image: 'broken-cart.png' },
-  { id: 'ribbon-tunnel', label: 'Ribbon tunnel', image: 'ribbon-tunnel.png' },
   { id: 'cushion-pile', label: 'Cushion pile', image: 'cushion-pile.png' },
   { id: 'flour-sacks', label: 'Flour sacks', image: 'flour-sacks.png' },
   { id: 'crumb-trail', label: 'Crumb trail', image: 'crumb-trail.png' },
-  { id: 'garnish-gate', label: 'Garnish gate', image: 'garnish-gate.png' },
   { id: 'steam-gadget', label: 'Steam gadget', image: 'steam-gadget.png' },
   { id: 'bento-stack', label: 'Bento stack', image: 'bento-stack.png' },
 ];
@@ -53,7 +49,7 @@ const SAMPLE_TRACK_OBSTACLE_PLACEMENTS: SampleTrackObstaclePlacement[] = [
   { position: 62, offsetY: -50 },
   { position: 83, offsetX: 200 },
 ];
-const DEFAULT_SAMPLE_OBSTACLE_INDEXES = [0, 1, 5, 11];
+const DEFAULT_SAMPLE_OBSTACLE_INDEXES = [0, 1, 2, 7];
 
 const spriteTestContestants = contestantDesigns.filter((contestant) => (
   getMovementSpriteSheet(contestant.id, 'run')

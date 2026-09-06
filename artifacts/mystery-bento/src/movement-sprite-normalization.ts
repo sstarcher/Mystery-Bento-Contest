@@ -23,9 +23,10 @@ export type MovementSpriteRenderStyle = {
 
 export function getMovementSpriteRenderStyle(
   normalization: MovementSpriteNormalization,
+  scaleMultiplier = 1,
 ): MovementSpriteRenderStyle {
   return {
-    frameTransform: `scale(${normalization.scale})`,
+    frameTransform: `scale(${normalization.scale * scaleMultiplier})`,
     frameTransformOrigin: '50% 100%',
     spriteTransform: `translateY(${normalization.baselineOffset}px)`,
   };

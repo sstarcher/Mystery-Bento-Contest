@@ -18,12 +18,14 @@ export function MovementSprite({
   prefersReducedMotion,
   animationKey,
   speedMultiplier = 1,
+  scaleMultiplier = 1,
 }: {
   persona: MovementSpritePersona;
   action: MovementAction;
   prefersReducedMotion: boolean;
   animationKey?: string;
   speedMultiplier?: number;
+  scaleMultiplier?: number;
 }) {
   const [displayAction, setDisplayAction] = useState<MovementAction>(action);
   const [frameIndex, setFrameIndex] = useState(0);
@@ -136,7 +138,7 @@ export function MovementSprite({
   const column = visibleFrameIndex % spriteSheet.columns;
   const row = Math.floor(visibleFrameIndex / spriteSheet.columns);
   const backgroundPosition = `${spriteSheet.columns > 1 ? (column / (spriteSheet.columns - 1)) * 100 : 0}% ${spriteSheet.rows > 1 ? (row / (spriteSheet.rows - 1)) * 100 : 0}%`;
-  const renderStyle = getMovementSpriteRenderStyle(spriteSheet.normalization);
+  const renderStyle = getMovementSpriteRenderStyle(spriteSheet.normalization, scaleMultiplier);
 
   return (
     <span

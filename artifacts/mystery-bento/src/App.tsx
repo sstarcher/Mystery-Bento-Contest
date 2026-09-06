@@ -556,6 +556,13 @@ const raceObstacleCatalog: Record<RaceObstacleKind, {
   'bento-stack': { label: 'Bento stack', shortLabel: 'bento stack', description: 'empty patterned bento boxes lean into the narrow finish approach', icon: '▤', imageSrc: `${RACE_OBSTACLE_IMAGE_BASE}/bento-stack.png`, primaryTrait: 'balance', secondaryTrait: 'focus' },
 };
 
+const DISABLED_RACE_OBSTACLE_KINDS = new Set<RaceObstacleKind>([
+  'ribbon-tunnel',
+  'garnish-gate',
+  'broken-cart',
+  'wobble-stack',
+]);
+
 const personaObstacleKinds: Record<string, RaceObstacleKind> = {
   pip: 'napkin-gust',
   sencha: 'tea-puddle',
@@ -870,8 +877,15 @@ function clampRacePosition(value: number) {
 
 function buildRaceSimulation(contestants: Persona[], rng: () => number): RaceSimulation {
   const obstaclePositions = [18, 40, 62, 83];
-  const fallbackKinds = shuffleWithRng(Object.keys(raceObstacleCatalog) as RaceObstacleKind[], rng);
-  const selectedKinds = contestants.map((persona) => personaObstacleKinds[persona.id] ?? fallbackKinds[0]).slice(0, 4);
+  const fallbackKinds = shuffleWithRng(
+    (Object.keys(raceObstacleCatalog) as RaceObstacleKind[])
+      .filter((kind) => !DISABLED_RACE_OBSTACLE_KINDS.has(kind)),
+    rng,
+  );
+  const selectedKinds = contestants
+    .map((persona) => personaObstacleKinds[persona.id])
+    .filter((kind): kind is RaceObstacleKind => kind !== undefined && !DISABLED_RACE_OBSTACLE_KINDS.has(kind))
+    .slice(0, 4);
   for (const kind of fallbackKinds) {
     if (selectedKinds.length >= 4) break;
     if (!selectedKinds.includes(kind)) selectedKinds.push(kind);
@@ -2199,6 +2213,7 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
                           action={runnerAction}
                           animationKey={movementAnimationKey}
                           speedMultiplier={runnerSpeedMultiplier}
+                          scaleMultiplier={persona.id === 'panko' ? 0.8 : undefined}
                           prefersReducedMotion={prefersReducedMotion}
                         />
                       </span>
