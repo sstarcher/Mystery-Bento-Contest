@@ -398,7 +398,7 @@ export default function RaceTrackDebugPage() {
             );
           })}
           <div className="race-track-debug-obstacle-layer" aria-label="Sample obstacle placements">
-            {sampleTrackObstacles.map((obstacle) => (
+            {sampleTrackObstacles.map((obstacle, positionIndex) => (
               <span
                 className="race-obstacle race-track-debug-obstacle"
                 data-position={`${obstacle.position}%`}
