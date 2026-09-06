@@ -219,6 +219,7 @@ const SUSHI_PLATE_SHRIMP_SRC = `${import.meta.env.BASE_URL}runtime/images/plates
 const SUSHI_PLATE_ROLLS_SRC = `${import.meta.env.BASE_URL}runtime/images/plates/sushi-plate-rolls.png`;
 const SUSHI_PLATE_SALMON_SRC = `${import.meta.env.BASE_URL}runtime/images/plates/sushi-plate-salmon.png`;
 const SUSHI_PLATE_NIGIRI_SRC = `${import.meta.env.BASE_URL}runtime/images/plates/sushi-plate-nigiri.png`;
+const SAPPORO_BEER_SRC = `${import.meta.env.BASE_URL}runtime/images/plates/beer.png`;
 const SENCHA_ANIMATION_SPRITE_SHEET_SRC = `${import.meta.env.BASE_URL}runtime/video/cooking/sencha-making-tea-sprite-sheet.png`;
 
 const TORO_ANIMATION_SPRITE_SHEET_SRC = `${import.meta.env.BASE_URL}runtime/video/cooking/captain-toro-cooking-sprite-sheet.png`;
@@ -483,6 +484,7 @@ const foodItems: FoodItem[] = [
   { id: 'garden-maki', name: 'Moon garden maki', note: 'cool green rolls scattered with sesame', imageSrc: SUSHI_PLATE_ROLLS_SRC },
   { id: 'salmon-duo', name: 'Salmon sunset duo', note: 'two rich cuts tucked over warm rice', imageSrc: SUSHI_PLATE_SALMON_SRC },
   { id: 'night-salmon', name: 'Night-market salmon', note: 'glossy salmon served on the midnight plate', imageSrc: SUSHI_PLATE_NIGIRI_SRC },
+  { id: 'sapporo-beer', name: 'Sapporo', note: 'a crisp golden pour for the late shift', imageSrc: SAPPORO_BEER_SRC },
 ];
 
 const acknowledgements = [
