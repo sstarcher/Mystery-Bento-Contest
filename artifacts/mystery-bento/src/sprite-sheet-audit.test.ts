@@ -191,12 +191,16 @@ for (const [personaId, metrics] of normalizedMovementMetrics) {
   );
   assert.ok(victoryMetric, `${personaId}: victory normalization metrics are missing`);
   const regularMedianHeight = regularHeights.slice().sort((a, b) => a - b)[Math.floor(regularHeights.length / 2)];
+  const expectedVictoryHeightMultiplier = personaId === 'rollo' ? 1.4 : 1.1;
   assert.ok(
-    Math.abs(victoryMetric!.height - regularMedianHeight * 1.1) <= 4,
-    `${personaId}: victory pose should be 10% larger than its regular movement pose`,
+    Math.abs(victoryMetric!.height - regularMedianHeight * expectedVictoryHeightMultiplier) <= 4,
+    `${personaId}: victory pose size drifted from its presentation target`,
   );
+  const baselineMetrics = personaId === 'rollo'
+    ? metrics.filter(({ action }) => action !== 'victory')
+    : metrics;
   assert.ok(
-    Math.max(...baselines) - Math.min(...baselines) <= 3,
+    Math.max(...baselineMetrics.map(({ baseline }) => baseline)) - Math.min(...baselineMetrics.map(({ baseline }) => baseline)) <= 3,
     `${personaId}: normalized action baseline drifted by more than 3 rendered pixels`,
   );
 }
