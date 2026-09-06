@@ -5,13 +5,13 @@ export type CurioShelfPlacement = {
 export type CurioShelfPlacementMap = Record<string, CurioShelfPlacement>;
 
 export const CURIO_SHELF_GRID = {
-  columns: 6,
-  rows: 2,
-  cellCount: 12,
+  columns: 7,
+  rows: 3,
+  cellCount: 21,
 } as const;
 
-// The stage deliberately keeps two empty cells for breathing room around the
-// ten curios currently allowed on the restaurant shelf.
+// The stage keeps five empty cells for breathing room around the sixteen curios
+// most collections will show before the full set is complete.
 export const CURIO_SHELF_SLOTS: readonly number[] = Array.from(
   { length: CURIO_SHELF_GRID.cellCount },
   (_, cell) => cell,

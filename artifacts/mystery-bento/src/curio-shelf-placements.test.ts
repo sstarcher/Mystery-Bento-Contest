@@ -22,11 +22,11 @@ Object.values(initial).forEach(assertInGrid);
 assertUniqueCells(Object.values(initial));
 
 const fullShelf = reconcileCurioPlacements(
-  ['one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten'],
+  ['one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen'],
   {},
   () => 0.37,
 );
-assert.equal(Object.keys(fullShelf).length, 10, 'the full displayed shelf receives one placement per curio');
+assert.equal(Object.keys(fullShelf).length, 16, 'the full displayed shelf receives one placement per curio');
 Object.values(fullShelf).forEach(assertInGrid);
 assertUniqueCells(Object.values(fullShelf));
 
@@ -54,7 +54,7 @@ assert.notDeepEqual(resetFirst.watch, resetSecond.watch, 'a cleared placement ma
 assert.deepEqual(
   normalizeCurioPlacements({
     good: { cell: 3 },
-    outside: { cell: 12 },
+    outside: { cell: 21 },
     malformed: { cell: 3.5 } as CurioShelfPlacement,
   }),
   { good: { cell: 3 } },

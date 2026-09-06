@@ -1570,7 +1570,7 @@ function getRestaurantShelfItems(collectibles: Collectible[]) {
   const pocketWatch = showcaseCollectibles.find((item) => item.id === 'pip-pocket-watch');
   const hasPocketWatch = collectibles.some((item) => item.id === 'pip-pocket-watch');
   const shelfCollectibles = pocketWatch && !hasPocketWatch ? [pocketWatch, ...collectibles] : collectibles;
-  const byZone = (zone: CurioDisplayZone) => shelfCollectibles.filter((item) => getCurioDisplayZone(item) === zone).slice(0, 2);
+  const byZone = (zone: CurioDisplayZone) => shelfCollectibles.filter((item) => getCurioDisplayZone(item) === zone);
   return (['house-keeps', 'tea-tools', 'spare-plates', 'little-finds', 'hanging-tools'] as CurioDisplayZone[])
     .flatMap((zone) => byZone(zone));
 }
