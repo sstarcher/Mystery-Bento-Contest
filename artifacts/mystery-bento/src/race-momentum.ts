@@ -22,11 +22,13 @@ export function ensureRaceEncounterVariety(
 export function getRaceMomentumAdjustment(laneIndex: number, laneCount: number, spread: number) {
   if (laneCount < 2 || laneIndex !== 0 && laneIndex !== laneCount - 1) return 0;
   const boundedSpread = Math.max(0, Math.min(24, spread));
+  if (boundedSpread === 0) return 0;
+  const adjustmentScale = 2;
   if (boundedSpread <= 8) {
-    return (laneIndex === 0 ? -1 : 1) * boundedSpread * 0.375;
+    return (laneIndex === 0 ? -1 : 1) * boundedSpread * 0.375 * adjustmentScale;
   }
   const meaningfulSpread = 3 + ((boundedSpread - 8) / 16) * 11;
-  return (laneIndex === 0 ? -1 : 1) * meaningfulSpread;
+  return (laneIndex === 0 ? -1 : 1) * meaningfulSpread * adjustmentScale;
 }
 
 export function resolveRaceEncounterResult({

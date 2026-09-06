@@ -75,10 +75,18 @@ function runRace(seed: number, roster: typeof contestants, startingOffsets: numb
   return { leaders, results };
 }
 
-assert.ok(getRaceMomentumAdjustment(3, 4, 4) > 0, 'a trailing lane should get a beneficial adjustment');
-assert.ok(getRaceMomentumAdjustment(0, 4, 4) < 0, 'the leader should get a disruption adjustment');
-assert.ok(Math.abs(getRaceMomentumAdjustment(0, 4, 8)) <= 3, 'a close pack should only get a mild adjustment');
+assert.equal(getRaceMomentumAdjustment(0, 4, 0), 0, 'a zero-spread leader should have no adjustment');
+assert.equal(getRaceMomentumAdjustment(0, 4, 4), -3, 'a close-pack leader should receive twice the existing penalty');
+assert.equal(getRaceMomentumAdjustment(3, 4, 4), 3, 'a close-pack trailing lane should receive twice the existing benefit');
+assert.equal(getRaceMomentumAdjustment(0, 4, 8), -6, 'the close-pack boundary should use the doubled adjustment');
+assert.equal(getRaceMomentumAdjustment(3, 4, 8), 6, 'the close-pack trailing boundary should use the doubled adjustment');
+assert.equal(getRaceMomentumAdjustment(0, 4, 9), -7.375, 'the wide-gap branch should preserve its doubled boundary value');
+assert.equal(getRaceMomentumAdjustment(3, 4, 16), 17, 'a wide-gap trailing lane should receive the doubled benefit');
+assert.equal(getRaceMomentumAdjustment(0, 4, 24), -28, 'the maximum spread should receive the doubled leader penalty');
+assert.equal(getRaceMomentumAdjustment(3, 4, 999), 28, 'spreads above the maximum should retain the doubled cap');
+assert.equal(getRaceMomentumAdjustment(0, 4, -10), 0, 'spreads below zero should retain the lower bound');
 assert.equal(getRaceMomentumAdjustment(1, 4, 20), 0, 'middle lanes should retain their authored odds');
+assert.equal(getRaceMomentumAdjustment(3, 1, 20), 0, 'a single-lane race should not receive rank adjustment');
 assert.deepEqual(
   ensureRaceEncounterVariety(['clear', 'surge', 'clear'], 1),
   ['clear', 'slow', 'clear'],
