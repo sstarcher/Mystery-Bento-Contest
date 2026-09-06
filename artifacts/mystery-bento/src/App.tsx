@@ -42,6 +42,7 @@ import saffyGarnishPlate from './assets/derived/curios/saffy-garnish-plate.png';
 import saffyPlatingTweezers from './assets/derived/curios/saffy-plating-tweezers.png';
 import saffyPresentationFan from './assets/derived/curios/saffy-presentation-fan.png';
 import { getMovementSpriteSheet, type MovementAction } from './movement-sprite-config';
+import { getMovementFrameIndex, getVictoryFrameIndex } from './movement-sprite-actions';
 import { getMovementSpriteRenderStyle } from './movement-sprite-normalization';
 import { RACE_BACKGROUND_SEQUENCE, RACE_BACKGROUND_TRACK_WIDTH_PX } from './race-backgrounds';
 import { CURIO_ART_FIT_SCALE, getCurioArtProfile, type CurioArtProfile } from './curio-art-sizing';
@@ -55,6 +56,7 @@ import {
 import {
   getFirstRunnerObstacleHitOffset as getTimelineFirstRunnerObstacleHitOffset,
   getRaceFinishCrossingOffset,
+  getRaceRunnerFinishAction,
   getRaceAnnouncementRevealOffsets,
   getRaceAnnouncementCompletionDelay,
   getRaceRunnerObstacleContactOffset,
@@ -1424,7 +1426,9 @@ function MovementSprite({
   const [isHoldingFall, setIsHoldingFall] = useState(false);
   const activeFallKey = useRef<string | null>(null);
   const oneShotKey = animationKey ?? action;
-  const effectiveAction = action === 'fall'
+  const effectiveAction = action === 'victory'
+    ? 'victory'
+    : action === 'fall'
     ? completedOneShotKey === oneShotKey && !isHoldingFall ? 'run' : 'fall'
     : isHoldingFall
       ? 'fall'
@@ -1443,6 +1447,14 @@ function MovementSprite({
   speedMultiplierRef.current = speedMultiplier;
 
   useEffect(() => {
+    if (action === 'victory') {
+      activeFallKey.current = null;
+      setCompletedOneShotKey(null);
+      setIsHoldingFall(false);
+      setDisplayAction('victory');
+      setFrameIndex(0);
+      return;
+    }
     if (action === 'fall') {
       if (activeFallKey.current !== oneShotKey) {
         activeFallKey.current = oneShotKey;
@@ -1457,7 +1469,7 @@ function MovementSprite({
     activeFallKey.current = null;
     setCompletedOneShotKey(null);
     setDisplayAction(action);
-    if (action === 'jump' || action === 'victory') setFrameIndex(0);
+    if (action === 'jump') setFrameIndex(0);
   }, [action, animationKey]);
 
   useEffect(() => {
@@ -1467,6 +1479,7 @@ function MovementSprite({
     previousFrameCount.current = spriteSheet?.frameCount ?? 1;
     setFrameIndex((current) => {
       if (!spriteSheet) return 0;
+      if (effectiveAction === 'victory') return 0;
       if (effectiveAction === 'jump' && priorSource !== spriteSheet.src) return 0;
       if (!priorSource || priorSource === spriteSheet.src) return current % spriteSheet.frameCount;
       return Math.floor((current / priorFrameCount) * spriteSheet.frameCount) % spriteSheet.frameCount;
@@ -1483,8 +1496,8 @@ function MovementSprite({
       : speedUpDurationMs(spriteSheet.frameDurationMs / cadenceMultiplier);
     const timer = window.setInterval(() => {
       setFrameIndex((current) => isOneShot
-        ? Math.min(current + 1, spriteSheet.frameCount - 1)
-        : (current + 1) % spriteSheet.frameCount);
+        ? getMovementFrameIndex(current + 1, spriteSheet.frameCount, false)
+        : getMovementFrameIndex(current + 1, spriteSheet.frameCount, true));
     }, frameDurationMs);
     return () => window.clearInterval(timer);
   }, [action, effectiveAction, prefersReducedMotion, spriteSheet]);
@@ -1507,7 +1520,14 @@ function MovementSprite({
   // Action changes reuse this component, so the previous action may have a
   // frame index beyond the new sheet's occupied range for one render. Normalize
   // it before painting to prevent a transient blank cell on any racer.
-  const visibleFrameIndex = frameIndex % spriteSheet.frameCount;
+  const isFreshVictory = action === 'victory'
+    && requestedSpriteSheet !== undefined
+    && displayAction !== 'victory';
+  const visibleFrameIndex = isFreshVictory
+    ? 0
+    : action === 'victory'
+      ? getVictoryFrameIndex(frameIndex, spriteSheet.frameCount, prefersReducedMotion)
+      : getMovementFrameIndex(frameIndex, spriteSheet.frameCount, true);
   const column = visibleFrameIndex % spriteSheet.columns;
   const row = Math.floor(visibleFrameIndex / spriteSheet.columns);
   const backgroundPosition = `${spriteSheet.columns > 1 ? (column / (spriteSheet.columns - 1)) * 100 : 0}% ${spriteSheet.rows > 1 ? (row / (spriteSheet.rows - 1)) * 100 : 0}%`;
@@ -2258,18 +2278,15 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
                  const runnerSpeedMultiplier = getRunnerEffectiveSpeed(runnerProfile, raceClockMs);
                  const runnerReaction = laneCurrentObstacle && encounter ? getRaceRunnerReaction(laneCurrentObstacle.kind, encounter.result) : 'ready';
                   const isWinner = (winner?.id ?? race.winnerId) === persona.id;
-                  const raceHasFinished = step === 'winner' || finishCrossed;
                    const hasObstacleReaction = hasNegativeObstacleImpact(encounter?.result);
-                  const runnerAction: MovementAction = raceHasFinished
-                    ? isWinner
-                      ? 'victory'
-                      : 'fall'
-                    : hasObstacleReaction
+                  const finishAction = getRaceRunnerFinishAction(finishCrossed, isWinner);
+                  const runnerAction: MovementAction = finishAction
+                    ?? (hasObstacleReaction
                       ? 'fall'
                       : step === 'intro'
                         ? 'idle'
-                        : getRunnerMovementState(runnerProfile, raceClockMs);
-                  const movementAnimationKey = raceHasFinished
+                        : getRunnerMovementState(runnerProfile, raceClockMs));
+                  const movementAnimationKey = finishAction
                     ? `${isWinner ? 'victory' : 'finish-fall'}-${persona.id}`
                     : hasObstacleReaction
                       ? `${step}-${laneCurrentObstacle?.id ?? 'reaction'}-${runnerReaction}`

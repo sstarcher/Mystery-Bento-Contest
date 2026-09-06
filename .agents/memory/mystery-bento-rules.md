@@ -39,11 +39,11 @@ Fall movement sheets are also one-shot reactions: they must finish one complete 
 
 **How to apply:** Hold the active fall key until its final frame, then hand off to the current gait; in reduced-motion mode, advance directly to the final fall frame so the handoff still completes.
 
-Resolved race reactions are sprite-driven rather than CSS-transform-driven: the conceptual reaction label may remain distinct for narration, but only negative obstacle outcomes use the fall sheet, freeze on their grounded final frame, and the winner uses a looping victory sheet after the finish.
+Resolved race reactions are sprite-driven rather than CSS-transform-driven: the conceptual reaction label may remain distinct for narration, but only negative obstacle outcomes use the fall sheet, freeze on their grounded final frame, and the winner uses a looping victory sheet after the finish; victory must cancel any still-held fall immediately.
 
 **Why:** CSS dodge, slide, duck, stumble, weave, and surge transforms made the race look like unrelated wobble effects and could fight the authored sprite silhouettes.
 
-**How to apply:** Keep `getRaceRunnerReaction` for deterministic narrative labels and announcer copy, map only `slow`/`reroute` visual outcomes to `fall`, let `clear`/`surge` keep their normal gait, reset fall/victory playback with stable handoff keys, and reserve portraits for cards or missing-asset fallback only.
+**How to apply:** Keep `getRaceRunnerReaction` for deterministic narrative labels and announcer copy, map only `slow`/`reroute` visual outcomes to `fall`, let `clear`/`surge` keep their normal gait, reset fall/victory playback with stable handoff keys, cancel a held fall when the finish resolves a winner, and reserve portraits for cards or missing-asset fallback only.
 
 Visual spectacle should always have a readable staged fallback when reduced motion is enabled.
 

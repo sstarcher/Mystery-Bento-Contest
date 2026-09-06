@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import {
   getFirstRunnerObstacleHitOffset,
   getRaceFinishCrossingOffset,
+  getRaceRunnerFinishAction,
   getRaceAnnouncementRevealOffsets,
   getRaceAnnouncementCompletionDelay,
   getRaceLaneProgressAtTime,
@@ -86,6 +87,9 @@ assert.ok(Math.abs(getRaceWorldTravelPercentAtTime('finale', RACE_STAGE_DURATION
 assert.ok(Math.abs(getRaceWorldTravelPercentAtTime('matchup', 0, false) - RACE_WARMUP_WORLD_END_PERCENT) < 1e-9);
 assert.ok(Math.abs(getRaceWorldTravelPercentAtTime('finale', 0, false) - RACE_MATCHUP_WORLD_END_PERCENT) < 1e-9);
 assert.equal(getRaceFinishCrossingOffset(false), RACE_STAGE_DURATIONS.finale);
+assert.equal(getRaceRunnerFinishAction(false, true), undefined);
+assert.equal(getRaceRunnerFinishAction(true, true), 'victory');
+assert.equal(getRaceRunnerFinishAction(true, false), 'fall');
 assert.equal(getRaceFinishCrossingOffset(true), 0);
 assert.deepEqual(
   getRaceAnnouncementRevealOffsets(640, [700, 820, 910], 80),

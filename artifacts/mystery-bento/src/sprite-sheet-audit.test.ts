@@ -3,6 +3,12 @@ import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import type { MovementAction } from './movement-sprite-actions';
+import {
+  getMovementFrameIndex,
+  getVictoryFrameIndex,
+  movementActions,
+  victorySpriteMetadata,
+} from './movement-sprite-actions';
 import { movementSpriteNormalization } from './movement-sprite-normalization';
 import {
   RACE_RUNNER_LANE_HEIGHT_PX,
@@ -106,6 +112,7 @@ const movementSpriteSheets: SpriteSheetAudit[] = [
   { file: 'sencha-fall.png', columns: 8, rows: 7, occupiedFrames: 56 },
   { file: 'sencha-victory.png', columns: 8, rows: 8, occupiedFrames: 64 },
 ];
+const movementSheetsByFile = new Map(movementSpriteSheets.map((sheet) => [sheet.file, sheet]));
 
 const runtimeAssetPath = (file: string) => fileURLToPath(new URL(`../public/runtime/video/cooking/${file}`, import.meta.url));
 const movementRuntimeAssetPath = (file: string) => fileURLToPath(new URL(`./assets/derived/contestants/movement/${file}`, import.meta.url));
@@ -186,13 +193,38 @@ for (const [personaId, metrics] of normalizedMovementMetrics) {
 
 const raceCss = readFileSync(fileURLToPath(new URL('./index.css', import.meta.url)), 'utf8');
 const appSource = readFileSync(fileURLToPath(new URL('./App.tsx', import.meta.url)), 'utf8');
+const movementConfigSource = readFileSync(fileURLToPath(new URL('./movement-sprite-config.ts', import.meta.url)), 'utf8');
 assert.match(raceCss, new RegExp(`\\.race-course-road \\{ padding-top: ${RACE_RUNNER_PRESENTATION_TOP_PX}px; \\}`));
 assert.match(raceCss, new RegExp(`\\.race-runner-overlay \\{ padding-top: ${RACE_RUNNER_OVERLAY_TOP_PX}px; \\}`));
 assert.match(raceCss, new RegExp(`\\.race-lane, \\.race-runner-lane \\{ height: ${RACE_RUNNER_LANE_HEIGHT_PX}px;`));
 assert.doesNotMatch(raceCss, /race-reaction-/);
-assert.match(appSource, /\['idle', 'walk', 'run', 'jump', 'fall', 'victory'\]/);
 assert.match(appSource, /hasNegativeObstacleImpact\(encounter\?\.result\)/);
 assert.match(appSource, /result === 'slow' \|\| result === 'reroute'/);
-assert.match(appSource, /const runnerAction: MovementAction = raceHasFinished/);
+assert.match(appSource, /getRaceRunnerFinishAction\(finishCrossed, isWinner\)/);
+assert.match(appSource, /const runnerAction: MovementAction = finishAction/);
 assert.match(appSource, /action=\{runnerAction\}/);
+assert.match(appSource, /if \(effectiveAction === 'victory'\) return 0/);
+assert.match(appSource, /const winningPersona = winner \?\? contestOutcome\.current\?\.winner/);
+assert.match(appSource, /const outcome = contestOutcome\.current \?\? resolveContest\(contestants, createRng\(Date\.now\(\)\)\)/);
+assert.deepEqual(movementActions, ['idle', 'walk', 'run', 'jump', 'fall', 'victory']);
+for (const [personaId, metadata] of Object.entries(victorySpriteMetadata)) {
+  assert.equal(metadata.columns, 8, `${personaId}: victory sheet should use an 8-column grid`);
+  assert.equal(metadata.rows, 8, `${personaId}: victory sheet should use an 8-row grid`);
+  assert.equal(metadata.frameCount, 64, `${personaId}: victory sheet should expose all authored frames`);
+  assert.match(
+    movementConfigSource,
+    new RegExp(`victory: sheet\\('${personaId}', 'victory', ${personaId}Victory, 8, 8, 64\\)`),
+    `${personaId}: victory sheet is not registered to its own persona`,
+  );
+  const asset = movementSheetsByFile.get(metadata.file);
+  assert.ok(asset, `${metadata.file}: victory asset is missing from the audit inventory`);
+  assert.equal(asset?.columns, metadata.columns);
+  assert.equal(asset?.rows, metadata.rows);
+  assert.equal(asset?.occupiedFrames, metadata.frameCount);
+}
+assert.equal(getVictoryFrameIndex(0, 64, false), 0, 'victory playback should begin on its first authored frame');
+assert.equal(getVictoryFrameIndex(64, 64, false), 0, 'victory playback should loop at the sheet boundary');
+assert.equal(getVictoryFrameIndex(127, 64, false), 63, 'victory playback should stay inside occupied frames');
+assert.equal(getVictoryFrameIndex(37, 64, true), 0, 'reduced motion should hold a stable readable victory pose');
+assert.equal(getMovementFrameIndex(99, 64, false), 63, 'one-shot playback should freeze on its final frame');
 console.log(`Sprite-sheet audit passed for ${spriteSheets.length + movementSpriteSheets.length} runtime sheets with sprite-driven race reactions.`);
