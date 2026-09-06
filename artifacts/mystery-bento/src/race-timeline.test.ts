@@ -17,6 +17,7 @@ import {
   RACE_LAST_CONTESTANT_PAUSE_MS,
   RACE_MATCHUP_WORLD_END_PERCENT,
   RACE_OBSTACLE_CONTACT_WINDOW_PERCENT,
+  RACE_FINISH_THRESHOLD_POSITION,
   RACE_RACE_DURATION_MS,
   RACE_RUNNER_MAX_SPREAD_PERCENT,
   RACE_RUNNER_SCREEN_MAX_PERCENT,
@@ -275,6 +276,7 @@ const contactRunnerAnchor = (elapsedMs: number) => getRaceRunnerScreenAnchors(
     + (contactLane.positions.warmup - contactLane.positions.intro)
       * Math.min(1, Math.max(0, elapsedMs / RACE_STAGE_DURATIONS.warmup))],
   [contactLane.positions.intro],
+  RACE_FINISH_THRESHOLD_POSITION,
 )[0];
 const contactObstacleAnchor = (elapsedMs: number) => Number.parseFloat(getRaceWorldScreenAnchor(
   contactObstacle.position,
@@ -385,7 +387,7 @@ assert.deepEqual(
   'reduced motion should expose readable authored snapshots for every race stage',
 );
 assert.ok(
-  normalFinishSnapshot.winnerPosition >= 4 && normalFinishSnapshot.winnerPosition <= 96,
+  normalFinishSnapshot.winnerPosition >= 4 && normalFinishSnapshot.winnerPosition <= 100,
   'normal motion should preserve a bounded continuous finish position',
 );
 
@@ -404,6 +406,15 @@ assert.deepEqual(
   parseAnchors(getRaceRunnerScreenAnchors(sharedStart, sharedStart)),
   [RACE_RUNNER_VISUAL_START_PERCENT, RACE_RUNNER_VISUAL_START_PERCENT, RACE_RUNNER_VISUAL_START_PERCENT, RACE_RUNNER_VISUAL_START_PERCENT],
   'all contestants should share one visual starting position',
+);
+assert.deepEqual(
+  parseAnchors(getRaceRunnerScreenAnchors(
+    sharedStart.map(() => RACE_FINISH_THRESHOLD_POSITION),
+    sharedStart,
+    RACE_FINISH_THRESHOLD_POSITION,
+  )),
+  [RACE_RUNNER_SCREEN_MAX_PERCENT, RACE_RUNNER_SCREEN_MAX_PERCENT, RACE_RUNNER_SCREEN_MAX_PERCENT, RACE_RUNNER_SCREEN_MAX_PERCENT],
+  'finish-threshold runners should project to the visible finish marker',
 );
 assert.deepEqual(
   parseAnchors(getRaceRunnerScreenAnchors(

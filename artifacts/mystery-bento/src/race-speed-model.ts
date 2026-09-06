@@ -22,6 +22,7 @@ export const RUNNER_SURGE_DURATION_MS = 3200;
 export const RUNNER_SPRITE_SLOW_SPEED_THRESHOLD = 1;
 export const RUNNER_SLOW_FRAME_CADENCE_FLOOR = 0.58;
 export const RUNNER_EVENT_DISTANCE_GAIN = 2.8;
+export const RUNNER_MAX_POSITION = 100;
 
 function getEventDuration(result: RunnerSpeedEventResult) {
   if (result === 'slow') return RUNNER_SLOW_DURATION_MS;
@@ -88,7 +89,7 @@ export function getContinuousRunnerPosition(
       * eventElapsed
       * RUNNER_EVENT_DISTANCE_GAIN;
   }, 0);
-  return clamp(profile.startPosition + baseTravel + eventTravel, 4, 96);
+  return clamp(profile.startPosition + baseTravel + eventTravel, 4, RUNNER_MAX_POSITION);
 }
 
 export function getRunnerFinishCrossingTime(

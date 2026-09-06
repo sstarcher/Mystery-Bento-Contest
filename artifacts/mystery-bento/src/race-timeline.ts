@@ -1,5 +1,7 @@
 import {
   RACE_BACKGROUND_CANVAS_WIDTH_PX,
+  RACE_BACKGROUND_FINISH_WORLD_POSITION,
+  RACE_BACKGROUND_FINISH_SCREEN_ANCHOR_PERCENT,
   RACE_BACKGROUND_FINISH_TRAVEL_PERCENT,
   RACE_BACKGROUND_FINISH_MARKER_X_PX,
   RACE_BACKGROUND_TRACK_WIDTH_PX,
@@ -58,9 +60,10 @@ export const RACE_MATCHUP_WORLD_END_PERCENT = RACE_FINALE_WORLD_END_PERCENT
   / RACE_RACE_DURATION_MS;
 export const RACE_FINALE_WORLD_START_PERCENT = RACE_MATCHUP_WORLD_END_PERCENT;
 export const RACE_RUNNER_SCREEN_MIN_PERCENT = 12;
-export const RACE_RUNNER_SCREEN_MAX_PERCENT = 88;
-export const RACE_RUNNER_MAX_SPREAD_PERCENT = 56;
 export const RACE_RUNNER_VISUAL_START_PERCENT = 14;
+export const RACE_RUNNER_SCREEN_MAX_PERCENT = RACE_BACKGROUND_FINISH_SCREEN_ANCHOR_PERCENT;
+export const RACE_RUNNER_MAX_SPREAD_PERCENT =
+  RACE_RUNNER_SCREEN_MAX_PERCENT - RACE_RUNNER_VISUAL_START_PERCENT;
 export const RACE_RUNNER_VISUAL_MAX_DISTANCE = 90;
 export const RACE_OBSTACLE_CONTACT_WINDOW_PERCENT = 11;
 export const RACE_RUNNER_PRESENTATION_TOP_PX = 470;
@@ -68,6 +71,7 @@ export const RACE_RUNNER_OVERLAY_TOP_PX = 460;
 export const RACE_RUNNER_LANE_HEIGHT_PX = 87;
 export const RACE_RUNNER_NORMALIZED_BASELINE_MAX_PX = 220;
 export const RACE_FINISH_VISIBLE_FRACTION = 0.98;
+export const RACE_FINISH_THRESHOLD_POSITION = RACE_BACKGROUND_FINISH_WORLD_POSITION;
 
 export const RACE_STAGE_OBSTACLE_INDICES: Record<Exclude<RaceTimelineStage, 'intro' | 'winner'>, number[]> = {
   warmup: [0],
@@ -129,7 +133,11 @@ export function getRaceWorldScreenAnchor(position: number, worldTravelPercent: n
   return `${(position * RACE_WORLD_TRACK_WIDTH_MULTIPLIER - worldTravelPercent * RACE_WORLD_TRACK_WIDTH_MULTIPLIER).toFixed(3)}%`;
 }
 
-export function getRaceRunnerScreenAnchors(positions: number[], startPositions: number[] = []) {
+export function getRaceRunnerScreenAnchors(
+  positions: number[],
+  startPositions: number[] = [],
+  finishPosition?: number,
+) {
   if (!positions.length) return [];
 
   // The camera can move backward relative to a runner's world position. Do
@@ -141,12 +149,15 @@ export function getRaceRunnerScreenAnchors(positions: number[], startPositions: 
   const visualTravel = RACE_RUNNER_MAX_SPREAD_PERCENT;
   return positions.map((position, index) => {
     const startPosition = startPositions[index] ?? 0;
+    const maxDistance = typeof finishPosition === 'number'
+      ? Math.max(1, finishPosition - startPosition)
+      : RACE_RUNNER_VISUAL_MAX_DISTANCE;
     const distance = Math.max(0, Math.min(
-      RACE_RUNNER_VISUAL_MAX_DISTANCE,
+      maxDistance,
       position - startPosition,
     ));
     return RACE_RUNNER_VISUAL_START_PERCENT
-      + (distance / RACE_RUNNER_VISUAL_MAX_DISTANCE) * visualTravel;
+      + (distance / maxDistance) * visualTravel;
   });
 }
 
@@ -280,7 +291,11 @@ export function getRaceRunnerObstacleContactOffset(
   const runnerStartPosition = lane.positions.intro;
   const getObstacleToRunnerDistance = (stageElapsedMs: number) => {
     const runnerPosition = getRunnerPositionAtRaceTime(stageOffset + stageElapsedMs);
-    const runnerAnchor = getRaceRunnerScreenAnchors([runnerPosition], [runnerStartPosition])[0] ?? RACE_RUNNER_VISUAL_START_PERCENT;
+    const runnerAnchor = getRaceRunnerScreenAnchors(
+      [runnerPosition],
+      [runnerStartPosition],
+      RACE_FINISH_THRESHOLD_POSITION,
+    )[0] ?? RACE_RUNNER_VISUAL_START_PERCENT;
     const worldTravelPercent = getRaceWorldTravelPercentAtTime(stage, stageElapsedMs, false);
     const obstacleAnchor = Number.parseFloat(getRaceWorldScreenAnchor(obstacle.position, worldTravelPercent));
     return obstacleAnchor - runnerAnchor;

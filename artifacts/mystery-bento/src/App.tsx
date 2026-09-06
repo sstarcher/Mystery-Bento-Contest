@@ -63,6 +63,7 @@ import { getCurioDebugState, selectRestaurantShelfCollectibles } from './curio-d
 import {
   getFirstRunnerObstacleHitOffset as getTimelineFirstRunnerObstacleHitOffset,
   getRaceFinishVisibleOffset,
+   RACE_FINISH_THRESHOLD_POSITION,
   getRaceRunnerFinishAction,
   getRaceAnnouncementRevealOffsets,
   getRaceAnnouncementCompletionDelay,
@@ -512,8 +513,6 @@ const contestStepOffsets: Record<ContestStep, number> = {
   winner: contestDurations.intro + contestDurations.warmup + contestDurations.matchup + contestDurations.finale,
 };
 const RACE_FINISH_ANNOUNCEMENT_DELAY_MS = 120;
-const RACE_FINISH_THRESHOLD_POSITION = 96;
-
 function getRaceFinishCrossingAt(
   startedAt: number,
   race: RaceSimulation,
@@ -895,7 +894,7 @@ function shuffleWithRng<T>(items: T[], rng: () => number) {
 }
 
 function clampRacePosition(value: number) {
-  return Math.min(96, Math.max(4, value));
+  return Math.min(100, Math.max(4, value));
 }
 
 function buildRaceSimulation(contestants: Persona[], rng: () => number): RaceSimulation {
@@ -1761,14 +1760,15 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
   const raceLanes = contestants.map((_, index) => race.lanes.find((lane) => lane.personaId === contestants[index]?.id) ?? race.lanes[index]);
   const introRunnerPositions = raceLanes.map((lane) => lane?.positions.intro ?? 5);
   const stageRunnerAnchors = {
-    intro: getRaceRunnerScreenAnchors(introRunnerPositions, introRunnerPositions),
-    warmup: getRaceRunnerScreenAnchors(raceLanes.map((lane) => lane?.positions.warmup ?? 28), introRunnerPositions),
-    matchup: getRaceRunnerScreenAnchors(raceLanes.map((lane) => lane?.positions.matchup ?? 52), introRunnerPositions),
-    finale: getRaceRunnerScreenAnchors(raceLanes.map((lane) => lane?.positions.finale ?? 78), introRunnerPositions),
+    intro: getRaceRunnerScreenAnchors(introRunnerPositions, introRunnerPositions, RACE_FINISH_THRESHOLD_POSITION),
+    warmup: getRaceRunnerScreenAnchors(raceLanes.map((lane) => lane?.positions.warmup ?? 28), introRunnerPositions, RACE_FINISH_THRESHOLD_POSITION),
+    matchup: getRaceRunnerScreenAnchors(raceLanes.map((lane) => lane?.positions.matchup ?? 52), introRunnerPositions, RACE_FINISH_THRESHOLD_POSITION),
+    finale: getRaceRunnerScreenAnchors(raceLanes.map((lane) => lane?.positions.finale ?? 78), introRunnerPositions, RACE_FINISH_THRESHOLD_POSITION),
   };
   const continuousRunnerAnchors = getRaceRunnerScreenAnchors(
     raceLanes.map((lane) => getLaneProgress(lane)),
     introRunnerPositions,
+    RACE_FINISH_THRESHOLD_POSITION,
   );
   const currentRunnerAnchors = continuousRunnerAnchors;
   const formatRunnerAnchor = (anchor: number | undefined) => `${(anchor ?? 50).toFixed(3)}%`;
@@ -2170,10 +2170,13 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
                 ))}
               </div>
               <div className="race-course-road">
-                {race.obstacles.map((obstacle) => (
+                {race.obstacles.map((obstacle, obstacleIndex) => (
                   <span
                     className={`race-obstacle race-obstacle-${obstacle.kind}`}
-                    style={{ left: `${obstacle.position}%` }}
+                    style={{
+                      left: `${obstacle.position}%`,
+                      ...(obstacleIndex === 0 ? { bottom: '130px' } : {}),
+                    }}
                     key={obstacle.id}
                     title={obstacle.label}
                     aria-hidden="true"
