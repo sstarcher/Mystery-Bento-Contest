@@ -109,7 +109,7 @@ export const movementSpriteNormalization: Record<string, NormalizationSet> = {
     run: normalized(1.116, 12.1),
     jump: normalized(1.312, 12.4),
     fall: normalized(0.954, -2.3),
-    victory: normalized(0.781, -38),
+    victory: normalized(1, 12),
   },
   saffy: {
     idle: normalized(1, 0),
