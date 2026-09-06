@@ -47,9 +47,9 @@ export const RACE_BACKGROUND_SEQUENCE: RaceBackgroundScene[] = [
   {
     id: 'moonlit-pavilion',
     file: 'race-background-06-pavilion-destination.webp',
-    sourceAsset: 'asset_mqEPbJkj88U6xZzrAaQh62rA_Use_the_attached_image_only_as__1788143277474.png',
-    label: 'moonlit pavilion destination',
-    aspectRatio: 6048 / 2592,
+    sourceAsset: 'scene5_1788656051116.webp',
+    label: 'hilltop pavilion finish',
+    aspectRatio: 7172 / 2592,
     isDestination: true,
   },
 ];
@@ -63,6 +63,13 @@ export const RACE_BACKGROUND_TRACK_WIDTH_PX = Math.round(
 
 export const RACE_BACKGROUND_TRACK_WIDTH_MULTIPLIER =
   RACE_BACKGROUND_TRACK_WIDTH_PX / RACE_BACKGROUND_CANVAS_WIDTH_PX;
+
+export const RACE_BACKGROUND_FINISH_SCREEN_ANCHOR_PERCENT = 88;
+export const RACE_BACKGROUND_FINISH_MARKER_X_PX = Math.round(
+  RACE_BACKGROUND_TRACK_WIDTH_PX
+  - RACE_BACKGROUND_CANVAS_WIDTH_PX
+  + (RACE_BACKGROUND_CANVAS_WIDTH_PX * RACE_BACKGROUND_FINISH_SCREEN_ANCHOR_PERCENT) / 100,
+);
 
 export const RACE_BACKGROUND_FINISH_TRAVEL_PERCENT =
   (1 - RACE_BACKGROUND_CANVAS_WIDTH_PX / RACE_BACKGROUND_TRACK_WIDTH_PX) * 100;

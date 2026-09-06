@@ -18,7 +18,7 @@ folder.
 
 - The original high-resolution race scenes are preserved here. The active
   deterministic course order starts with `scene1_...`, `scene2_...`,
-  `scene3-updated_...`, `scene4_...`, then `asset_mqEP...`.
+  `scene3-updated_...`, `scene4_...`, then `scene5_...`.
 - The earlier lantern-gate and garden-market uploads remain preserved as
   inactive source material.
 - The previous transparent-edge `scene1_...` upload remains preserved as
@@ -30,8 +30,8 @@ folder.
   uploads are now active.
 - The former scene 5 `asset_JLEx...` upload remains preserved as inactive source
   material after being removed from the active course.
-- `asset_mqEP...` is the final moonlit-pavilion destination used for the finish
-  crossing and winner state.
+- The previous `asset_mqEP...` destination remains preserved as inactive source
+  material; the latest scene 5 upload is now active for the finish crossing.
 
 `source/images/obstacles/` contains the 12 uploaded obstacle illustrations used
 by the race catalog. Tea-puddle and moon-reflection are separate source images.
@@ -56,7 +56,7 @@ transparent cutouts and sprite sheets are derived later in the pipeline.
 
 ## Image audit status
 
-- 51 source images are preserved here: one character sheet, 14 race
+- 52 source images are preserved here: one character sheet, 15 race
   backgrounds, 12 obstacle illustrations, and 24 runner-action sheets.
 - The app currently has 12 portraits, 72 movement sheets, 12 public cooking
   sheets, five

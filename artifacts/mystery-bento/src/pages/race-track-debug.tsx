@@ -1,6 +1,7 @@
 import { useRef, useState, type KeyboardEvent as ReactKeyboardEvent, type PointerEvent as ReactPointerEvent } from 'react';
 import {
   RACE_BACKGROUND_CANVAS_HEIGHT_PX,
+  RACE_BACKGROUND_FINISH_MARKER_X_PX,
   RACE_BACKGROUND_SEQUENCE,
   RACE_BACKGROUND_TRACK_WIDTH_PX,
 } from '../race-backgrounds';
@@ -90,6 +91,13 @@ export default function RaceTrackDebugPage() {
           className="race-track-debug-world"
           style={{ width: `${RACE_BACKGROUND_TRACK_WIDTH_PX}px`, height: `${RACE_BACKGROUND_CANVAS_HEIGHT_PX}px` }}
         >
+          <div
+            className="race-track-debug-finish-marker"
+            style={{ left: `${RACE_BACKGROUND_FINISH_MARKER_X_PX}px` }}
+            aria-label="Simulation finish line"
+          >
+            <span>SIM FINISH</span>
+          </div>
           {RACE_BACKGROUND_SEQUENCE.map((scene, index) => {
             const sceneWidth = Math.round(scene.aspectRatio * RACE_BACKGROUND_CANVAS_HEIGHT_PX);
             return (
