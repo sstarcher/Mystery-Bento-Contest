@@ -84,6 +84,11 @@ import {
   type RaceTimelineCheckpoint,
 } from './race-timeline';
 import { ensureRaceEncounterVariety, resolveRaceEncounterResult } from './race-momentum';
+import {
+  getRaceObstacleBottomPx,
+  getRaceObstacleLeftCss,
+  RACE_OBSTACLE_PLACEMENTS,
+} from './race-obstacle-layout';
 import { selectContestants } from './contest-roster';
 import {
   getContinuousRunnerPosition,
@@ -898,7 +903,6 @@ function clampRacePosition(value: number) {
 }
 
 function buildRaceSimulation(contestants: Persona[], rng: () => number): RaceSimulation {
-  const obstaclePositions = [18, 40, 62, 83];
   const fallbackKinds = shuffleWithRng(
     (Object.keys(raceObstacleCatalog) as RaceObstacleKind[])
       .filter((kind) => !DISABLED_RACE_OBSTACLE_KINDS.has(kind)),
@@ -924,7 +928,8 @@ function buildRaceSimulation(contestants: Persona[], rng: () => number): RaceSim
       description: `${sourcePersona.name}'s signature hazard: ${catalog.description}. Their quirk — ${sourcePersona.quirk.toLowerCase()} — makes this one personal.`,
       icon: catalog.icon,
       imageSrc: catalog.imageSrc,
-      position: obstaclePositions[index] ?? 83,
+      position: RACE_OBSTACLE_PLACEMENTS[index]?.position
+        ?? RACE_OBSTACLE_PLACEMENTS[RACE_OBSTACLE_PLACEMENTS.length - 1].position,
       sourcePersonaId: sourcePersona.id,
     };
   });
@@ -2174,8 +2179,10 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
                   <span
                     className={`race-obstacle race-obstacle-${obstacle.kind}`}
                     style={{
-                      left: `${obstacle.position}%`,
-                      ...(obstacleIndex === 0 ? { bottom: '130px' } : {}),
+                      left: getRaceObstacleLeftCss(obstacleIndex),
+                      ...(getRaceObstacleBottomPx(obstacleIndex) === undefined
+                        ? {}
+                        : { bottom: `${getRaceObstacleBottomPx(obstacleIndex)}px` }),
                     }}
                     key={obstacle.id}
                     title={obstacle.label}

@@ -3,6 +3,11 @@ import { contestantDesigns } from '../contestant-design-config';
 import { MovementSprite } from '../movement-sprite';
 import { getMovementSpriteSheet, type MovementAction } from '../movement-sprite-config';
 import {
+  getRaceObstacleBottomPx,
+  getRaceObstacleLeftCss,
+  RACE_OBSTACLE_PLACEMENTS,
+} from '../race-obstacle-layout';
+import {
   RACE_BACKGROUND_CANVAS_HEIGHT_PX,
   RACE_BACKGROUND_FINISH_MARKER_ANGLE_DEG,
   RACE_BACKGROUND_FINISH_MARKER_ROAD_LENGTH_PX,
@@ -24,13 +29,7 @@ type SampleTrackObstacleOption = {
   image: string;
 };
 
-type SampleTrackObstaclePlacement = {
-  position: number;
-  offsetX?: number;
-  offsetY?: number;
-};
-
-type SampleTrackObstacle = SampleTrackObstacleOption & SampleTrackObstaclePlacement;
+type SampleTrackObstacle = SampleTrackObstacleOption & typeof RACE_OBSTACLE_PLACEMENTS[number];
 
 const SAMPLE_TRACK_OBSTACLE_OPTIONS: SampleTrackObstacleOption[] = [
   { id: 'napkin-gust', label: 'Napkin gust', image: 'napkin-gust.png' },
@@ -43,12 +42,6 @@ const SAMPLE_TRACK_OBSTACLE_OPTIONS: SampleTrackObstacleOption[] = [
   { id: 'bento-stack', label: 'Bento stack', image: 'bento-stack.png' },
 ];
 
-const SAMPLE_TRACK_OBSTACLE_PLACEMENTS: SampleTrackObstaclePlacement[] = [
-  { position: 18, offsetX: 200, offsetY: 80 },
-  { position: 40 },
-  { position: 62, offsetY: -50 },
-  { position: 83, offsetX: 200 },
-];
 const DEFAULT_SAMPLE_OBSTACLE_INDEXES = [0, 1, 2, 7];
 
 const spriteTestContestants = contestantDesigns.filter((contestant) => (
@@ -214,7 +207,7 @@ export default function RaceTrackDebugPage() {
   const [isDragging, setIsDragging] = useState(false);
   const [sampleObstacleIndexes, setSampleObstacleIndexes] = useState(DEFAULT_SAMPLE_OBSTACLE_INDEXES);
   const sampleTrackObstacles = useMemo(
-    () => SAMPLE_TRACK_OBSTACLE_PLACEMENTS.map((placement, positionIndex) => {
+    () => RACE_OBSTACLE_PLACEMENTS.map((placement, positionIndex) => {
       const option = SAMPLE_TRACK_OBSTACLE_OPTIONS[sampleObstacleIndexes[positionIndex] ?? 0] ?? SAMPLE_TRACK_OBSTACLE_OPTIONS[0];
       return {
         ...option,
@@ -411,8 +404,10 @@ export default function RaceTrackDebugPage() {
                 data-position={`${obstacle.position}%`}
                 key={obstacle.id}
                 style={{
-                  left: obstacle.offsetX ? `calc(${obstacle.position}% + ${obstacle.offsetX}px)` : `${obstacle.position}%`,
-                  bottom: obstacle.offsetY ? `${210 - obstacle.offsetY}px` : undefined,
+                  left: getRaceObstacleLeftCss(positionIndex),
+                  bottom: getRaceObstacleBottomPx(positionIndex) === undefined
+                    ? undefined
+                    : `${getRaceObstacleBottomPx(positionIndex)}px`,
                 }}
               >
                 <span className="race-obstacle-art">
