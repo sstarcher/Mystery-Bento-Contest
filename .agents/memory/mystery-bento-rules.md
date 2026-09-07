@@ -75,11 +75,11 @@ Sprite-sheet motion must change frames discretely; never interpolate the transfo
 
 **How to apply:** Use exact one-frame offsets with discrete timing, and verify the first, middle, and last poses at the final display size.
 
-Contest audio should follow one absolute contest clock, while visual stage transitions run independently of clip readiness.
+Contest audio uses two anchored clocks: the contest-open clock for roster intro beats, then the actual race-start handoff clock for moving-race and winner beats; visual motion remains independent of clip readiness.
 
-**Why:** A long, missing, or autoplay-blocked clip must never create a visible pause in the race; serialization belongs to the announcer queue, not the motion timeline.
+**Why:** Intro narration describes the lineup before motion, while hazard, lead-change, and winner narration must stay aligned to rendered race events even when the intro handoff finishes earlier or later than its budget.
 
-**How to apply:** Schedule beats from the contest start timestamp, keep the queue serialized with the minimum gap, and reset only the audio session when Skip Scene jumps directly to the finish.
+**How to apply:** Anchor intro beats to contest open, anchor obstacle entry/reaction, lead-change, finish-in-sight, and winner beats to the race-start timestamp or resolved finish crossing, keep the queue serialized with the minimum gap, and reset only the audio session when Skip Scene jumps directly to the finish.
 
 The race-start handoff must use the same duration-plus-gap fallback when audio is muted, missing, or blocked.
 
@@ -111,9 +111,9 @@ For normal-motion race reactions, visible runner/obstacle contact is the authori
 
 **How to apply:** Derive contact from the rendered screen anchors for staged obstacles, keep outcomes deterministic, and retain the simulation-based fallback when motion is reduced.
 
-Obstacle callouts should announce the rendered obstacle's arrival at the viewport's right edge; reaction narration should remain attached to the first runner contact.
+Obstacle callouts should announce the rendered obstacle's arrival at the viewport's right edge only when the first runner has at least one second before contact; reaction narration should remain attached to the first runner contact.
 
-**Why:** Spectators need advance notice of an approaching hazard, while the reaction line should still describe the actual encounter rather than the obstacle's entrance.
+**Why:** Spectators need useful advance notice of an approaching hazard, while a callout with less than one second of warning sounds late and the reaction line should still describe the actual encounter rather than the obstacle's entrance.
 
 **How to apply:** Schedule the reusable obstacle callout from the scrolling world-track entry point, then schedule the resolved reaction/result as a separate contact beat. Include shared horizontal obstacle offsets in the entry calculation.
 

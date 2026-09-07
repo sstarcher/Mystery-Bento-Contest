@@ -11,6 +11,10 @@ import {
 export type RaceTimelineStage = 'intro' | 'warmup' | 'matchup' | 'finale' | 'winner';
 export type RaceTimelineEncounterResult = 'clear' | 'slow' | 'surge' | 'reroute';
 export type RaceRunnerFinishAction = 'victory' | 'idle';
+export type RaceStageAnnouncerCue = {
+  id: 'finish-in-sight';
+  label: 'Finish in sight';
+};
 export type RaceTimelineObstacle = { id: string; position: number };
 export type RaceTimelineLane = {
   positions: Record<RaceTimelineStage, number>;
@@ -84,6 +88,12 @@ export function getRaceStageObstacleIndices(stage: RaceTimelineStage, obstacleCo
   if (!(stage in RACE_STAGE_OBSTACLE_INDICES)) return [];
   return RACE_STAGE_OBSTACLE_INDICES[stage as keyof typeof RACE_STAGE_OBSTACLE_INDICES]
     .filter((index) => index < obstacleCount);
+}
+
+export function getRaceStageAnnouncerCue(stage: RaceTimelineStage): RaceStageAnnouncerCue | undefined {
+  return stage === 'finale'
+    ? { id: 'finish-in-sight', label: 'Finish in sight' }
+    : undefined;
 }
 
 export function getRaceFinishVisibleOffset(prefersReducedMotion: boolean) {
@@ -259,6 +269,34 @@ export function getRaceAnnouncementCompletionDelay(
   postAnnouncementGapMs: number,
 ) {
   return announcementDurationMs + postAnnouncementGapMs;
+}
+
+export function getRaceAnnouncerBeatStartOffset(
+  stage: RaceTimelineStage,
+  localOffsetMs: number,
+  finishCrossingMs = 0,
+  finishSettleMs = 0,
+) {
+  if (stage === 'intro') return localOffsetMs;
+  if (stage === 'winner') return finishCrossingMs + finishSettleMs + localOffsetMs;
+  return RACE_STAGE_OFFSETS[stage] + localOffsetMs;
+}
+
+export function getRaceObstacleAnnouncerTiming(
+  entryOffsetMs: number,
+  contactOffsetMs: number,
+  stageDurationMs: number,
+  prefersReducedMotion: boolean,
+) {
+  const entryOffset = Math.max(0, Math.min(stageDurationMs, entryOffsetMs));
+  const reactionOffset = prefersReducedMotion
+    ? Math.min(stageDurationMs, entryOffset + 2_400)
+    : Math.max(0, Math.min(stageDurationMs, contactOffsetMs));
+  return {
+    calloutOffset: entryOffset,
+    reactionOffset,
+    canCallout: reactionOffset - entryOffset >= 1_000,
+  };
 }
 
 function getRaceStageStartPosition(stage: RaceTimelineStage, lane: RaceTimelineLane) {

@@ -7,6 +7,9 @@ import {
   getRaceRunnerFinishAction,
   getRaceAnnouncementRevealOffsets,
   getRaceAnnouncementCompletionDelay,
+  getRaceAnnouncerBeatStartOffset,
+  getRaceObstacleAnnouncerTiming,
+  getRaceStageAnnouncerCue,
   getRaceLaneProgressAtTime,
   getRaceRunnerScreenAnchors,
   getRaceRunnerObstacleContactOffset,
@@ -129,6 +132,48 @@ assert.equal(
   raceStartHandoff.movementStartOffset,
   raceStartHandoff.announcementEndOffset + 520,
   'the race clock should begin only after the start announcement and its audio gap',
+);
+assert.equal(
+  getRaceAnnouncerBeatStartOffset('warmup', 320),
+  320,
+  'warmup announcer cues should use the actual race-start clock origin',
+);
+assert.equal(
+  getRaceAnnouncerBeatStartOffset('matchup', 320),
+  RACE_STAGE_DURATIONS.warmup + 320,
+  'matchup announcer cues should be relative to the moving race clock',
+);
+assert.equal(
+  getRaceAnnouncerBeatStartOffset('winner', 900, 21_000, 240),
+  22_140,
+  'winner announcer cues should follow the resolved finish crossing instead of a fixed stage duration',
+);
+assert.equal(getRaceStageAnnouncerCue('warmup'), undefined, 'warm-up transition clips should stay inactive');
+assert.equal(getRaceStageAnnouncerCue('matchup'), undefined, 'matchup transition clips should stay inactive');
+assert.deepEqual(
+  getRaceStageAnnouncerCue('finale'),
+  { id: 'finish-in-sight', label: 'Finish in sight' },
+  'finish in sight should be the only active stage cue',
+);
+assert.deepEqual(
+  getRaceObstacleAnnouncerTiming(1_000, 1_800, 7_000, false),
+  { calloutOffset: 1_000, reactionOffset: 1_800, canCallout: false },
+  'moving-race obstacle timing should retain entry and contact even when the callout is suppressed',
+);
+assert.deepEqual(
+  getRaceObstacleAnnouncerTiming(1_000, 2_000, 7_000, false),
+  { calloutOffset: 1_000, reactionOffset: 2_000, canCallout: true },
+  'an obstacle with one second of warning should keep its callout',
+);
+assert.deepEqual(
+  getRaceObstacleAnnouncerTiming(1_000, 1_999, 7_000, false),
+  { calloutOffset: 1_000, reactionOffset: 1_999, canCallout: false },
+  'an obstacle with less than one second of warning should skip its callout',
+);
+assert.deepEqual(
+  getRaceObstacleAnnouncerTiming(1_000, 1_800, 7_000, true),
+  { calloutOffset: 1_000, reactionOffset: 3_400, canCallout: true },
+  'reduced-motion obstacle narration should use its deterministic staged contact fallback',
 );
 assert.ok(
   raceStartHandoff.movementStartOffset < RACE_STAGE_DURATIONS.intro,

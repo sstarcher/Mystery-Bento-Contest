@@ -1,10 +1,27 @@
 import assert from 'node:assert/strict';
 import {
   ensureRaceEncounterVariety,
+  getRaceLeadChangeKind,
   getRaceMomentumAdjustment,
   resolveRaceEncounterResult,
   type RaceMomentumTraits,
 } from './race-momentum';
+
+assert.equal(
+  getRaceLeadChangeKind('a', 'a', new Set(['a'])),
+  undefined,
+  'the same leader should not create a lead-change event',
+);
+assert.equal(
+  getRaceLeadChangeKind('a', 'b', new Set(['a'])),
+  'overtake',
+  'a new leader who has not led earlier should be classified as an overtake',
+);
+assert.equal(
+  getRaceLeadChangeKind('a', 'b', new Set(['a', 'b'])),
+  'reversal',
+  'a returning leader should be classified as a reversal',
+);
 
 type TestLane = { id: string; traits: RaceMomentumTraits; progress: number };
 

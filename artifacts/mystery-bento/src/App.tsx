@@ -67,8 +67,11 @@ import {
   getRaceRunnerFinishAction,
   getRaceAnnouncementRevealOffsets,
   getRaceAnnouncementCompletionDelay,
+  getRaceAnnouncerBeatStartOffset,
+  getRaceObstacleAnnouncerTiming,
   getRaceRunnerObstacleContactOffset,
   getRaceStartHandoffTiming,
+  getRaceStageAnnouncerCue,
   getRaceLaneProgressAtTime as getTimelineLaneProgressAtTime,
   getRaceRunnerScreenAnchors,
   getRaceWorldScreenAnchor,
@@ -83,7 +86,7 @@ import {
   RACE_WARMUP_WORLD_END_PERCENT,
   type RaceTimelineCheckpoint,
 } from './race-timeline';
-import { ensureRaceEncounterVariety, resolveRaceEncounterResult } from './race-momentum';
+import { ensureRaceEncounterVariety, getRaceLeadChangeKind, resolveRaceEncounterResult } from './race-momentum';
 import {
   getRaceObstacleBottomPx,
   getRaceObstacleHorizontalOffsetPx,
@@ -389,12 +392,6 @@ const reactionAnnouncerClips: Record<Exclude<RaceRunnerReaction, 'ready'>, Annou
   surge: announcerClip('reactions', 'surges-through-the-opening', 'surges through the opening'),
 };
 
-const stageAnnouncerClips: Partial<Record<ContestStep, AnnouncerClip>> = {
-  warmup: announcerClip('stage-transitions', 'warm-up-underway', 'Warm-up underway'),
-  matchup: announcerClip('stage-transitions', 'around-bend-into-matchup', 'Around the bend into the matchup'),
-  finale: announcerClip('stage-transitions', 'finish-in-sight', 'Finish in sight'),
-};
-
 const paceAnnouncerClips = [
   announcerClip('pace-lead-changes', 'pack-still-together', 'The pack is still together'),
   announcerClip('pace-lead-changes', 'field-beginning-to-stretch', 'The field is beginning to stretch'),
@@ -511,13 +508,6 @@ const contestNames = [
 
 const contestDurations = RACE_STAGE_DURATIONS;
 
-const contestStepOffsets: Record<ContestStep, number> = {
-  intro: 0,
-  warmup: contestDurations.intro,
-  matchup: contestDurations.intro + contestDurations.warmup,
-  finale: contestDurations.intro + contestDurations.warmup + contestDurations.matchup,
-  winner: contestDurations.intro + contestDurations.warmup + contestDurations.matchup + contestDurations.finale,
-};
 const RACE_FINISH_ANNOUNCEMENT_DELAY_MS = 120;
 function getRaceFinishCrossingAt(
   startedAt: number,
@@ -695,18 +685,25 @@ function buildAnnouncerSequence(contestants: Persona[], race: RaceSimulation, pr
             false,
             getRaceObstacleHorizontalOffsetPx(obstacleIndex),
           );
-        const orderedHitOffset = prefersReducedMotion
-          ? Math.min(stageDuration, entryOffset + 2_400)
-          : Math.min(stageDuration, Math.max(hitOffset, entryOffset + 2_400));
+        const obstacleTiming = getRaceObstacleAnnouncerTiming(
+          entryOffset,
+          hitOffset,
+          stageDuration,
+          prefersReducedMotion,
+        );
         return {
           obstacle,
-          hitOffset: orderedHitOffset,
-          offset: orderedHitOffset,
-          entryOffset,
+          hitOffset: obstacleTiming.reactionOffset,
+          offset: obstacleTiming.reactionOffset,
+          entryOffset: obstacleTiming.calloutOffset,
+          canCallout: obstacleTiming.canCallout,
         };
       });
     const firstObstacleOffset = obstacleMilestones[0]?.offset ?? stageDuration;
-    const transition = stageAnnouncerClips[stage];
+    const transitionCue = getRaceStageAnnouncerCue(stage);
+    const transition = transitionCue
+      ? announcerClip('stage-transitions', transitionCue.id, transitionCue.label)
+      : undefined;
     if (transition) {
       const finishCrossingStageOffset = Math.max(
         0,
@@ -729,7 +726,7 @@ function buildAnnouncerSequence(contestants: Persona[], race: RaceSimulation, pr
         clips: [transition],
       });
     }
-    obstacleMilestones.forEach(({ obstacle, entryOffset, hitOffset }, obstacleOrder) => {
+    obstacleMilestones.forEach(({ obstacle, entryOffset, hitOffset, canCallout }, obstacleOrder) => {
       const leaderId = race.checkpointLeaders[obstacle.id]?.afterId;
       const leadLane = race.lanes.find((lane) => lane.personaId === leaderId)
         ?? [...race.lanes].sort((a, b) => {
@@ -754,14 +751,16 @@ function buildAnnouncerSequence(contestants: Persona[], race: RaceSimulation, pr
             : reactionAnnouncerClips[reaction]);
         }
       }
-      beats.push({
-        id: `obstacle-callout-${obstacle.id}`,
-        step: stage,
-        label: `${obstacle.label} callout`,
-        offset: entryOffset,
-        deadlineOffset: obstacleMilestones[obstacleOrder + 1]?.entryOffset ?? stageDuration,
-        clips,
-      });
+      if (canCallout) {
+        beats.push({
+          id: `obstacle-callout-${obstacle.id}`,
+          step: stage,
+          label: `${obstacle.label} callout`,
+          offset: entryOffset,
+          deadlineOffset: obstacleMilestones[obstacleOrder + 1]?.entryOffset ?? stageDuration,
+          clips,
+        });
+      }
       if (reactionClips.length) {
         beats.push({
           id: `obstacle-reaction-${obstacle.id}`,
@@ -1090,12 +1089,17 @@ function buildRaceSimulation(
       beforeId: leaderBefore.personaId,
       afterId: leaderAfter.personaId,
     };
-    if (leaderBefore.personaId !== leaderAfter.personaId) {
+    const leadChangeKind = getRaceLeadChangeKind(
+      leaderBefore.personaId,
+      leaderAfter.personaId,
+      previouslyLed,
+    );
+    if (leadChangeKind) {
       leadChanges.push({
         obstacleId: obstacle.id,
         fromPersonaId: leaderBefore.personaId,
         toPersonaId: leaderAfter.personaId,
-        kind: previouslyLed.has(leaderAfter.personaId) ? 'reversal' : 'overtake',
+        kind: leadChangeKind,
       });
     }
     previouslyLed.add(leaderAfter.personaId);
@@ -1942,6 +1946,7 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
     audio: HTMLAudioElement;
     beat: AnnouncerBeat;
     clipIndex: number;
+    deadlineAt: number;
     resume: () => Promise<void>;
     cancel: () => void;
   } | null>(null);
@@ -2078,14 +2083,10 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
   const toggleVoice = () => {
     if (voiceEnabled && audioNeedsGesture && pendingAudio.current) {
       const pending = pendingAudio.current;
-      const startedAt = announcerSessionStartedAt.current ?? contestStartedAt ?? Date.now();
-      const deadlineAt = startedAt
-        + (announcerResetKey === 0 ? contestStepOffsets[pending.beat.step] : 0)
-        + pending.beat.deadlineOffset;
       const durationMs = Number.isFinite(pending.audio.duration)
         ? pending.audio.duration * 1000
         : pending.beat.clips[pending.clipIndex]?.durationMs ?? 2000;
-      if (Date.now() + durationMs > deadlineAt) {
+      if (Date.now() + durationMs > pending.deadlineAt) {
         pending.audio.pause();
         pending.audio.currentTime = 0;
         pendingAudio.current = null;
@@ -2136,16 +2137,68 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
       announcerSessionResetKey.current = announcerResetKey;
     }
     const startedAt = announcerSessionStartedAt.current;
+    const raceStartAnchor = raceStartedAt;
+    const getBeatSchedule = (beat: AnnouncerBeat) => {
+      if (announcerResetKey > 0) {
+        if (beat.step !== 'winner') return null;
+        return {
+          startAt: startedAt + beat.offset,
+          deadlineAt: startedAt + beat.deadlineOffset,
+          offset: beat.offset,
+        };
+      }
+
+      if (beat.step === 'intro') {
+        // The intro is driven by the contest-open clock. Once the starting
+        // lantern has handed off to the race, never replay stale intro beats.
+        if (!contestStartedAt || raceStartAnchor) return null;
+        return {
+          startAt: contestStartedAt + beat.offset,
+          deadlineAt: contestStartedAt + beat.deadlineOffset,
+          offset: beat.offset,
+        };
+      }
+
+      if (!raceStartAnchor) return null;
+      const raceRelativeBase = getRaceAnnouncerBeatStartOffset(
+        beat.step,
+        0,
+        race.finishCrossingMs,
+        FINISH_CROSSING_SETTLE_MS,
+      );
+      const raceRelativeDeadline = getRaceAnnouncerBeatStartOffset(
+        beat.step,
+        beat.deadlineOffset,
+        race.finishCrossingMs,
+        FINISH_CROSSING_SETTLE_MS,
+      );
+      return {
+        startAt: raceStartAnchor + getRaceAnnouncerBeatStartOffset(
+          beat.step,
+          beat.offset,
+          race.finishCrossingMs,
+          FINISH_CROSSING_SETTLE_MS,
+        ),
+        deadlineAt: raceStartAnchor + raceRelativeDeadline,
+        offset: raceRelativeBase + beat.offset,
+      };
+    };
     const beats = announcerSequence
-      .filter((beat) => announcerResetKey === 0 || beat.step === 'winner')
-      .map((beat) => ({
-        beat,
-        offset: (announcerResetKey === 0 ? contestStepOffsets[beat.step] : 0) + beat.offset,
-      }))
+      .map((beat) => {
+        const schedule = getBeatSchedule(beat);
+        return schedule ? { beat, ...schedule } : null;
+      })
+      .filter((scheduled): scheduled is {
+        beat: AnnouncerBeat;
+        startAt: number;
+        deadlineAt: number;
+        offset: number;
+      } => Boolean(scheduled))
       .sort((a, b) => a.offset - b.offset);
     const timers: number[] = [];
     const pendingBeatIds = new Set(beats.map(({ beat }) => beat.id));
     const beatOffsets = new Map(beats.map(({ beat, offset }) => [beat.id, offset]));
+    const beatDeadlines = new Map(beats.map(({ beat, deadlineAt }) => [beat.id, deadlineAt]));
     let cancelled = false;
     let activeBeat: { beat: AnnouncerBeat; clipIndex: number } | null = null;
     const metadataAudio = new Map<string, HTMLAudioElement>();
@@ -2198,9 +2251,7 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
     };
 
     function deadlineFor(beat: AnnouncerBeat) {
-      return startedAt
-        + (announcerResetKey === 0 ? contestStepOffsets[beat.step] : 0)
-        + beat.deadlineOffset;
+      return beatDeadlines.get(beat.id) ?? Number.NEGATIVE_INFINITY;
     }
 
     function finishBeat(beat: AnnouncerBeat) {
@@ -2305,6 +2356,7 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
         audio,
         beat,
         clipIndex,
+        deadlineAt: deadlineFor(beat),
         resume: () => audio.play(),
         cancel: () => skipClip(beat, clipIndex),
       };
@@ -2378,8 +2430,8 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
     };
 
     if (voiceEnabled) {
-      beats.forEach(({ beat, offset }) => {
-        schedule(() => startBeat(beat), Math.max(0, startedAt + offset - Date.now()));
+      beats.forEach(({ beat, startAt }) => {
+        schedule(() => startBeat(beat), Math.max(0, startAt - Date.now()));
       });
     } else {
       pendingBeatIds.clear();
@@ -2393,7 +2445,7 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
         audio.src = '';
       });
     };
-  }, [announcerResetKey, announcerSequence, contestStartedAt, voiceEnabled]);
+  }, [announcerResetKey, announcerSequence, contestStartedAt, raceStartedAt, voiceEnabled]);
 
   useEffect(() => () => {
     if (announcerAudio.current) {

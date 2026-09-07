@@ -31,6 +31,17 @@ export function getRaceMomentumAdjustment(laneIndex: number, laneCount: number, 
   return (laneIndex === 0 ? -1 : 1) * meaningfulSpread * adjustmentScale;
 }
 
+export type RaceLeadChangeKind = 'overtake' | 'reversal';
+
+export function getRaceLeadChangeKind(
+  leaderBeforeId: string,
+  leaderAfterId: string,
+  previouslyLedIds: ReadonlySet<string>,
+): RaceLeadChangeKind | undefined {
+  if (leaderBeforeId === leaderAfterId) return undefined;
+  return previouslyLedIds.has(leaderAfterId) ? 'reversal' : 'overtake';
+}
+
 export function resolveRaceEncounterResult({
   traits,
   primaryTrait,

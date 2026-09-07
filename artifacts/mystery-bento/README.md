@@ -214,10 +214,20 @@ families:
 The review queue contains five contest-title clips and 12 character-blurb clips
 because the current `App.tsx` contest sequence does not select those families.
 The active sequence uses the selected race-start clip, contestant names,
-obstacle and reaction clips, pace/stage transitions, and the winner
-name-plus-result fragment. Obstacle callouts begin when each rendered obstacle
-enters from the right edge of the scrolling course; the reaction/result clip
-remains tied to the first runner's actual contact with that obstacle.
+obstacle and reaction clips, pace/lead-change clips, the finish-in-sight cue,
+and the winner name-plus-result fragment. Warm-up, matchup, and finale
+transition clips are not part of the active sequence; finish-in-sight is the
+only retained stage cue.
+
+The intro roster uses the contest-open clock. Once the starting-lantern handoff
+completes, every moving-race cue uses the actual race-start clock: an obstacle
+callout begins at its rendered right-edge entry only when the first runner has
+at least one second before contact; otherwise the callout is omitted. The
+reaction/result clip still follows the first runner's rendered contact without
+a synthetic delay floor. Lead changes are resolved at each obstacle checkpoint:
+the ranked leader before and after the encounter are compared; a changed leader
+is an overtake unless that runner had already led earlier, in which case it is
+a reversal.
 
 The selected race-start clip controls the actual race handoff. Muted, blocked,
 missing, or delayed audio uses the deterministic timing fallback instead of
