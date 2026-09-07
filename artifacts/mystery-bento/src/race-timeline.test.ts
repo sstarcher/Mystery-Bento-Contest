@@ -42,6 +42,9 @@ import {
 } from './race-timeline';
 import { getMovementSpriteRenderStyle, movementSpriteNormalization } from './movement-sprite-normalization';
 import { getContinuousRunnerPosition } from './race-speed-model';
+import { getMatchedEncounterResultAudio } from './announcer-result-audio';
+import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 
 const obstacles: RaceTimelineObstacle[] = [
   { id: 'napkin', position: 18 },
@@ -49,6 +52,46 @@ const obstacles: RaceTimelineObstacle[] = [
   { id: 'finish-hazard', position: 62 },
   { id: 'last-hazard', position: 83 },
 ];
+
+const appSource = readFileSync(fileURLToPath(new URL('./App.tsx', import.meta.url)), 'utf8');
+assert.doesNotMatch(appSource, /bento-stack-at-the-finish/);
+assert.doesNotMatch(appSource, /garnish-gate-one-elegant-line/);
+assert.doesNotMatch(appSource, /sidesteps-it-and-holds-the-line/);
+assert.doesNotMatch(appSource, /weaves-through-and-finds-a-stranger-line/);
+assert.doesNotMatch(appSource, /result-fragments\/clean-line/);
+assert.doesNotMatch(appSource, /result-fragments\/finds-an-unexpected-opening/);
+assert.match(appSource, /getMatchedEncounterResultAudio\(encounter\.result, encounter\.headline\)/);
+assert.match(appSource, /if \(matchedResultAudio\)/);
+assert.match(appSource, /clear: \{ headline: 'clean line'/);
+assert.match(appSource, /slow: \{ headline: 'slowed down'/);
+assert.match(appSource, /surge: \{ headline: 'found a break'/);
+assert.match(appSource, /reroute: \{ headline: 'rerouted'/);
+
+assert.equal(
+  getMatchedEncounterResultAudio('clear', 'clean line'),
+  undefined,
+  'clear encounters stay silent because the only clear clip uses forbidden line wording',
+);
+assert.deepEqual(
+  getMatchedEncounterResultAudio('slow', 'slowed down'),
+  { file: 'slowed-down', label: 'slowed down' },
+  'slowed-down audio must match the visible headline exactly',
+);
+assert.deepEqual(
+  getMatchedEncounterResultAudio('surge', 'found a break'),
+  { file: 'found-a-break', label: 'found a break' },
+  'found-a-break audio must match the visible headline exactly',
+);
+assert.deepEqual(
+  getMatchedEncounterResultAudio('reroute', 'rerouted'),
+  { file: 'rerouted', label: 'rerouted' },
+  'rerouted audio must match the visible headline exactly',
+);
+assert.equal(
+  getMatchedEncounterResultAudio('surge', 'finds an unexpected opening'),
+  undefined,
+  'semantically similar but non-identical result copy must stay silent',
+);
 
 const lineups: RaceTimelineLane[][] = [
   [

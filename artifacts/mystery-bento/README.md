@@ -214,10 +214,12 @@ families:
 The review queue contains five contest-title clips and 12 character-blurb clips
 because the current `App.tsx` contest sequence does not select those families.
 The active sequence uses the selected race-start clip, contestant names,
-obstacle and reaction clips, pace/lead-change clips, the finish-in-sight cue,
-and the winner name-plus-result fragment. Warm-up, matchup, and finale
-transition clips are not part of the active sequence; finish-in-sight is the
-only retained stage cue.
+obstacle callouts, exact-match result fragments, pace/lead-change clips, the
+finish-in-sight cue, and the winner name-plus-result fragment. Result audio is
+selected only when its spoken wording exactly matches the visible encounter
+headline; clear or otherwise unmatched results stay silent instead of falling
+back to reaction prose. Warm-up, matchup, and finale transition clips are not
+part of the active sequence; finish-in-sight is the only retained stage cue.
 
 The intro roster uses the contest-open clock. Once the starting-lantern handoff
 completes, every moving-race cue uses the actual race-start clock: obstacle

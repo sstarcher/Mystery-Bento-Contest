@@ -43,6 +43,7 @@ import saffyPlatingTweezers from './assets/derived/curios/saffy-plating-tweezers
 import saffyPresentationFan from './assets/derived/curios/saffy-presentation-fan.png';
 import { getMovementSpriteSheet, type MovementAction } from './movement-sprite-config';
 import { MovementSprite } from './movement-sprite';
+import { getMatchedEncounterResultAudio } from './announcer-result-audio';
 import {
   RACE_BACKGROUND_FINISH_MARKER_ANGLE_DEG,
   RACE_BACKGROUND_FINISH_SCREEN_ANCHOR_PERCENT,
@@ -305,7 +306,7 @@ const announcerClipDurations: Record<string, number> = {
   'character-names/tilda': 900,
   'character-names/toro': 800,
   'character-names/uma': 750,
-  'obstacles/bento-stack-at-the-finish': 1550,
+  'obstacles/bento-stack-narrowed-final-lane': 2220,
   'obstacles/broken-cart-across-the-course': 1650,
   'obstacles/crumb-trail-ahead': 1150,
   'obstacles/cushion-pile-ahead': 1360,
@@ -317,17 +318,14 @@ const announcerClipDurations: Record<string, number> = {
   'obstacles/steam-gadget-ahead': 1460,
   'obstacles/tea-puddle-ahead': 1230,
   'obstacles/wobble-stack-ahead': 1230,
-  'result-fragments/clean-line': 1000,
-  'result-fragments/finds-an-unexpected-opening': 1460,
+  'result-fragments/found-a-break': 1000,
   'result-fragments/rerouted': 1000,
   'result-fragments/slowed-down': 1230,
   'reactions/ducks-beneath-it-and-keeps-moving': 2010,
   'reactions/jumps-over-it-and-keeps-moving': 2060,
-  'reactions/sidesteps-it-and-holds-the-line': 1780,
   'reactions/slides-around-it-and-recovers': 1830,
   'reactions/stumbles-steadies-and-carries-on': 2490,
   'reactions/surges-through-the-opening': 1570,
-  'reactions/weaves-through-and-finds-a-stranger-line': 2310,
   'pace-lead-changes/field-beginning-to-stretch': 1840,
   'pace-lead-changes/lead-changed-hands': 1580,
   'pace-lead-changes/new-leader-lantern-route': 1760,
@@ -388,33 +386,16 @@ const obstacleAnnouncerClips: Record<RaceObstacleKind, [AnnouncerClip, Announcer
   ],
   'garnish-gate': [
     announcerClip('obstacles', 'garnish-gate-ahead', 'Garnish gate ahead'),
-    announcerClip('obstacles', 'garnish-gate-one-elegant-line', 'Garnish gate, one elegant line'),
+    announcerClip('obstacles', 'garnish-gate-ahead', 'Garnish gate ahead'),
   ],
   'steam-gadget': [
     announcerClip('obstacles', 'steam-gadget-ahead', 'Steam gadget ahead'),
     announcerClip('obstacles', 'steam-gadget-filled-lane-with-fog', 'Steam gadget filled the lane with fog'),
   ],
   'bento-stack': [
-    announcerClip('obstacles', 'bento-stack-at-the-finish', 'Bento stack at the finish'),
+    announcerClip('obstacles', 'bento-stack-narrowed-final-lane', 'Bento stack narrowed the final lane'),
     announcerClip('obstacles', 'bento-stack-narrowed-final-lane', 'Bento stack narrowed the final lane'),
   ],
-};
-
-const resultAnnouncerClips: Record<RaceEncounterResult, AnnouncerClip> = {
-  clear: announcerClip('result-fragments', 'clean-line', 'clean line'),
-  slow: announcerClip('result-fragments', 'slowed-down', 'slowed down'),
-  surge: announcerClip('result-fragments', 'finds-an-unexpected-opening', 'finds an unexpected opening'),
-  reroute: announcerClip('result-fragments', 'rerouted', 'rerouted'),
-};
-
-const reactionAnnouncerClips: Record<Exclude<RaceRunnerReaction, 'ready'>, AnnouncerClip> = {
-  jump: announcerClip('reactions', 'jumps-over-it-and-keeps-moving', 'jumps over it and keeps moving'),
-  dodge: announcerClip('reactions', 'sidesteps-it-and-holds-the-line', 'sidesteps it and holds the line'),
-  slide: announcerClip('reactions', 'slides-around-it-and-recovers', 'slides around it and recovers'),
-  duck: announcerClip('reactions', 'ducks-beneath-it-and-keeps-moving', 'ducks beneath it and keeps moving'),
-  stumble: announcerClip('reactions', 'stumbles-steadies-and-carries-on', 'stumbles, steadies, and carries on'),
-  weave: announcerClip('reactions', 'weaves-through-and-finds-a-stranger-line', 'weaves through and finds a stranger line'),
-  surge: announcerClip('reactions', 'surges-through-the-opening', 'surges through the opening'),
 };
 
 const paceAnnouncerClips = [
@@ -671,8 +652,6 @@ function buildAnnouncerSequence(contestants: Persona[], race: RaceSimulation, pr
       clips: [raceStart],
     },
   ];
-  let cleanLineAnnounced = false;
-
   const stageSteps: Array<'warmup' | 'matchup' | 'finale'> = ['warmup', 'matchup', 'finale'];
   stageSteps.forEach((stage, stageIndex) => {
     const stageDuration = contestDurations[stage];
@@ -751,19 +730,14 @@ function buildAnnouncerSequence(contestants: Persona[], race: RaceSimulation, pr
         })[0]
         ?? race.lanes[0];
       const encounter = leadLane?.encounters[obstacle.id];
-      const reaction = encounter ? getRaceRunnerReaction(obstacle.kind, encounter.result) : 'ready';
       const clips: AnnouncerClip[] = [
         obstacleAnnouncerClips[obstacle.kind]?.[0],
       ].filter((clip): clip is AnnouncerClip => Boolean(clip));
-      const reactionClips: AnnouncerClip[] = [];
+      const resultClips: AnnouncerClip[] = [];
       if (encounter) {
-        if (encounter.result === 'clear') {
-          reactionClips.push(cleanLineAnnounced && reaction !== 'ready' ? reactionAnnouncerClips[reaction] : resultAnnouncerClips.clear);
-          cleanLineAnnounced = true;
-        } else {
-          reactionClips.push(reaction === 'ready'
-            ? resultAnnouncerClips[encounter.result]
-            : reactionAnnouncerClips[reaction]);
+        const matchedResultAudio = getMatchedEncounterResultAudio(encounter.result, encounter.headline);
+        if (matchedResultAudio) {
+          resultClips.push(announcerClip('result-fragments', matchedResultAudio.file, matchedResultAudio.label));
         }
       }
       if (canCallout) {
@@ -776,7 +750,7 @@ function buildAnnouncerSequence(contestants: Persona[], race: RaceSimulation, pr
           clips,
         });
       }
-      if (reactionClips.length) {
+      if (resultClips.length) {
         beats.push({
           id: `obstacle-reaction-${obstacle.id}`,
           step: 'race',
@@ -784,7 +758,7 @@ function buildAnnouncerSequence(contestants: Persona[], race: RaceSimulation, pr
           label: `${obstacle.label} reaction`,
           offset: hitOffset,
           deadlineOffset: obstacleMilestones[obstacleOrder + 1]?.hitOffset ?? stageDuration,
-          clips: reactionClips,
+          clips: resultClips,
         });
       }
     });
