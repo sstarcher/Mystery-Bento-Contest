@@ -217,6 +217,8 @@ assert.match(raceCss, new RegExp(`\\.race-lane, \\.race-runner-lane \\{ height: 
 assert.doesNotMatch(raceCss, /race-reaction-/);
 assert.match(appSource, /hasNegativeObstacleImpact\(encounter\?\.result\)/);
 assert.match(appSource, /result === 'slow' \|\| result === 'reroute'/);
+assert.match(appSource, /const hasJumpReaction = runnerReaction === 'jump'/);
+assert.match(appSource, /hasJumpReaction\s*\n\s*\? 'jump'/);
 assert.match(appSource, /getRaceRunnerFinishAction\(finishCrossed, isWinner\)/);
 assert.match(appSource, /const RaceLiveRenderer = memo/);
 assert.match(appSource, /setPresentations\(frameState\.presentations\)/);
@@ -230,6 +232,8 @@ assert.match(debugPageSource, /sequence="victory"/);
 assert.match(debugPageSource, /Run → fall → run/);
 assert.match(debugPageSource, /Run → victory/);
 assert.match(movementRendererSource, /getMovementFrameIndex\(current \+ 1, spriteSheet\.frameCount, false\)/);
+assert.match(movementRendererSource, /const isJumpOneShot = action === 'jump'/);
+assert.match(movementRendererSource, /effectiveAction === 'jump' && isJumpOneShot/);
 assert.match(movementRendererSource, /getVictoryFrameIndex\(frameIndex, spriteSheet\.frameCount, prefersReducedMotion\)/);
 assert.match(movementRendererSource, /getMovementSpriteRenderStyle\(spriteSheet\.normalization, scaleMultiplier\)/);
 assert.match(movementRendererSource, /speedMultiplierRef\.current/);

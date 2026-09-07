@@ -1765,12 +1765,15 @@ const RaceLiveRenderer = memo(function RaceLiveRenderer({
       const isWinner = (winner?.id ?? race.winnerId) === contestants[index]?.id;
       const finishAction = getRaceRunnerFinishAction(finishCrossed, isWinner);
       const hasObstacleReaction = hasNegativeObstacleImpact(encounter?.result);
+      const hasJumpReaction = runnerReaction === 'jump' && Boolean(laneCurrentObstacle && encounter);
       const runnerAction: MovementAction = finishAction
         ?? (hasObstacleReaction
           ? 'fall'
-          : step === 'intro'
-            ? 'idle'
-            : getRunnerMovementState(runnerProfile, clockMs));
+          : hasJumpReaction
+            ? 'jump'
+            : step === 'intro'
+              ? 'idle'
+              : getRunnerMovementState(runnerProfile, clockMs));
       return {
         anchor: currentRunnerAnchors[index] ?? stageRunnerAnchors[step === 'winner' ? 'finale' : step][index] ?? 50,
         obstacleIndex: laneCurrentObstacleIndex,

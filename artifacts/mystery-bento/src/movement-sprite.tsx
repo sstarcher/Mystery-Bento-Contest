@@ -42,9 +42,12 @@ export function MovementSprite({
   const requestedSpriteSheet = getMovementSpriteSheet(persona.id, effectiveAction);
   const spriteSheet = requestedSpriteSheet ?? getMovementSpriteSheet(persona.id, 'run');
   const renderedAction = requestedSpriteSheet ? effectiveAction : 'run';
+  const isJumpOneShot = action === 'jump' && completedOneShotKey !== oneShotKey;
   const isOneShot = requestedSpriteSheet !== undefined
-    && effectiveAction === 'fall'
-    && (action === 'fall' || isHoldingFall);
+    && (
+      (effectiveAction === 'fall' && (action === 'fall' || isHoldingFall))
+      || (effectiveAction === 'jump' && isJumpOneShot)
+    );
   const previousSpriteSource = useRef<string | null>(null);
   const previousFrameCount = useRef(1);
   const speedMultiplierRef = useRef(speedMultiplier);
@@ -69,11 +72,18 @@ export function MovementSprite({
       }
       return;
     }
+    if (action === 'jump') {
+      activeFallKey.current = null;
+      setCompletedOneShotKey(null);
+      setIsHoldingFall(false);
+      setDisplayAction('jump');
+      setFrameIndex(0);
+      return;
+    }
     if (isHoldingFall) return;
     activeFallKey.current = null;
     setCompletedOneShotKey(null);
     setDisplayAction(action);
-    if (action === 'jump') setFrameIndex(0);
   }, [action, animationKey]);
 
   useEffect(() => {
@@ -141,7 +151,7 @@ export function MovementSprite({
     ? 0
     : action === 'victory'
       ? getVictoryFrameIndex(frameIndex, spriteSheet.frameCount, prefersReducedMotion)
-      : getMovementFrameIndex(frameIndex, spriteSheet.frameCount, true);
+      : getMovementFrameIndex(frameIndex, spriteSheet.frameCount, !isOneShot);
   const column = visibleFrameIndex % spriteSheet.columns;
   const row = Math.floor(visibleFrameIndex / spriteSheet.columns);
   const backgroundPosition = `${spriteSheet.columns > 1 ? (column / (spriteSheet.columns - 1)) * 100 : 0}% ${spriteSheet.rows > 1 ? (row / (spriteSheet.rows - 1)) * 100 : 0}%`;

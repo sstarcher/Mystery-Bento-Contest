@@ -151,6 +151,8 @@ try {
   assert(metadata.leadChanges.some(({ kind }) => kind === 'reversal'), 'expected a resolved lead reversal');
 
   const liveSamples = [];
+  const jumpReactionPersonas = new Set();
+  const jumpAnimationPersonas = new Set();
   let sampling = true;
   const sampleLiveOrder = async () => {
     if (!sampling) return;
@@ -158,6 +160,8 @@ try {
       const lanes = [...document.querySelectorAll('.race-runner-lane')].map((lane) => ({
         id: lane.dataset.personaId,
         anchor: Number(lane.querySelector('.race-runner')?.dataset.runnerAnchor ?? NaN),
+        reaction: lane.dataset.runnerReaction,
+        movementAction: lane.querySelector('.race-movement-sprite')?.dataset.movementAction,
       }));
       return {
         order: lanes.slice().sort((a, b) => b.anchor - a.anchor).map((lane) => lane.id),
@@ -165,6 +169,12 @@ try {
       };
     })()`);
     if (sample?.lanes?.every((lane) => Number.isFinite(lane.anchor))) liveSamples.push(sample);
+    sample?.lanes?.forEach((lane) => {
+      if (lane.reaction === 'jump') {
+        jumpReactionPersonas.add(lane.id);
+        if (lane.movementAction === 'jump') jumpAnimationPersonas.add(lane.id);
+      }
+    });
   };
   const sampleTimer = setInterval(() => { void sampleLiveOrder(); }, 150);
 
@@ -234,6 +244,8 @@ try {
   const liveLeaderTransitions = liveLeaders.filter((leader, index) => index === 0 || leader !== liveLeaders[index - 1]);
   assert(liveLeadChanges >= 2, `expected repeated live lead changes, got ${liveOrders.join(' | ')}`);
   assert(liveReversal, `expected a live leader reversal, got ${liveLeaders.join(' -> ')}`);
+  const missingJumpAnimations = [...jumpReactionPersonas].filter((id) => !jumpAnimationPersonas.has(id));
+  assert(missingJumpAnimations.length === 0, `jump reactions never rendered the jump sheet for ${missingJumpAnimations.join(', ')}`);
   const finish = await evaluate(cdp, `(() => {
     const race = document.querySelector('.contest-race');
     const reveal = document.querySelector('[data-testid="winner-reveal-card"]');

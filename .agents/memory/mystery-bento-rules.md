@@ -45,6 +45,12 @@ Resolved race reactions are sprite-driven rather than CSS-transform-driven: the 
 
 **How to apply:** Keep `getRaceRunnerReaction` for deterministic narrative labels and announcer copy, map only `slow`/`reroute` visual outcomes to `fall`, let `clear`/`surge` keep their normal gait, reset fall/victory playback with stable handoff keys, cancel a held fall when the finish resolves a winner, and reserve portraits for cards or missing-asset fallback only.
 
+Any narration that describes a visible reaction must share the renderer's action mapping: jump narration must select a one-shot jump sheet, then return to the normal gait after the authored frames complete.
+
+**Why:** A spoken “jumps over it” line paired with an unchanged run silhouette breaks the cause-and-effect story even when the underlying encounter result is correct.
+
+**How to apply:** Derive the visual action from the same resolved reaction used for narration, and browser-check that a jump reaction renders `data-movement-action="jump"` at least once before completing.
+
 Visual spectacle should always have a readable staged fallback when reduced motion is enabled.
 
 **Why:** The belt, item splash, and contest race are part of the story but must not be required for understanding what happened.
