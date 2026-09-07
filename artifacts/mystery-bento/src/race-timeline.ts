@@ -53,6 +53,11 @@ export const RACE_STAGE_OFFSETS: Record<RaceTimelineStage, number> = {
 };
 
 export const RACE_LAST_CONTESTANT_PAUSE_MS = 1000;
+// The starting-lantern card clears just before the call ends, while the race
+// itself starts on the call's completion boundary. Keep this separate from
+// the normal announcer gap used between unrelated clips.
+export const RACE_START_POPUP_LEAD_OUT_MS = 360;
+export const RACE_START_POST_ANNOUNCEMENT_GAP_MS = 0;
 
 export const RACE_WORLD_TRACK_WIDTH_MULTIPLIER = RACE_BACKGROUND_TRACK_WIDTH_MULTIPLIER;
 export const RACE_FINALE_WORLD_END_PERCENT = RACE_BACKGROUND_FINISH_TRAVEL_PERCENT;
@@ -280,6 +285,7 @@ export type RaceStartHandoffTiming = {
   nameRevealOffsets: number[];
   finalNameEndOffset: number;
   raceStartOffset: number;
+  raceStartPopupHideOffset: number;
   announcementEndOffset: number;
   movementStartOffset: number;
 };
@@ -289,8 +295,9 @@ export function getRaceStartHandoffTiming(
   nameDurationsMs: number[],
   nameGapMs: number,
   raceStartDurationMs: number,
-  postAnnouncementGapMs: number,
+  postAnnouncementGapMs = RACE_START_POST_ANNOUNCEMENT_GAP_MS,
   finalNamePauseMs = RACE_LAST_CONTESTANT_PAUSE_MS,
+  popupLeadOutMs = RACE_START_POPUP_LEAD_OUT_MS,
 ): RaceStartHandoffTiming {
   const nameRevealOffsets = getRaceAnnouncementRevealOffsets(
     openingDurationMs,
@@ -304,14 +311,23 @@ export function getRaceStartHandoffTiming(
   const raceStartOffset = finalNameEndOffset
     + (lastNameIndex >= 0 ? finalNamePauseMs : 0);
   const announcementEndOffset = raceStartOffset + raceStartDurationMs;
+  const raceStartPopupHideOffset = raceStartOffset
+    + Math.max(0, raceStartDurationMs - popupLeadOutMs);
 
   return {
     nameRevealOffsets,
     finalNameEndOffset,
     raceStartOffset,
+    raceStartPopupHideOffset,
     announcementEndOffset,
     movementStartOffset: announcementEndOffset + postAnnouncementGapMs,
   };
+}
+
+export function getRaceStartAnnouncementCompletionDelay(
+  announcementDurationMs: number,
+) {
+  return announcementDurationMs + RACE_START_POST_ANNOUNCEMENT_GAP_MS;
 }
 
 export function getRaceAnnouncementCompletionDelay(

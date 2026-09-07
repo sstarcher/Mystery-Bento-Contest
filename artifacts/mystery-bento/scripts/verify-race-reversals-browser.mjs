@@ -130,9 +130,79 @@ try {
     'contest overlay to open',
   );
   await waitFor(
-    () => evaluate(cdp, 'Boolean(document.querySelector(".contest-race"))'),
+    () => evaluate(cdp, 'Boolean(document.querySelector(".contest-race-intro .contest-start-graphic"))'),
+    15000,
+    'starting-lantern graphic to appear',
+  );
+  const startGraphicSeenAt = Date.now();
+  const startGraphicSnapshot = await evaluate(cdp, `(() => {
+    const race = document.querySelector('.contest-race-intro');
+    const worldTrack = race?.querySelector('.race-world-track');
+    const runner = race?.querySelector('.race-runner');
+    return {
+      popupVisible: Boolean(race?.querySelector('.contest-start-graphic')),
+      worldTravelPercent: Number(worldTrack?.dataset.worldTravelPercent ?? NaN),
+      runnerAnchor: Number(runner?.dataset.runnerAnchor ?? NaN),
+    };
+  })()`);
+  assert(startGraphicSnapshot.popupVisible, 'starting-lantern graphic was not visible during the race-start handoff');
+  assert(startGraphicSnapshot.worldTravelPercent === 0, 'the course moved before the race-start handoff completed');
+
+  await waitFor(
+    () => evaluate(cdp, 'Boolean(document.querySelector(".contest-race-intro")) && !document.querySelector(".contest-start-graphic")'),
+    15000,
+    'starting-lantern graphic to lead out',
+  );
+  const popupClearedAt = Date.now();
+  const popupLeadOutSnapshot = await evaluate(cdp, `(() => ({
+    popupVisible: Boolean(document.querySelector('.contest-start-graphic')),
+    introStillVisible: Boolean(document.querySelector('.contest-race-intro')),
+  }))()`);
+  assert(!popupLeadOutSnapshot.popupVisible, 'starting-lantern graphic did not clear before the race handoff');
+  assert(popupLeadOutSnapshot.introStillVisible, 'race presentation left the intro before the starting-lantern lead-out');
+  assert(
+    popupClearedAt - startGraphicSeenAt >= 200,
+    `starting-lantern graphic lead-out was too short: ${popupClearedAt - startGraphicSeenAt}ms`,
+  );
+
+  await waitFor(
+    () => evaluate(cdp, 'Boolean(document.querySelector(".contest-race-race"))'),
     15000,
     'race presentation to begin',
+  );
+  const raceTransitionAt = Date.now();
+  const raceBoundarySnapshot = await evaluate(cdp, `(() => {
+    const race = document.querySelector('.contest-race-race');
+    const worldTrack = race?.querySelector('.race-world-track');
+    const runner = race?.querySelector('.race-runner');
+    return {
+      popupVisible: Boolean(race?.querySelector('.contest-start-graphic')),
+      worldTravelPercent: Number(worldTrack?.dataset.worldTravelPercent ?? NaN),
+      runnerAnchor: Number(runner?.dataset.runnerAnchor ?? NaN),
+    };
+  })()`);
+  assert(!raceBoundarySnapshot.popupVisible, 'starting-lantern graphic remained visible after the race handoff');
+  assert(
+    raceBoundarySnapshot.worldTravelPercent <= 1,
+    `the first race frame drifted too far from the authored world origin: ${raceBoundarySnapshot.worldTravelPercent}`,
+  );
+  await new Promise((resolve) => setTimeout(resolve, 150));
+  const firstMovingFrame = await evaluate(cdp, `(() => {
+    const race = document.querySelector('.contest-race-race');
+    const worldTrack = race?.querySelector('.race-world-track');
+    const runner = race?.querySelector('.race-runner');
+    return {
+      worldTravelPercent: Number(worldTrack?.dataset.worldTravelPercent ?? NaN),
+      runnerAnchor: Number(runner?.dataset.runnerAnchor ?? NaN),
+    };
+  })()`);
+  assert(
+    firstMovingFrame.worldTravelPercent > raceBoundarySnapshot.worldTravelPercent,
+    `course did not move promptly after the announcement boundary: ${JSON.stringify({ raceBoundarySnapshot, firstMovingFrame })}`,
+  );
+  assert(
+    firstMovingFrame.runnerAnchor > raceBoundarySnapshot.runnerAnchor,
+    `runner did not move promptly after the announcement boundary: ${JSON.stringify({ raceBoundarySnapshot, firstMovingFrame })}`,
   );
 
   const metadata = await evaluate(cdp, `(() => {
@@ -351,6 +421,15 @@ try {
     renderedLeadChanges,
     liveLeadChanges,
     liveLeaderTransitions,
+     handoff: {
+       startGraphicSeenAt,
+       popupClearedAt,
+       raceTransitionAt,
+       popupLeadOutMs: popupClearedAt - startGraphicSeenAt,
+       raceStartToFirstMotionMs: raceTransitionAt - popupClearedAt,
+       raceBoundarySnapshot,
+       firstMovingFrame,
+     },
     observed,
     finish,
   }, null, 2));

@@ -7,6 +7,7 @@ import {
   getRaceRunnerFinishAction,
   getRaceAnnouncementRevealOffsets,
   getRaceAnnouncementCompletionDelay,
+  getRaceStartAnnouncementCompletionDelay,
   getRaceAnnouncerBeatStartOffset,
   getRaceObstacleAnnouncerTiming,
   getRaceStageAnnouncerCue,
@@ -21,6 +22,8 @@ import {
   getRaceWorldTravelPercentAtTime,
   RACE_FINALE_WORLD_END_PERCENT,
   RACE_LAST_CONTESTANT_PAUSE_MS,
+  RACE_START_POPUP_LEAD_OUT_MS,
+  RACE_START_POST_ANNOUNCEMENT_GAP_MS,
   RACE_MATCHUP_WORLD_END_PERCENT,
   RACE_OBSTACLE_CONTACT_WINDOW_PERCENT,
   RACE_OBSTACLE_ENTRY_SCREEN_ANCHOR_PERCENT,
@@ -186,7 +189,7 @@ const raceStartHandoff = getRaceStartHandoffTiming(
   [850, 900, 800, 800],
   80,
   6350,
-  520,
+  RACE_START_POST_ANNOUNCEMENT_GAP_MS,
 );
 assert.deepEqual(
   raceStartHandoff.nameRevealOffsets,
@@ -204,9 +207,14 @@ assert.equal(
   'the start announcement should have its own visible duration',
 );
 assert.equal(
+  raceStartHandoff.announcementEndOffset - raceStartHandoff.raceStartPopupHideOffset,
+  RACE_START_POPUP_LEAD_OUT_MS,
+  'the starting-lantern popup should clear a short lead-out before the call completes',
+);
+assert.equal(
   raceStartHandoff.movementStartOffset,
-  raceStartHandoff.announcementEndOffset + 520,
-  'the race clock should begin only after the start announcement and its audio gap',
+  raceStartHandoff.announcementEndOffset,
+  'the race clock should begin on the start announcement completion boundary',
 );
 assert.equal(
   getRaceAnnouncerBeatStartOffset('warmup', 320),
@@ -312,9 +320,14 @@ assert.notEqual(
   getMovementSpriteRenderStyle(movementSpriteNormalization.miso.idle).frameTransform,
   'action changes should preserve per-action normalization rather than reusing idle sizing',
 );
-const fallbackDelay = getRaceAnnouncementCompletionDelay(6350, 520);
+const fallbackDelay = getRaceStartAnnouncementCompletionDelay(6350);
 const mutedFallbackCompletion = raceStartHandoff.raceStartOffset + fallbackDelay;
 const unavailableFallbackCompletion = raceStartHandoff.raceStartOffset + fallbackDelay;
+assert.equal(
+  fallbackDelay,
+  6350,
+  'muted and unavailable audio should preserve the authored announcement duration without an extra pause',
+);
 assert.equal(
   unavailableFallbackCompletion,
   mutedFallbackCompletion,
