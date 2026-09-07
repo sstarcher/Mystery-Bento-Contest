@@ -599,23 +599,26 @@
 .race-sprite-test-intro h2 { margin: 0; color: #fff0cf; font-size: clamp(21px, 3vw, 30px); line-height: 1; }
 .race-sprite-test-intro p:not(.race-track-debug-kicker) { max-width: 700px; margin: 8px 0 0; color: #bca99b; font-family: var(--app-font-mono); font-size: 11px; line-height: 1.45; }
 .race-sprite-test-motion-note { flex: 0 0 auto; margin: 0; padding: 8px 10px; border: 1px solid rgba(245,201,104,.42); color: #f5c968; background: #30223c; font-family: var(--app-font-mono); font-size: 9px; letter-spacing: .08em; text-transform: uppercase; }
-.race-sprite-test-controls { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-top: 18px; }
+.race-sprite-test-controls { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-top: 18px; }
 .race-sprite-test-controls label { display: grid; gap: 6px; min-width: 0; color: #f8e7c6; font-family: var(--app-font-mono); font-size: 9px; letter-spacing: .08em; text-transform: uppercase; }
 .race-sprite-test-controls select { width: 100%; min-height: 38px; padding: 8px 10px; border: 1px solid rgba(245,201,104,.55); border-radius: 0; color: #fff0cf; background: #30223c; font: inherit; font-size: 11px; letter-spacing: normal; text-transform: none; }
 .race-sprite-test-controls select:focus-visible { outline: 3px solid #f5c968; outline-offset: 3px; }
-.race-sprite-test-cards { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; margin-top: 14px; }
+.race-sprite-test-cards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; margin-top: 14px; }
 .race-sprite-test-card { min-width: 0; overflow: hidden; border: 1px solid rgba(245,201,104,.32); background: #30223c; }
 .race-sprite-test-card-fall { border-top: 4px solid #d66d5c; }
+.race-sprite-test-card-jump { border-top: 4px solid #e0a75a; }
 .race-sprite-test-card-victory { border-top: 4px solid #6fb59b; }
 .race-sprite-test-card-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 13px 14px 10px; }
 .race-sprite-test-sequence { margin: 0 0 4px; color: #f5c968; font-family: var(--app-font-mono); font-size: 9px; letter-spacing: .12em; text-transform: uppercase; }
 .race-sprite-test-card-victory .race-sprite-test-sequence { color: #9dd6ba; }
+.race-sprite-test-card-jump .race-sprite-test-sequence { color: #f0bf78; }
 .race-sprite-test-card h3 { margin: 0; color: #fff0cf; font-size: 18px; line-height: 1.1; }
 .race-sprite-test-replay { flex: 0 0 auto; padding: 7px 9px; border: 1px solid rgba(245,201,104,.55); color: #f8e7c6; background: transparent; font-family: var(--app-font-mono); font-size: 9px; letter-spacing: .1em; text-transform: uppercase; }
 .race-sprite-test-replay:hover { color: #17121d; background: #f5c968; }
 .race-sprite-test-status { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; padding: 8px 14px; border-top: 1px solid rgba(255,255,255,.08); border-bottom: 1px solid rgba(255,255,255,.08); color: #bca99b; font-family: var(--app-font-mono); font-size: 9px; text-transform: uppercase; letter-spacing: .08em; }
 .race-sprite-test-status strong { color: #f5c968; font-size: 10px; text-align: right; }
 .race-sprite-test-card-victory .race-sprite-test-status strong { color: #9dd6ba; }
+.race-sprite-test-card-jump .race-sprite-test-status strong { color: #f0bf78; }
 .race-sprite-test-stage { position: relative; display: grid; place-items: end center; min-height: 258px; overflow: hidden; background-color: #403448; background-image: linear-gradient(45deg, rgba(255,255,255,.035) 25%, transparent 25%, transparent 75%, rgba(255,255,255,.035) 75%), linear-gradient(45deg, rgba(255,255,255,.035) 25%, transparent 25%, transparent 75%, rgba(255,255,255,.035) 75%); background-position: 0 0, 12px 12px; background-size: 24px 24px; }
 .race-sprite-test-stage::before { content: 'transparent canvas'; position: absolute; top: 10px; left: 12px; color: rgba(248,231,198,.46); font-family: var(--app-font-mono); font-size: 8px; letter-spacing: .1em; text-transform: uppercase; }
 .race-sprite-test-ground { position: absolute; right: 12%; bottom: 22px; left: 12%; height: 2px; background: rgba(245,201,104,.7); box-shadow: 0 3px 0 rgba(23,18,29,.44); }

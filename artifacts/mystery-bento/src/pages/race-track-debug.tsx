@@ -21,6 +21,8 @@ const RACE_BACKGROUND_BASE = `${import.meta.env.BASE_URL}runtime/images/race-bac
 const RACE_OBSTACLE_BASE = `${import.meta.env.BASE_URL}runtime/images/obstacles`;
 const FALL_SEQUENCE_RUN_MS = 1800;
 const FALL_SEQUENCE_FALL_MS = 2100;
+const JUMP_SEQUENCE_RUN_MS = 1800;
+const JUMP_SEQUENCE_JUMP_MS = 1500;
 const VICTORY_SEQUENCE_RUN_MS = 1800;
 
 type SampleTrackObstacleOption = {
@@ -46,6 +48,7 @@ const DEFAULT_SAMPLE_OBSTACLE_INDEXES = [0, 1, 2, 7];
 
 const spriteTestContestants = contestantDesigns.filter((contestant) => (
   getMovementSpriteSheet(contestant.id, 'run')
+  && getMovementSpriteSheet(contestant.id, 'jump')
   && getMovementSpriteSheet(contestant.id, 'fall')
   && getMovementSpriteSheet(contestant.id, 'victory')
 ));
@@ -73,7 +76,7 @@ function SpriteTestLane({
   contestant,
   prefersReducedMotion,
 }: {
-  sequence: 'fall' | 'victory';
+  sequence: 'fall' | 'jump' | 'victory';
   contestant: SpriteTestPersona;
   prefersReducedMotion: boolean;
 }) {
@@ -93,18 +96,40 @@ function SpriteTestLane({
       : elapsedMs < FALL_SEQUENCE_RUN_MS + FALL_SEQUENCE_FALL_MS
         ? 'fall'
         : 'run'
+    : sequence === 'jump'
+      ? elapsedMs < JUMP_SEQUENCE_RUN_MS
+        ? 'run'
+        : elapsedMs < JUMP_SEQUENCE_RUN_MS + JUMP_SEQUENCE_JUMP_MS
+          ? 'jump'
+          : 'run'
     : elapsedMs < VICTORY_SEQUENCE_RUN_MS ? 'run' : 'victory';
   const action: MovementAction = phase;
   const phaseLabel = sequence === 'fall'
     ? phase === 'fall' ? 'Full fall reaction' : phase === 'run' && elapsedMs >= FALL_SEQUENCE_RUN_MS + FALL_SEQUENCE_FALL_MS ? 'Running again' : 'Running'
-    : phase === 'victory' ? 'Looping victory' : 'Running';
-  const sequenceLabel = sequence === 'fall' ? 'Run → fall → run' : 'Run → victory';
+    : sequence === 'jump'
+      ? phase === 'jump' ? 'Jumping over obstacle' : phase === 'run' && elapsedMs >= JUMP_SEQUENCE_RUN_MS + JUMP_SEQUENCE_JUMP_MS ? 'Running again' : 'Running'
+      : phase === 'victory' ? 'Looping victory' : 'Running';
+  const sequenceLabel = sequence === 'fall'
+    ? 'Run → fall → run'
+    : sequence === 'jump'
+      ? 'Run → jump → run'
+      : 'Run → victory';
+  const sequenceKicker = sequence === 'fall'
+    ? 'Recovery handoff'
+    : sequence === 'jump'
+      ? 'Obstacle handoff'
+      : 'Finish handoff';
+  const sequenceCaption = sequence === 'fall'
+    ? 'Run, complete the fall sheet, then return to run.'
+    : sequence === 'jump'
+      ? 'Run, complete the jump sheet, then return to run.'
+      : 'Run, then hold the looping victory sheet.';
 
   return (
     <article className={`race-sprite-test-card race-sprite-test-card-${sequence}`} data-sprite-test-sequence={sequence}>
       <div className="race-sprite-test-card-header">
         <div>
-          <p className="race-sprite-test-sequence">{sequence === 'fall' ? 'Recovery handoff' : 'Finish handoff'}</p>
+          <p className="race-sprite-test-sequence">{sequenceKicker}</p>
           <h3>{sequenceLabel}</h3>
         </div>
         <button
@@ -134,7 +159,7 @@ function SpriteTestLane({
       </div>
       <p className="race-sprite-test-caption">
         <strong>{contestant.name}</strong>
-        <span>{sequence === 'fall' ? 'Run, complete the fall sheet, then return to run.' : 'Run, then hold the looping victory sheet.'}</span>
+        <span>{sequenceCaption}</span>
       </p>
     </article>
   );
@@ -143,6 +168,7 @@ function SpriteTestLane({
 function SpriteTestStrip() {
   const prefersReducedMotion = usePrefersReducedMotion();
   const [fallPersonaId, setFallPersonaId] = useState('pip');
+  const [jumpPersonaId, setJumpPersonaId] = useState('nori');
   const [victoryPersonaId, setVictoryPersonaId] = useState('sencha');
   const fallPersona = useMemo(
     () => spriteTestContestants.find((contestant) => contestant.id === fallPersonaId) ?? spriteTestContestants[0],
@@ -152,8 +178,12 @@ function SpriteTestStrip() {
     () => spriteTestContestants.find((contestant) => contestant.id === victoryPersonaId) ?? spriteTestContestants[1] ?? spriteTestContestants[0],
     [victoryPersonaId],
   );
+  const jumpPersona = useMemo(
+    () => spriteTestContestants.find((contestant) => contestant.id === jumpPersonaId) ?? spriteTestContestants[2] ?? spriteTestContestants[0],
+    [jumpPersonaId],
+  );
 
-  if (!fallPersona || !victoryPersona) return null;
+  if (!fallPersona || !jumpPersona || !victoryPersona) return null;
 
   return (
     <section className="race-sprite-test-strip" aria-labelledby="race-sprite-test-heading">
@@ -181,6 +211,18 @@ function SpriteTestStrip() {
           </select>
         </label>
         <label>
+          <span>Run → jump → run contestant</span>
+          <select
+            value={jumpPersona.id}
+            onChange={(event) => setJumpPersonaId(event.target.value)}
+            aria-label="Contestant for the run, jump, run sequence"
+          >
+            {spriteTestContestants.map((contestant) => (
+              <option value={contestant.id} key={contestant.id}>{contestant.name}</option>
+            ))}
+          </select>
+        </label>
+        <label>
           <span>Run → victory contestant</span>
           <select
             value={victoryPersona.id}
@@ -195,6 +237,7 @@ function SpriteTestStrip() {
       </div>
       <div className="race-sprite-test-cards">
         <SpriteTestLane sequence="fall" contestant={fallPersona} prefersReducedMotion={prefersReducedMotion} />
+        <SpriteTestLane sequence="jump" contestant={jumpPersona} prefersReducedMotion={prefersReducedMotion} />
         <SpriteTestLane sequence="victory" contestant={victoryPersona} prefersReducedMotion={prefersReducedMotion} />
       </div>
     </section>

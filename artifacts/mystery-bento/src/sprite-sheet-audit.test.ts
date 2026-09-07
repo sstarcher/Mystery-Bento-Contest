@@ -227,9 +227,12 @@ assert.match(movementRendererSource, /if \(effectiveAction === 'victory'\) retur
 assert.match(appSource, /const winningPersona = winner \?\? contestOutcome\.current\?\.winner/);
 assert.match(appSource, /const outcome = contestOutcome\.current \?\? resolveContest\(contestants, createRng\(Date\.now\(\)\)\)/);
 assert.match(debugPageSource, /race-sprite-test-strip/);
+assert.match(debugPageSource, /getMovementSpriteSheet\(contestant\.id, 'jump'\)/);
 assert.match(debugPageSource, /sequence="fall"/);
+assert.match(debugPageSource, /sequence="jump"/);
 assert.match(debugPageSource, /sequence="victory"/);
 assert.match(debugPageSource, /Run → fall → run/);
+assert.match(debugPageSource, /Run → jump → run/);
 assert.match(debugPageSource, /Run → victory/);
 assert.match(movementRendererSource, /getMovementFrameIndex\(current \+ 1, spriteSheet\.frameCount, false\)/);
 assert.match(movementRendererSource, /const isJumpOneShot = action === 'jump'/);
