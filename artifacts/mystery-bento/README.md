@@ -220,11 +220,10 @@ transition clips are not part of the active sequence; finish-in-sight is the
 only retained stage cue.
 
 The intro roster uses the contest-open clock. Once the starting-lantern handoff
-completes, every moving-race cue uses the actual race-start clock: an obstacle
-callout begins at its rendered right-edge entry only when the first runner has
-at least one second before contact; otherwise the callout is omitted. The
-reaction/result clip still follows the first runner's rendered contact without
-a synthetic delay floor. Lead changes are resolved at each obstacle checkpoint:
+completes, every moving-race cue uses the actual race-start clock: obstacle
+callouts begin when each rendered obstacle enters from the right edge, and the
+reaction/result clip follows the first runner's rendered contact without a
+synthetic delay floor. Lead changes are resolved at each obstacle checkpoint:
 the ranked leader before and after the encounter are compared; a changed leader
 is an overtake unless that runner had already led earlier, in which case it is
 a reversal.

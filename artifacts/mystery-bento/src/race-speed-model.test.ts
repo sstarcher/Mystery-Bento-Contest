@@ -6,6 +6,9 @@ import {
   getRunnerFinishCrossingTime,
   getRunnerMovementState,
   getRunnerSpriteCadenceMultiplier,
+  buildRunnerTrajectory,
+  getRunnerTrajectoryPositionAtTime,
+  resolveRunnerFinishOrder,
   type ContinuousRunnerProfile,
 } from './race-speed-model';
 
@@ -116,6 +119,32 @@ assert.ok(
 assert.ok(
   getContinuousRunnerPosition(baseProfile, (baseFinishCrossingTime ?? 1) - 1, courseTravelEnd, raceDurationMs) < finishThreshold,
   'the first crossing should not be resolved before the threshold is reached',
+);
+const baseFinishTrajectory = buildRunnerTrajectory(
+  baseProfile,
+  courseTravelEnd,
+  raceDurationMs,
+  1_000,
+  baseFinishCrossingTime,
+);
+assert.equal(
+  getRunnerTrajectoryPositionAtTime(baseFinishTrajectory, 0),
+  baseProfile.startPosition,
+  'resolved trajectory should begin at the authored starting position',
+);
+assert.equal(
+  getRunnerTrajectoryPositionAtTime(baseFinishTrajectory, baseFinishCrossingTime ?? 0),
+  getContinuousRunnerPosition(baseProfile, baseFinishCrossingTime ?? 0, courseTravelEnd, raceDurationMs),
+  'resolved trajectory should include the exact finish crossing point',
+);
+assert.deepEqual(
+  resolveRunnerFinishOrder([
+    { personaId: 'first', finishCrossingMs: 10_000 },
+    { personaId: 'roster-tie-break', finishCrossingMs: 10_025 },
+    { personaId: 'late', finishCrossingMs: 10_400 },
+  ]),
+  ['first', 'roster-tie-break', 'late'],
+  'near-simultaneous crossings should use deterministic roster order',
 );
 
 console.log('Race speed model verification passed: stat pace, slow recovery, and surge distance are deterministic.');

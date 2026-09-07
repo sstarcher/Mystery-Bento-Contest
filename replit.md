@@ -52,9 +52,8 @@ server, database, accounts, or environment secrets.
   synthetic finish anchors.
 - The announcer uses the contest-open clock only for the roster intro. Moving
   race narration starts from the actual starting-lantern handoff; obstacle
-  callouts use right-edge entry only when the first runner has at least one
-  second of warning, reactions use rendered contact, and lead changes compare
-  checkpoint leaders before and after each obstacle.
+  callouts use right-edge entry, reactions use rendered contact, and lead
+  changes compare checkpoint leaders before and after each obstacle.
 - Live race obstacles and Track inspector obstacles consume one shared placement
   module and are covered by the race verification suite.
 - The meter long-press is implemented as a focusable progressbar with pointer and keyboard support, while its visual guidance remains intentionally hidden.

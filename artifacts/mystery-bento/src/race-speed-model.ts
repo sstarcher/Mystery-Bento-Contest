@@ -7,6 +7,35 @@ export type RunnerSpeedEvent = {
   triggerMs: number;
 };
 
+export type RunnerTrajectoryPoint = {
+  elapsedMs: number;
+  position: number;
+};
+
+export type RunnerFinishRecord = {
+  personaId: string;
+  finishCrossingMs: number | null;
+};
+
+export const RUNNER_FINISH_TIE_WINDOW_MS = 50;
+
+export function resolveRunnerFinishOrder(
+  lanes: ReadonlyArray<RunnerFinishRecord>,
+  tieWindowMs = RUNNER_FINISH_TIE_WINDOW_MS,
+) {
+  return lanes
+    .map((lane, index) => ({ lane, index }))
+    .sort((a, b) => {
+      const aCrossing = a.lane.finishCrossingMs ?? Number.POSITIVE_INFINITY;
+      const bCrossing = b.lane.finishCrossingMs ?? Number.POSITIVE_INFINITY;
+      const crossingDelta = aCrossing - bCrossing;
+      return Math.abs(crossingDelta) <= tieWindowMs
+        ? a.index - b.index
+        : crossingDelta;
+    })
+    .map(({ lane }) => lane.personaId);
+}
+
 export type ContinuousRunnerProfile = {
   startPosition: number;
   baseSpeedMultiplier: number;
@@ -29,6 +58,10 @@ function getEventDuration(result: RunnerSpeedEventResult) {
   if (result === 'reroute') return RUNNER_REROUTE_DURATION_MS;
   if (result === 'surge') return RUNNER_SURGE_DURATION_MS;
   return 0;
+}
+
+export function getRunnerSpeedEventDuration(result: RunnerSpeedEventResult) {
+  return getEventDuration(result);
 }
 
 function getEventMultiplier(result: RunnerSpeedEventResult) {
@@ -90,6 +123,57 @@ export function getContinuousRunnerPosition(
       * RUNNER_EVENT_DISTANCE_GAIN;
   }, 0);
   return clamp(profile.startPosition + baseTravel + eventTravel, 4, RUNNER_MAX_POSITION);
+}
+
+/**
+ * Resolve the continuous movement curve into a serializable playback trace.
+ * Event boundaries and the finish crossing are always represented exactly;
+ * regular samples keep playback interpolation faithful between those points.
+ */
+export function buildRunnerTrajectory(
+  profile: ContinuousRunnerProfile,
+  courseTravelEndPosition: number,
+  raceDurationMs: number,
+  sampleIntervalMs = 100,
+  finishCrossingMs: number | null = null,
+) {
+  const sampleTimes = new Set<number>([0, raceDurationMs]);
+  for (let elapsedMs = sampleIntervalMs; elapsedMs < raceDurationMs; elapsedMs += sampleIntervalMs) {
+    sampleTimes.add(elapsedMs);
+  }
+  profile.events.forEach((event) => {
+    sampleTimes.add(Math.max(0, Math.min(raceDurationMs, event.triggerMs)));
+    const endMs = event.triggerMs + getEventDuration(event.result);
+    sampleTimes.add(Math.max(0, Math.min(raceDurationMs, endMs)));
+  });
+  if (finishCrossingMs !== null) {
+    sampleTimes.add(Math.max(0, Math.min(raceDurationMs, finishCrossingMs)));
+  }
+  return [...sampleTimes]
+    .sort((a, b) => a - b)
+    .map((elapsedMs): RunnerTrajectoryPoint => ({
+      elapsedMs,
+      position: getContinuousRunnerPosition(profile, elapsedMs, courseTravelEndPosition, raceDurationMs),
+    }));
+}
+
+export function getRunnerTrajectoryPositionAtTime(
+  trajectory: RunnerTrajectoryPoint[],
+  elapsedMs: number,
+) {
+  if (!trajectory.length) return 0;
+  if (elapsedMs <= trajectory[0].elapsedMs) return trajectory[0].position;
+  const last = trajectory[trajectory.length - 1];
+  if (elapsedMs >= last.elapsedMs) return last.position;
+  for (let index = 1; index < trajectory.length; index += 1) {
+    const current = trajectory[index];
+    if (elapsedMs > current.elapsedMs) continue;
+    const previous = trajectory[index - 1];
+    const duration = Math.max(1, current.elapsedMs - previous.elapsedMs);
+    const progress = (elapsedMs - previous.elapsedMs) / duration;
+    return previous.position + (current.position - previous.position) * progress;
+  }
+  return last.position;
 }
 
 export function getRunnerFinishCrossingTime(

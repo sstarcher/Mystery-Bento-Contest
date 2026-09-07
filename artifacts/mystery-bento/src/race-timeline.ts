@@ -65,7 +65,18 @@ export const RACE_MATCHUP_WORLD_END_PERCENT = RACE_FINALE_WORLD_END_PERCENT
 export const RACE_FINALE_WORLD_START_PERCENT = RACE_MATCHUP_WORLD_END_PERCENT;
 export const RACE_RUNNER_SCREEN_MIN_PERCENT = 12;
 export const RACE_RUNNER_VISUAL_START_PERCENT = 14;
-export const RACE_RUNNER_SCREEN_MAX_PERCENT = RACE_BACKGROUND_FINISH_SCREEN_ANCHOR_PERCENT;
+export const RACE_RUNNER_RENDER_WIDTH_PX = 216;
+export const RACE_RUNNER_LEADING_EDGE_OFFSET_PERCENT =
+  (RACE_RUNNER_RENDER_WIDTH_PX / RACE_BACKGROUND_CANVAS_WIDTH_PX) * 50;
+// The runner transform is centered on the sprite. Keep the sprite's leading
+// edge aligned with the marker's final viewport pixel position instead of
+// placing its center on the authored screen percentage.
+export const RACE_RUNNER_SCREEN_MAX_PERCENT =
+  (
+    RACE_BACKGROUND_FINISH_MARKER_X_PX
+    - (RACE_BACKGROUND_TRACK_WIDTH_PX - RACE_BACKGROUND_CANVAS_WIDTH_PX)
+  ) / RACE_BACKGROUND_CANVAS_WIDTH_PX * 100
+  - RACE_RUNNER_LEADING_EDGE_OFFSET_PERCENT;
 export const RACE_RUNNER_MAX_SPREAD_PERCENT =
   RACE_RUNNER_SCREEN_MAX_PERCENT - RACE_RUNNER_VISUAL_START_PERCENT;
 export const RACE_RUNNER_VISUAL_MAX_DISTANCE = 90;
@@ -140,6 +151,12 @@ export function getRaceWorldTravelPercentAtTime(stage: RaceTimelineStage, elapse
     * Math.max(0, Math.min(1, raceElapsed / RACE_RACE_DURATION_MS));
 }
 
+export function getRaceWorldTravelPercentAtRaceTime(elapsedMs: number, prefersReducedMotion: boolean) {
+  if (prefersReducedMotion) return RACE_FINALE_WORLD_END_PERCENT;
+  return RACE_FINALE_WORLD_END_PERCENT
+    * Math.max(0, Math.min(1, elapsedMs / RACE_RACE_DURATION_MS));
+}
+
 export function getRaceWorldScreenAnchor(position: number, worldTravelPercent: number) {
   return `${(position * RACE_WORLD_TRACK_WIDTH_MULTIPLIER - worldTravelPercent * RACE_WORLD_TRACK_WIDTH_MULTIPLIER).toFixed(3)}%`;
 }
@@ -189,6 +206,7 @@ export function getRaceRunnerScreenAnchors(
   positions: number[],
   startPositions: number[] = [],
   finishPosition?: number,
+  finishScreenAnchor = RACE_RUNNER_SCREEN_MAX_PERCENT,
 ) {
   if (!positions.length) return [];
 
@@ -198,7 +216,7 @@ export function getRaceRunnerScreenAnchors(
   // Instead, map each runner's distance from their shared start onto one fixed
   // visual track. This keeps the presentation monotonic while the simulation
   // remains free to use its authored world positions.
-  const visualTravel = RACE_RUNNER_MAX_SPREAD_PERCENT;
+  const visualTravel = Math.max(0, finishScreenAnchor - RACE_RUNNER_VISUAL_START_PERCENT);
   return positions.map((position, index) => {
     const startPosition = startPositions[index] ?? 0;
     const maxDistance = typeof finishPosition === 'number'
@@ -211,6 +229,16 @@ export function getRaceRunnerScreenAnchors(
     return RACE_RUNNER_VISUAL_START_PERCENT
       + (distance / maxDistance) * visualTravel;
   });
+}
+
+export function getRaceRunnerFinishScreenAnchorAtRaceTime(
+  elapsedMs: number,
+  prefersReducedMotion: boolean,
+) {
+  if (prefersReducedMotion) return RACE_RUNNER_SCREEN_MAX_PERCENT;
+  return RACE_RUNNER_VISUAL_START_PERCENT
+    + RACE_RUNNER_MAX_SPREAD_PERCENT
+      * Math.max(0, Math.min(1, elapsedMs / RACE_RACE_DURATION_MS));
 }
 
 export function getRaceAnnouncementRevealOffsets(

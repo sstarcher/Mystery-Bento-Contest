@@ -486,11 +486,11 @@ const parseAnchors = (anchors: number[]) => anchors.map((anchor) => Number(ancho
 const sharedStart = [8, 10, 7, 12];
 const boundedAnchors = parseAnchors(getRaceRunnerScreenAnchors([8, 60, 100, 95], sharedStart));
 assert.ok(
-  boundedAnchors.every((anchor) => anchor >= RACE_RUNNER_SCREEN_MIN_PERCENT && anchor <= RACE_RUNNER_SCREEN_MAX_PERCENT),
+  boundedAnchors.every((anchor) => anchor >= RACE_RUNNER_SCREEN_MIN_PERCENT && anchor <= RACE_RUNNER_SCREEN_MAX_PERCENT + 0.001),
   'oversized runners should stay within the visible race viewport',
 );
 assert.ok(
-  Math.max(...boundedAnchors) - Math.min(...boundedAnchors) <= RACE_RUNNER_MAX_SPREAD_PERCENT,
+  Math.max(...boundedAnchors) - Math.min(...boundedAnchors) <= RACE_RUNNER_MAX_SPREAD_PERCENT + 0.001,
   'runner projection should cap the visible pack spread',
 );
 assert.deepEqual(
@@ -504,7 +504,8 @@ assert.deepEqual(
     sharedStart,
     RACE_FINISH_THRESHOLD_POSITION,
   )),
-  [RACE_RUNNER_SCREEN_MAX_PERCENT, RACE_RUNNER_SCREEN_MAX_PERCENT, RACE_RUNNER_SCREEN_MAX_PERCENT, RACE_RUNNER_SCREEN_MAX_PERCENT],
+  [RACE_RUNNER_SCREEN_MAX_PERCENT, RACE_RUNNER_SCREEN_MAX_PERCENT, RACE_RUNNER_SCREEN_MAX_PERCENT, RACE_RUNNER_SCREEN_MAX_PERCENT]
+    .map((anchor) => Number(anchor.toFixed(3))),
   'finish-threshold runners should project to the visible finish marker',
 );
 assert.deepEqual(
@@ -515,7 +516,8 @@ assert.deepEqual(
   [RACE_RUNNER_VISUAL_START_PERCENT + RACE_RUNNER_MAX_SPREAD_PERCENT,
     RACE_RUNNER_VISUAL_START_PERCENT + RACE_RUNNER_MAX_SPREAD_PERCENT,
     RACE_RUNNER_VISUAL_START_PERCENT + RACE_RUNNER_MAX_SPREAD_PERCENT,
-    RACE_RUNNER_VISUAL_START_PERCENT + RACE_RUNNER_MAX_SPREAD_PERCENT],
+    RACE_RUNNER_VISUAL_START_PERCENT + RACE_RUNNER_MAX_SPREAD_PERCENT]
+    .map((anchor) => Number(anchor.toFixed(3))),
   'visual travel should stop at a bounded forward finish position',
 );
 const beforeAdvance = getRaceRunnerScreenAnchors([24, 27, 22, 30], sharedStart);

@@ -139,12 +139,29 @@ try {
     const race = document.querySelector('.contest-race');
     return {
       winnerId: race?.dataset.raceWinnerId,
+       planReady: race?.dataset.racePlanReady === 'true',
       initialOrder: JSON.parse(race?.dataset.raceInitialOrder ?? '[]'),
       initialGap: Number(race?.dataset.raceInitialGap ?? 0),
       checkpointLeaders: JSON.parse(race?.dataset.raceCheckpointLeaders ?? '{}'),
       leadChanges: JSON.parse(race?.dataset.raceLeadChanges ?? '[]'),
+       finishOrder: JSON.parse(race?.dataset.raceFinishOrder ?? '[]'),
+       finishCrossings: JSON.parse(race?.dataset.raceFinishCrossings ?? '{}'),
+       raceDurationMs: Number(race?.dataset.raceDurationMs ?? NaN),
+       playbackFinishCrossingMs: Number(race?.dataset.racePlaybackFinishCrossingMs ?? NaN),
+       trace: JSON.parse(race?.dataset.raceTrace ?? '{}'),
     };
   })()`);
+   assert(metadata.planReady, 'race did not expose its resolved playback plan');
+   assert(metadata.finishOrder[0] === metadata.winnerId, `finish order winner did not match race winner: ${metadata.finishOrder.join(', ')}`);
+   assert(Number.isFinite(Number(metadata.finishCrossings[metadata.winnerId])), 'resolved winner did not expose a finish crossing time');
+   assert(Number.isFinite(metadata.raceDurationMs), 'race did not expose its continuous duration');
+   assert(
+     metadata.playbackFinishCrossingMs === metadata.raceDurationMs,
+     `visible finish was scheduled before the final background completed: ${metadata.playbackFinishCrossingMs} < ${metadata.raceDurationMs}`,
+   );
+   assert(metadata.trace.lanes?.length === metadata.initialOrder.length, 'resolved trace did not include every lane');
+   assert(metadata.trace.lanes.every((lane) => Number.isFinite(Number(lane.finishCrossingMs))), 'resolved trace left a lane without a finish crossing');
+   assert(metadata.trace.lanes.every((lane) => Object.keys(lane.encounters ?? {}).length === metadata.trace.obstacles?.length), 'resolved trace did not cover every obstacle for every lane');
   assert(metadata.initialGap >= 10, `expected a large initial gap, got ${metadata.initialGap.toFixed(2)}`);
   assert(metadata.initialOrder[0] === 'pip', `expected Pip to start in front, got ${metadata.initialOrder.join(', ')}`);
   assert(metadata.leadChanges.length >= 2, `expected at least two resolved lead changes, got ${metadata.leadChanges.length}`);
@@ -249,15 +266,57 @@ try {
   const finish = await evaluate(cdp, `(() => {
     const race = document.querySelector('.contest-race');
     const reveal = document.querySelector('[data-testid="winner-reveal-card"]');
+     const viewport = race?.querySelector('.race-course-viewport')?.getBoundingClientRect();
+     const markerRect = race?.querySelector('.race-finish-marker')?.getBoundingClientRect();
+     const worldTrack = race?.querySelector('.race-world-track');
+      const finishAnchor = Number(race?.querySelector('.race-finish-marker')?.dataset.finishAnchor ?? 88);
+      const runnerLeadingEdgeOffset = Number(race?.dataset.raceRunnerLeadingEdgeOffset ?? 0);
+     const lanes = [...document.querySelectorAll('.race-runner-lane')].map((lane) => ({
+       id: lane.dataset.personaId,
+       anchor: Number(lane.querySelector('.race-runner')?.dataset.runnerAnchor ?? NaN),
+       resolvedCrossed: lane.querySelector('.race-runner')?.dataset.runnerFinishCrossed === 'true',
+       crossingMs: Number(lane.dataset.finishCrossingMs ?? NaN),
+     }));
+     const visibleCrossers = lanes
+       .filter((lane) => lane.anchor + runnerLeadingEdgeOffset >= finishAnchor - 0.5)
+       .map((lane) => lane.id);
     return {
       winnerId: race?.dataset.raceWinnerId,
       revealText: reveal?.textContent?.replace(/\\s+/g, ' ').trim() ?? '',
       finishCrossed: race?.dataset.finishCrossed === 'true',
+       finishVisible: race?.dataset.finishVisible === 'true',
+       worldTravelPercent: Number(worldTrack?.dataset.worldTravelPercent ?? NaN),
+       backgroundEndPercent: Number(race?.dataset.raceBackgroundEndPercent ?? NaN),
+       finishMarkerInViewport: Boolean(
+         viewport && markerRect
+         && markerRect.left >= viewport.left - 2
+         && markerRect.left <= viewport.right + 2,
+       ),
+       finishMarkerLeft: markerRect?.left ?? null,
+       runnerLeadingEdges: [...document.querySelectorAll('.race-runner')].map((runner) => {
+         const rect = runner.getBoundingClientRect();
+         return { id: runner.closest('.race-runner-lane')?.dataset.personaId, right: rect.right };
+       }),
+       lanes,
+       visibleCrossers,
       victoryLanes: [...document.querySelectorAll('.race-runner-lane')].filter((lane) => lane.querySelector('[data-movement-action="victory"]') || lane.dataset.personaId === race?.dataset.raceWinnerId).map((lane) => lane.dataset.personaId),
     };
   })()`);
   assert(finish.finishCrossed, 'finish presentation did not mark the race crossed');
+   assert(finish.finishVisible, 'finish crossing occurred before the finish marker was announced visible');
+   assert(
+     finish.worldTravelPercent >= finish.backgroundEndPercent - 0.1,
+     `finish crossing occurred before the final background completed: ${finish.worldTravelPercent} < ${finish.backgroundEndPercent}`,
+   );
+   assert(finish.finishMarkerInViewport, 'finish crossing occurred before the finish marker entered the viewport');
+   const winnerRunner = finish.runnerLeadingEdges.find((runner) => runner.id === finish.winnerId);
+   assert(
+     winnerRunner && finish.finishMarkerLeft !== null && winnerRunner.right <= finish.finishMarkerLeft + 0.1,
+     `winner sprite crossed beyond the finish marker: ${JSON.stringify({ winnerRunner, finishMarkerLeft: finish.finishMarkerLeft })}`,
+   );
   assert(finish.winnerId === metadata.winnerId, 'finish winner did not match the resolved race winner');
+   assert(finish.visibleCrossers[0] === metadata.winnerId, `first rendered finish crossing did not match the resolved winner: ${JSON.stringify(finish)}`);
+   assert(finish.lanes.find((lane) => lane.id === metadata.winnerId)?.resolvedCrossed, 'resolved winner lane did not report its crossing');
   assert(finish.revealText.includes(finish.winnerId === 'pip' ? 'Pip Porridge' : finish.winnerId === 'sencha' ? 'Lady Sencha' : 'Nori Nib'), 'winner reveal did not name the resolved winner');
   assert(browserErrors.length === 0, `browser reported ${browserErrors.length} exception(s): ${browserErrors.join('; ')}`);
 

@@ -45,6 +45,7 @@ import { getMovementSpriteSheet, type MovementAction } from './movement-sprite-c
 import { MovementSprite } from './movement-sprite';
 import {
   RACE_BACKGROUND_FINISH_MARKER_ANGLE_DEG,
+  RACE_BACKGROUND_FINISH_SCREEN_ANCHOR_PERCENT,
   RACE_BACKGROUND_FINISH_MARKER_ROAD_LENGTH_PX,
   RACE_BACKGROUND_FINISH_MARKER_ROAD_TOP_PX,
   RACE_BACKGROUND_FINISH_MARKER_X_PX,
@@ -64,6 +65,7 @@ import {
   getRaceObstacleEntryOffset as getTimelineRaceObstacleEntryOffset,
   getRaceFinishVisibleOffset,
    RACE_FINISH_THRESHOLD_POSITION,
+   RACE_FINALE_WORLD_END_PERCENT,
   getRaceRunnerFinishAction,
   getRaceAnnouncementRevealOffsets,
   getRaceAnnouncementCompletionDelay,
@@ -72,19 +74,21 @@ import {
   getRaceRunnerObstacleContactOffset,
   getRaceStartHandoffTiming,
   getRaceStageAnnouncerCue,
-  getRaceLaneProgressAtTime as getTimelineLaneProgressAtTime,
   getRaceRunnerScreenAnchors,
+   getRaceRunnerFinishScreenAnchorAtRaceTime,
   getRaceWorldScreenAnchor,
-  getRaceWorldTravelPercentAtTime,
-  RACE_FINALE_WORLD_END_PERCENT,
+  getRaceWorldTravelPercentAtRaceTime,
+   RACE_RUNNER_SCREEN_MAX_PERCENT,
+   RACE_RUNNER_RENDER_WIDTH_PX,
+   RACE_RUNNER_LEADING_EDGE_OFFSET_PERCENT,
   RACE_LAST_CONTESTANT_PAUSE_MS,
   RACE_MATCHUP_WORLD_END_PERCENT,
-  RACE_OBSTACLE_CONTACT_WINDOW_PERCENT,
   RACE_RACE_DURATION_MS,
   RACE_STAGE_OFFSETS,
   RACE_STAGE_DURATIONS,
   RACE_WARMUP_WORLD_END_PERCENT,
   type RaceTimelineCheckpoint,
+  type RaceTimelineStage,
 } from './race-timeline';
 import { ensureRaceEncounterVariety, getRaceLeadChangeKind, resolveRaceEncounterResult } from './race-momentum';
 import {
@@ -96,10 +100,15 @@ import {
 import { selectContestants } from './contest-roster';
 import {
   getContinuousRunnerPosition,
+  buildRunnerTrajectory,
   getRunnerBaseSpeedMultiplier,
   getRunnerFinishCrossingTime,
   getRunnerEffectiveSpeed,
   getRunnerMovementState,
+  getRunnerSpeedEventDuration,
+  getRunnerTrajectoryPositionAtTime,
+  resolveRunnerFinishOrder,
+  type RunnerTrajectoryPoint,
   type RunnerSpeedEvent,
 } from './race-speed-model';
 
@@ -177,15 +186,26 @@ type RaceEncounter = {
   result: RaceEncounterResult;
   headline: string;
   detail: string;
+  reaction: RaceRunnerReaction;
+  triggerMs: number | null;
+  reactionEndMs: number | null;
+};
+
+type RaceReactionWindow = {
+  obstacleId: string;
+  triggerMs: number;
+  endMs: number;
 };
 type RaceLaneSimulation = {
   personaId: string;
-  positions: Record<ContestStep, number>;
+  positions: Record<RacePositionStep, number>;
   finishCrossingMs: number | null;
   encounters: Record<string, RaceEncounter>;
   checkpoints: RaceTimelineCheckpoint[];
   baseSpeedMultiplier: number;
   speedEvents: RunnerSpeedEvent[];
+  reactionWindows: RaceReactionWindow[];
+  trajectory: RunnerTrajectoryPoint[];
 };
 type RaceLeadChange = {
   obstacleId: string;
@@ -198,11 +218,15 @@ type RaceSimulation = {
   lanes: RaceLaneSimulation[];
   finishCrossingMs: number;
   winnerId: string;
+  finishOrder: string[];
+  finishCrossings: Record<string, number | null>;
   checkpointLeaders: Record<string, { beforeId: string; afterId: string }>;
   leadChanges: RaceLeadChange[];
 };
 type ContestOutcome = { winner: Persona; memorableEvent: string; contestName: string; race: RaceSimulation };
-type ContestStep = 'intro' | 'warmup' | 'matchup' | 'finale' | 'winner';
+
+type RacePositionStep = 'intro' | 'warmup' | 'matchup' | 'finale' | 'winner';
+type ContestStep = 'intro' | 'race' | 'winner';
 
 const queryClient = new QueryClient();
 const METER_KEY = 'mystery-bento-meter';
@@ -255,6 +279,7 @@ type AnnouncerClip = { id: string; src: string; label: string; durationMs: numbe
 type AnnouncerBeat = {
   id: string;
   step: ContestStep;
+  timelineStage?: RaceTimelineStage;
   label: string;
   clips: AnnouncerClip[];
   offset: number;
@@ -508,7 +533,14 @@ const contestNames = [
 
 const contestDurations = RACE_STAGE_DURATIONS;
 
+const RACE_RUNNER_TRAVEL_END_POSITION = RACE_FINISH_THRESHOLD_POSITION + 40;
 const RACE_FINISH_ANNOUNCEMENT_DELAY_MS = 120;
+
+function getRacePlaybackFinishCrossingMs(race: RaceSimulation, prefersReducedMotion: boolean) {
+  return prefersReducedMotion
+    ? RACE_RACE_DURATION_MS
+    : Math.max(RACE_RACE_DURATION_MS, race.finishCrossingMs);
+}
 function getRaceFinishCrossingAt(
   startedAt: number,
   race: RaceSimulation,
@@ -516,8 +548,8 @@ function getRaceFinishCrossingAt(
 ) {
   return startedAt + (
     prefersReducedMotion
-      ? RACE_STAGE_OFFSETS.finale + RACE_STAGE_DURATIONS.finale
-      : race.finishCrossingMs
+      ? RACE_RACE_DURATION_MS
+      : getRacePlaybackFinishCrossingMs(race, prefersReducedMotion)
   );
 }
 
@@ -526,28 +558,11 @@ function getRaceFinishVisibleAt(
   race: RaceSimulation,
   prefersReducedMotion: boolean,
 ) {
-  const plannedVisibleAt = startedAt + RACE_STAGE_OFFSETS.finale + (
-    prefersReducedMotion
-      ? RACE_STAGE_DURATIONS.finale
-      : getRaceFinishVisibleOffset(prefersReducedMotion)
-  );
-  return Math.min(plannedVisibleAt, getRaceFinishCrossingAt(startedAt, race, prefersReducedMotion));
+  const crossingAt = getRaceFinishCrossingAt(startedAt, race, prefersReducedMotion);
+  // The marker is in the moving panorama, so do not announce it before the
+  // background endpoint has actually brought it into the viewport.
+  return crossingAt;
 }
-const contestNextStep: Partial<Record<ContestStep, ContestStep>> = {
-  intro: 'warmup',
-  warmup: 'matchup',
-  matchup: 'finale',
-  finale: 'winner',
-};
-
-const raceStepProgress: Record<ContestStep, number> = {
-  intro: 0,
-  warmup: 1,
-  matchup: 2,
-  finale: 3,
-  winner: 4,
-};
-
 const raceObstacleCatalog: Record<RaceObstacleKind, {
   label: string;
   shortLabel: string;
@@ -658,7 +673,7 @@ function buildAnnouncerSequence(contestants: Persona[], race: RaceSimulation, pr
   ];
   let cleanLineAnnounced = false;
 
-  const stageSteps: ContestStep[] = ['warmup', 'matchup', 'finale'];
+  const stageSteps: Array<'warmup' | 'matchup' | 'finale'> = ['warmup', 'matchup', 'finale'];
   stageSteps.forEach((stage, stageIndex) => {
     const stageDuration = contestDurations[stage];
     const obstacleIndices = stage === 'finale' ? [2, 3] : [stageIndex];
@@ -707,7 +722,7 @@ function buildAnnouncerSequence(contestants: Persona[], race: RaceSimulation, pr
     if (transition) {
       const finishCrossingStageOffset = Math.max(
         0,
-        race.finishCrossingMs - RACE_STAGE_OFFSETS.finale,
+        getRacePlaybackFinishCrossingMs(race, prefersReducedMotion) - RACE_STAGE_OFFSETS.finale,
       );
       const transitionOffset = stage === 'finale'
         ? Math.min(
@@ -717,7 +732,7 @@ function buildAnnouncerSequence(contestants: Persona[], race: RaceSimulation, pr
         : 220;
       beats.push({
         id: `stage-${stage}`,
-        step: stage,
+        step: 'race',
         label: transition.label,
         offset: transitionOffset,
         deadlineOffset: stage === 'finale'
@@ -754,7 +769,7 @@ function buildAnnouncerSequence(contestants: Persona[], race: RaceSimulation, pr
       if (canCallout) {
         beats.push({
           id: `obstacle-callout-${obstacle.id}`,
-          step: stage,
+      step: 'race',
           label: `${obstacle.label} callout`,
           offset: entryOffset,
           deadlineOffset: obstacleMilestones[obstacleOrder + 1]?.entryOffset ?? stageDuration,
@@ -764,7 +779,8 @@ function buildAnnouncerSequence(contestants: Persona[], race: RaceSimulation, pr
       if (reactionClips.length) {
         beats.push({
           id: `obstacle-reaction-${obstacle.id}`,
-          step: stage,
+          step: 'race',
+          timelineStage: stage,
           label: `${obstacle.label} reaction`,
           offset: hitOffset,
           deadlineOffset: obstacleMilestones[obstacleOrder + 1]?.hitOffset ?? stageDuration,
@@ -788,7 +804,8 @@ function buildAnnouncerSequence(contestants: Persona[], race: RaceSimulation, pr
       const changeIndex = stageLeadChanges.indexOf(change);
       beats.push({
         id: `pace-${stage}-${changeObstacle.id}-${changeIndex}`,
-        step: stage,
+        step: 'race',
+        timelineStage: stage,
         label: paceClip.label,
         offset: changeMilestone.offset,
         deadlineOffset: obstacleMilestones[obstacleMilestones.indexOf(changeMilestone) + 1]?.offset ?? stageDuration,
@@ -805,7 +822,8 @@ function buildAnnouncerSequence(contestants: Persona[], race: RaceSimulation, pr
       const nextMilestone = obstacleMilestones.find((milestone) => milestone.offset > paceOffset)?.offset ?? stageDuration;
       beats.push({
         id: `pace-${stage}`,
-        step: stage,
+        step: 'race',
+        timelineStage: stage,
         label: paceClip.label,
         offset: paceOffset,
         deadlineOffset: nextMilestone,
@@ -995,6 +1013,8 @@ function buildRaceSimulation(
       personaId: persona.id,
       baseSpeedMultiplier,
       speedEvents: [],
+      reactionWindows: [],
+      trajectory: [],
       positions: {
         intro: clampRacePosition(progress),
         warmup: clampRacePosition(progress),
@@ -1079,6 +1099,9 @@ function buildRaceSimulation(
         result,
         ...encounterCopy[result],
         detail: `${encounterCopy[result].detail} ${reactionCopy[reaction]}`,
+        reaction,
+        triggerMs: null,
+        reactionEndMs: null,
       };
     });
 
@@ -1132,7 +1155,7 @@ function buildRaceSimulation(
             events: speedEvents,
           },
           elapsedMs,
-          RACE_FINALE_WORLD_END_PERCENT,
+          RACE_RUNNER_TRAVEL_END_POSITION,
           RACE_RACE_DURATION_MS,
         ),
         false,
@@ -1153,19 +1176,60 @@ function buildRaceSimulation(
         events: lane.speedEvents,
       },
       RACE_FINISH_THRESHOLD_POSITION,
-      RACE_FINALE_WORLD_END_PERCENT,
+      RACE_RUNNER_TRAVEL_END_POSITION,
       RACE_RACE_DURATION_MS,
+    );
+    lane.reactionWindows = lane.speedEvents.map((event) => ({
+      obstacleId: event.obstacleId,
+      triggerMs: event.triggerMs,
+      endMs: event.triggerMs + Math.max(
+        900,
+        getRunnerSpeedEventDuration(event.result),
+      ),
+    }));
+    lane.reactionWindows.forEach((window) => {
+      const encounter = lane.encounters[window.obstacleId];
+      if (!encounter) return;
+      encounter.triggerMs = window.triggerMs;
+      encounter.reactionEndMs = window.endMs;
+    });
+    lane.trajectory = buildRunnerTrajectory(
+      {
+        startPosition: lane.positions.intro,
+        baseSpeedMultiplier: lane.baseSpeedMultiplier,
+        events: lane.speedEvents,
+      },
+      RACE_RUNNER_TRAVEL_END_POSITION,
+      RACE_RACE_DURATION_MS,
+      100,
+      lane.finishCrossingMs,
+    );
+    // The same resolved trajectory drives both normal interpolation and the
+    // reduced-motion stage snapshots. Keep the authored checkpoint data for
+    // narration/debugging, but do not let a second stage projection decide
+    // where a runner appears.
+    lane.positions.warmup = getRunnerTrajectoryPositionAtTime(
+      lane.trajectory,
+      RACE_STAGE_OFFSETS.warmup + RACE_STAGE_DURATIONS.warmup,
+    );
+    lane.positions.matchup = getRunnerTrajectoryPositionAtTime(
+      lane.trajectory,
+      RACE_STAGE_OFFSETS.matchup + RACE_STAGE_DURATIONS.matchup,
+    );
+    lane.positions.finale = getRunnerTrajectoryPositionAtTime(
+      lane.trajectory,
+      RACE_STAGE_OFFSETS.finale + RACE_STAGE_DURATIONS.finale,
     );
   });
 
+  // The lane crossings determine the winner order, but the shared visible
+  // finish cannot fire until the panorama has completed its final background.
   const firstFinishCrossingMs = Math.min(
     ...lanes
       .map((lane) => lane.finishCrossingMs)
       .filter((crossingMs): crossingMs is number => crossingMs !== null),
   );
-  const resolvedFinishCrossingMs = Number.isFinite(firstFinishCrossingMs)
-    ? firstFinishCrossingMs
-    : RACE_RACE_DURATION_MS;
+  const resolvedFinishCrossingMs = RACE_RACE_DURATION_MS;
   lanes.forEach((lane) => {
     lane.positions.winner = clampRacePosition(getContinuousRunnerPosition(
       {
@@ -1173,17 +1237,16 @@ function buildRaceSimulation(
         baseSpeedMultiplier: lane.baseSpeedMultiplier,
         events: lane.speedEvents,
       },
-      resolvedFinishCrossingMs,
-      RACE_FINALE_WORLD_END_PERCENT,
+      firstFinishCrossingMs,
+      RACE_RUNNER_TRAVEL_END_POSITION,
       RACE_RACE_DURATION_MS,
     ));
   });
 
-  const winnerLane = [...lanes].sort((a, b) => {
-    const aCrossing = a.finishCrossingMs ?? Number.POSITIVE_INFINITY;
-    const bCrossing = b.finishCrossingMs ?? Number.POSITIVE_INFINITY;
-    return aCrossing - bCrossing;
-  })[0] ?? lanes[0];
+  // Near-simultaneous crossings use the roster order as an explicit,
+  // serializable tie-break instead of relying on engine sort stability.
+  const finishOrder = resolveRunnerFinishOrder(lanes);
+  const winnerLane = lanes.find((lane) => lane.personaId === finishOrder[0]) ?? lanes[0];
   const winnerId = winnerLane?.personaId ?? contestants[0]?.id ?? spriteSheetContestants[0]?.id;
   if (!winnerId) throw new Error('Cannot build a race without a sprite-sheet contestant.');
   return {
@@ -1191,6 +1254,8 @@ function buildRaceSimulation(
     lanes: lanes.map(({ persona: _persona, progress: _progress, ...lane }) => lane),
     finishCrossingMs: resolvedFinishCrossingMs,
     winnerId,
+    finishOrder,
+    finishCrossings: Object.fromEntries(lanes.map((lane) => [lane.personaId, lane.finishCrossingMs])),
     checkpointLeaders,
     leadChanges,
   };
@@ -1643,6 +1708,7 @@ type RaceRunnerPresentation = {
   animationKey: string;
   speedMultiplier: number;
   reaction: RaceRunnerReaction;
+  finishCrossed: boolean;
 };
 
 type RaceLiveRendererProps = {
@@ -1657,8 +1723,6 @@ type RaceLiveRendererProps = {
 };
 
 const RACE_CANVAS_WIDTH_PX = 1280;
-const RACE_RUNNER_WIDTH_PX = 216;
-
 const RaceLiveRenderer = memo(function RaceLiveRenderer({
   contestants,
   winner,
@@ -1693,60 +1757,35 @@ const RaceLiveRenderer = memo(function RaceLiveRenderer({
     const getLaneProgress = (lane: RaceLaneSimulation | undefined) => {
       if (!lane) return 0;
       if (step === 'winner' || finishCrossed) return lane.positions.winner;
-      if (step === 'intro' || prefersReducedMotion) {
-        return getTimelineLaneProgressAtTime(
-          step,
-          lane,
-          race.obstacles,
-          clockMs - RACE_STAGE_OFFSETS[step],
-          prefersReducedMotion,
-        );
-      }
-      return getContinuousRunnerPosition(
-        {
-          startPosition: lane.positions.intro,
-          baseSpeedMultiplier: lane.baseSpeedMultiplier,
-          events: lane.speedEvents,
-        },
-        clockMs,
-        RACE_FINALE_WORLD_END_PERCENT,
-        RACE_RACE_DURATION_MS,
+      if (step === 'intro') return lane.positions.intro;
+      return getRunnerTrajectoryPositionAtTime(
+        lane.trajectory,
+        prefersReducedMotion ? RACE_RACE_DURATION_MS : clockMs,
       );
     };
-    const worldTravelPercent = getRaceWorldTravelPercentAtTime(
-      step,
-      clockMs - RACE_STAGE_OFFSETS[step],
+    const worldTravelPercent = getRaceWorldTravelPercentAtRaceTime(
+      clockMs,
       prefersReducedMotion,
     );
     const laneProgresses = raceLanes.map((lane) => getLaneProgress(lane));
+    const runnerFinishScreenAnchor = getRaceRunnerFinishScreenAnchorAtRaceTime(
+      clockMs,
+      prefersReducedMotion,
+    );
     const currentRunnerAnchors = getRaceRunnerScreenAnchors(
       laneProgresses,
       introRunnerPositions,
       RACE_FINISH_THRESHOLD_POSITION,
+      runnerFinishScreenAnchor,
     );
-    const stageObstacleIndex = Math.min(race.obstacles.length - 1, Math.max(0, raceStepProgress[step] - 1));
-    const stageObstacleAnchors = race.obstacles
-      .map((obstacle, obstacleIndex) => ({
-        obstacleIndex,
-        anchor: Number.parseFloat(getRaceWorldScreenAnchor(
-          obstacle.position
-            + (getRaceObstacleHorizontalOffsetPx(obstacleIndex) / RACE_BACKGROUND_TRACK_WIDTH_PX) * 100,
-          worldTravelPercent,
-        )),
-      }))
-      .filter(({ obstacleIndex }) => obstacleIndex >= stageObstacleIndex);
     const getCurrentLaneObstacleIndex = (lane: RaceLaneSimulation | undefined, laneIndex: number) => {
       if (!lane || step === 'intro' || step === 'winner') return -1;
-      const reachedIndex = race.obstacles.reduce((reached, obstacle, obstacleIndex) => (
-        laneProgresses[laneIndex] >= obstacle.position ? obstacleIndex : reached
-      ), -1);
-      if (prefersReducedMotion) return reachedIndex < stageObstacleIndex ? -1 : reachedIndex;
-      const runnerAnchor = currentRunnerAnchors[laneIndex];
-      if (typeof runnerAnchor !== 'number') return -1;
-      const contactStart = runnerAnchor - RACE_OBSTACLE_CONTACT_WINDOW_PERCENT;
-      const contactEnd = runnerAnchor + RACE_OBSTACLE_CONTACT_WINDOW_PERCENT;
-      const contactedObstacle = stageObstacleAnchors.find(({ anchor }) => anchor >= contactStart && anchor <= contactEnd);
-      return contactedObstacle?.obstacleIndex ?? -1;
+      const activeWindow = lane.reactionWindows.find((window) => (
+        clockMs >= window.triggerMs && clockMs < window.endMs
+      ));
+      return activeWindow
+        ? race.obstacles.findIndex((obstacle) => obstacle.id === activeWindow.obstacleId)
+        : -1;
     };
 
     const presentations = raceLanes.map((lane, index): RaceRunnerPresentation => {
@@ -1759,9 +1798,7 @@ const RaceLiveRenderer = memo(function RaceLiveRenderer({
         events: lane?.speedEvents ?? [],
       };
       const runnerSpeedMultiplier = getRunnerEffectiveSpeed(runnerProfile, clockMs);
-      const runnerReaction = laneCurrentObstacle && encounter
-        ? getRaceRunnerReaction(laneCurrentObstacle.kind, encounter.result)
-        : 'ready';
+      const runnerReaction = encounter?.reaction ?? 'ready';
       const isWinner = (winner?.id ?? race.winnerId) === contestants[index]?.id;
       const finishAction = getRaceRunnerFinishAction(finishCrossed, isWinner);
       const hasObstacleReaction = hasNegativeObstacleImpact(encounter?.result);
@@ -1775,7 +1812,9 @@ const RaceLiveRenderer = memo(function RaceLiveRenderer({
               ? 'idle'
               : getRunnerMovementState(runnerProfile, clockMs));
       return {
-        anchor: currentRunnerAnchors[index] ?? stageRunnerAnchors[step === 'winner' ? 'finale' : step][index] ?? 50,
+        anchor: currentRunnerAnchors[index]
+          ?? stageRunnerAnchors[step === 'intro' ? 'intro' : 'finale'][index]
+          ?? 50,
         obstacleIndex: laneCurrentObstacleIndex,
         action: runnerAction,
         animationKey: finishAction
@@ -1785,6 +1824,9 @@ const RaceLiveRenderer = memo(function RaceLiveRenderer({
             : step,
         speedMultiplier: finishAction ? 1 : runnerSpeedMultiplier,
         reaction: runnerReaction,
+        finishCrossed: lane?.finishCrossingMs !== null
+          && lane?.finishCrossingMs !== undefined
+          && clockMs >= lane.finishCrossingMs,
       };
     });
     return { worldTravelPercent, presentations };
@@ -1818,8 +1860,9 @@ const RaceLiveRenderer = memo(function RaceLiveRenderer({
       frameState.presentations.forEach((presentation, index) => {
         const runner = runnerRefs.current[index];
         if (!runner) return;
-        runner.style.transform = `translate3d(${presentation.anchor / 100 * RACE_CANVAS_WIDTH_PX - RACE_RUNNER_WIDTH_PX / 2}px, 0, 0)`;
+        runner.style.transform = `translate3d(${presentation.anchor / 100 * RACE_CANVAS_WIDTH_PX - RACE_RUNNER_RENDER_WIDTH_PX / 2}px, 0, 0)`;
         runner.dataset.runnerAnchor = presentation.anchor.toFixed(3);
+         runner.dataset.runnerFinishCrossed = String(presentation.finishCrossed);
       });
       const obstacleIndexes = frameState.presentations.map(({ obstacleIndex }) => obstacleIndex);
       const priorObstacleIndexes = previousObstacleIndexes.current;
@@ -1882,6 +1925,7 @@ const RaceLiveRenderer = memo(function RaceLiveRenderer({
             '--race-finish-marker-road-top': `${RACE_BACKGROUND_FINISH_MARKER_ROAD_TOP_PX}px`,
             left: `${RACE_BACKGROUND_FINISH_MARKER_X_PX}px`,
           } as CSSProperties}
+           data-finish-anchor={RACE_BACKGROUND_FINISH_SCREEN_ANCHOR_PERCENT}
           aria-label="Finish line"
         />
       </div>
@@ -1889,7 +1933,7 @@ const RaceLiveRenderer = memo(function RaceLiveRenderer({
         {contestants.map((persona, index) => {
           const presentation = presentations[index];
           if (!presentation) return null;
-          const stageAnchors = stageRunnerAnchors[step === 'winner' ? 'finale' : step];
+          const stageAnchors = stageRunnerAnchors[step === 'intro' ? 'intro' : 'finale'];
           return (
             <div
               className="race-runner-lane"
@@ -1897,6 +1941,9 @@ const RaceLiveRenderer = memo(function RaceLiveRenderer({
               data-persona-id={persona.id}
               data-obstacle-index={presentation.obstacleIndex}
               data-runner-reaction={presentation.reaction}
+              data-finish-crossing-ms={raceLanes[index]?.finishCrossingMs ?? undefined}
+              data-finish-order-index={race.finishOrder.indexOf(persona.id)}
+              data-reaction-windows={JSON.stringify(raceLanes[index]?.reactionWindows ?? [])}
             >
               <div
                 className="race-runner"
@@ -1906,7 +1953,7 @@ const RaceLiveRenderer = memo(function RaceLiveRenderer({
                   '--race-warmup-anchor': `${stageRunnerAnchors.warmup[index] ?? 50}%`,
                   '--race-matchup-anchor': `${stageRunnerAnchors.matchup[index] ?? 50}%`,
                   '--race-finale-anchor': `${stageRunnerAnchors.finale[index] ?? 50}%`,
-                  transform: `translate3d(${presentation.anchor / 100 * RACE_CANVAS_WIDTH_PX - RACE_RUNNER_WIDTH_PX / 2}px, 0, 0)`,
+                  transform: `translate3d(${presentation.anchor / 100 * RACE_CANVAS_WIDTH_PX - RACE_RUNNER_RENDER_WIDTH_PX / 2}px, 0, 0)`,
                 } as CSSProperties}
               >
                 <span className="race-runner-sprite">
@@ -2073,7 +2120,9 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
         : obstacleIndexes
     ));
   };
-  const currentObstacleIndex = step === 'intro' ? -1 : Math.min(race.obstacles.length - 1, raceStepProgress[step] - 1);
+  const currentObstacleIndex = step === 'intro'
+    ? -1
+    : Math.max(-1, ...raceContactState);
   const currentObstacle = currentObstacleIndex >= 0 ? race.obstacles[currentObstacleIndex] : null;
   const currentObstacleCopy = currentObstacle
     ? `${currentObstacle.label}: ${currentObstacle.description}`
@@ -2163,23 +2212,43 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
       }
 
       if (!raceStartAnchor) return null;
+      if (beat.step === 'winner') {
+        const winnerRelativeStart = getRaceAnnouncerBeatStartOffset(
+          'winner',
+          beat.offset,
+          getRacePlaybackFinishCrossingMs(race, prefersReducedMotion),
+          FINISH_CROSSING_SETTLE_MS,
+        );
+        const winnerRelativeDeadline = getRaceAnnouncerBeatStartOffset(
+          'winner',
+          beat.deadlineOffset,
+          getRacePlaybackFinishCrossingMs(race, prefersReducedMotion),
+          FINISH_CROSSING_SETTLE_MS,
+        );
+        return {
+          startAt: raceStartAnchor + winnerRelativeStart,
+          deadlineAt: raceStartAnchor + winnerRelativeDeadline,
+          offset: winnerRelativeStart,
+        };
+      }
+      const timelineStage = beat.timelineStage ?? 'warmup';
       const raceRelativeBase = getRaceAnnouncerBeatStartOffset(
-        beat.step,
+        timelineStage,
         0,
-        race.finishCrossingMs,
+        getRacePlaybackFinishCrossingMs(race, prefersReducedMotion),
         FINISH_CROSSING_SETTLE_MS,
       );
       const raceRelativeDeadline = getRaceAnnouncerBeatStartOffset(
-        beat.step,
+        timelineStage,
         beat.deadlineOffset,
-        race.finishCrossingMs,
+        getRacePlaybackFinishCrossingMs(race, prefersReducedMotion),
         FINISH_CROSSING_SETTLE_MS,
       );
       return {
         startAt: raceStartAnchor + getRaceAnnouncerBeatStartOffset(
-          beat.step,
+          timelineStage,
           beat.offset,
-          race.finishCrossingMs,
+          getRacePlaybackFinishCrossingMs(race, prefersReducedMotion),
           FINISH_CROSSING_SETTLE_MS,
         ),
         deadlineAt: raceStartAnchor + raceRelativeDeadline,
@@ -2448,7 +2517,7 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
         audio.src = '';
       });
     };
-  }, [announcerResetKey, announcerSequence, contestStartedAt, raceStartedAt, voiceEnabled]);
+  }, [announcerResetKey, announcerSequence, contestStartedAt, prefersReducedMotion, raceStartedAt, voiceEnabled]);
 
   useEffect(() => () => {
     if (announcerAudio.current) {
@@ -2498,6 +2567,34 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
           data-race-initial-gap={Math.max(...race.lanes.map((lane) => lane.positions.intro)) - Math.min(...race.lanes.map((lane) => lane.positions.intro))}
           data-race-checkpoint-leaders={JSON.stringify(race.checkpointLeaders)}
           data-race-lead-changes={JSON.stringify(race.leadChanges)}
+           data-race-plan-ready="true"
+           data-race-obstacle-order={JSON.stringify(race.obstacles.map((obstacle) => obstacle.id))}
+           data-race-finish-order={JSON.stringify(race.finishOrder)}
+           data-race-finish-crossings={JSON.stringify(race.finishCrossings)}
+            data-race-duration-ms={RACE_RACE_DURATION_MS}
+            data-race-background-end-percent={RACE_FINALE_WORLD_END_PERCENT}
+            data-race-playback-finish-crossing-ms={race.finishCrossingMs}
+            data-race-runner-finish-anchor={RACE_RUNNER_SCREEN_MAX_PERCENT}
+            data-race-runner-leading-edge-offset={RACE_RUNNER_LEADING_EDGE_OFFSET_PERCENT}
+           data-race-reaction-plan={JSON.stringify(Object.fromEntries(race.lanes.map((lane) => [
+             lane.personaId,
+              lane.reactionWindows.map((window) => ({
+                ...window,
+                result: lane.encounters[window.obstacleId]?.result,
+                reaction: lane.encounters[window.obstacleId]?.reaction,
+              })),
+           ])))}
+            data-race-trace={JSON.stringify({
+              finishOrder: race.finishOrder,
+              finishCrossings: race.finishCrossings,
+              obstacles: race.obstacles.map(({ id, kind, position }) => ({ id, kind, position })),
+              lanes: race.lanes.map((lane) => ({
+                personaId: lane.personaId,
+                finishCrossingMs: lane.finishCrossingMs,
+                trajectoryPoints: lane.trajectory.length,
+                encounters: lane.encounters,
+              })),
+            })}
           aria-label="Animated contest race"
         >
           {showRaceStartGraphic && (
@@ -2842,7 +2939,9 @@ function Home() {
   };
   const skipContest = () => {
     if (completionGuard.current) return;
-    const winningPersona = winner ?? contestOutcome.current?.winner ?? contestants[0] ?? personas[0];
+    const resolvedOutcome = contestOutcome.current;
+    if (!resolvedOutcome) return;
+    const winningPersona = resolvedOutcome.winner;
     setFinishLineVisible(true);
     finishCrossedRef.current = true;
     setFinishCrossed(true);
@@ -2854,7 +2953,7 @@ function Home() {
   const startRace = () => {
     if (!contestOpen || contestRaceStartedAt.current || completionGuard.current) return;
     contestRaceStartedAt.current = Date.now();
-    setContestStep('warmup');
+    setContestStep('race');
     setLiveStatus('The race is underway. The first hazard is already coming into view.');
   };
   useEffect(() => () => {
@@ -2873,44 +2972,28 @@ function Home() {
     if (contestStep === 'intro' && !contestRaceStartedAt.current) return;
     const race = contestOutcome.current?.race;
     if (!race) return;
-    const nextStep = contestNextStep[contestStep];
-    if (!nextStep) return;
+    if (contestStep !== 'race') return;
     const startedAt = contestRaceStartedAt.current ?? contestIntroStartedAt.current ?? Date.now();
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-      const nextStepAt = nextStep === 'winner'
-      ? getRaceFinishVisibleAt(startedAt, race, prefersReducedMotion)
-        : startedAt + RACE_STAGE_OFFSETS[nextStep];
     contestTimer.current = window.setTimeout(() => {
-      if (nextStep === 'winner') {
-        if (finishLineVisible || finishCrossedRef.current) return;
-        setFinishLineVisible(true);
-        setLiveStatus('The finish line is in sight. The last crossing is being settled.');
-          const finishCrossingAt = getRaceFinishCrossingAt(startedAt, race, prefersReducedMotion);
-          finishTransitionTimer.current = window.setTimeout(() => {
-            if (!contestOpen || completionGuard.current || finishCrossedRef.current) return;
-            finishCrossedRef.current = true;
-            setFinishCrossed(true);
-            finishTransitionTimer.current = window.setTimeout(() => {
-              if (!contestOpen || completionGuard.current) return;
-              const outcome = contestOutcome.current ?? resolveContest(contestants, createRng(Date.now()));
-              contestOutcome.current = outcome;
-              setWinner(outcome.winner);
-              setContestStep('winner');
-              setLiveStatus(`${outcome.memorableEvent} ${outcome.winner.name} wins.`);
-            }, FINISH_CROSSING_SETTLE_MS);
-          }, Math.max(0, finishCrossingAt - Date.now()));
-        return;
-      }
-      if (finishCrossedRef.current) return;
-      const stageMessages: Record<Exclude<ContestStep, 'winner'>, string> = {
-        intro: 'The contestants have arrived. The warm-up begins beneath the lanterns.',
-        warmup: 'The world rolls. The first hazard is already coming into view.',
-        matchup: 'The market slips past. The next hazard is waiting around the bend.',
-        finale: 'The last hazard is ahead. The final lane is still unfolding.',
-      };
-      setContestStep(nextStep);
-      setLiveStatus(stageMessages[nextStep]);
-    }, Math.max(0, nextStepAt - Date.now()));
+      if (finishLineVisible || finishCrossedRef.current) return;
+      setFinishLineVisible(true);
+      setLiveStatus('The finish line is in sight. The last crossing is being settled.');
+      const finishCrossingAt = getRaceFinishCrossingAt(startedAt, race, prefersReducedMotion);
+      finishTransitionTimer.current = window.setTimeout(() => {
+        if (!contestOpen || completionGuard.current || finishCrossedRef.current) return;
+        finishCrossedRef.current = true;
+        setFinishCrossed(true);
+        finishTransitionTimer.current = window.setTimeout(() => {
+          if (!contestOpen || completionGuard.current) return;
+          const outcome = contestOutcome.current;
+          if (!outcome) return;
+          setWinner(outcome.winner);
+          setContestStep('winner');
+          setLiveStatus(`${outcome.memorableEvent} ${outcome.winner.name} wins.`);
+        }, FINISH_CROSSING_SETTLE_MS);
+      }, Math.max(0, finishCrossingAt - Date.now()) + FINISH_CROSSING_SETTLE_MS);
+    }, Math.max(0, getRaceFinishVisibleAt(startedAt, race, prefersReducedMotion) - Date.now()));
     return () => {
       if (contestTimer.current) window.clearTimeout(contestTimer.current);
       if (finishTransitionTimer.current) window.clearTimeout(finishTransitionTimer.current);
