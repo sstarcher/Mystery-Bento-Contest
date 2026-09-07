@@ -11,6 +11,8 @@ import {
   getRaceObstacleAnnouncerTiming,
   getRaceStageAnnouncerCue,
   getRaceLaneProgressAtTime,
+  getRaceRunnerCameraOverflow,
+  getRaceRunnerScreenCap,
   getRaceRunnerScreenAnchors,
   getRaceRunnerObstacleContactOffset,
   getRaceStartHandoffTiming,
@@ -91,6 +93,36 @@ assert.equal(
   getMatchedEncounterResultAudio('surge', 'finds an unexpected opening'),
   undefined,
   'semantically similar but non-identical result copy must stay silent',
+);
+assert.equal(
+  getRaceRunnerScreenCap(0.49, false),
+  40,
+  'the first half of the race should hold the lead runner at the 40% screen cap',
+);
+assert.equal(
+  getRaceRunnerScreenCap(0.5, false),
+  55,
+  'the second cap should open at the halfway race boundary',
+);
+assert.equal(
+  getRaceRunnerScreenCap(0.99, false),
+  55,
+  'the second cap should remain active until the final obstacle resolves',
+);
+assert.equal(
+  getRaceRunnerScreenCap(0.75, true),
+  null,
+  'the final obstacle resolution should unlock runners regardless of race-progress percentage',
+);
+assert.equal(
+  getRaceRunnerCameraOverflow(54, 55),
+  0,
+  'a leader inside the active cap should not accelerate the scenery',
+);
+assert.equal(
+  getRaceRunnerCameraOverflow(71, 55),
+  16,
+  'scenery correction should equal the leader movement beyond the active cap',
 );
 
 const lineups: RaceTimelineLane[][] = [

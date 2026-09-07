@@ -77,9 +77,13 @@ import {
   getRaceStageAnnouncerCue,
   getRaceRunnerScreenAnchors,
    getRaceRunnerFinishScreenAnchorAtRaceTime,
+   getRaceRunnerCameraOverflow,
+   getRaceRunnerScreenCap,
   getRaceWorldScreenAnchor,
   getRaceWorldTravelPercentAtRaceTime,
    RACE_RUNNER_SCREEN_MAX_PERCENT,
+    RACE_RUNNER_SCREEN_MIN_PERCENT,
+    RACE_WORLD_TRACK_WIDTH_MULTIPLIER,
    RACE_RUNNER_RENDER_WIDTH_PX,
    RACE_RUNNER_LEADING_EDGE_OFFSET_PERCENT,
   RACE_LAST_CONTESTANT_PAUSE_MS,
@@ -1710,12 +1714,21 @@ const RaceLiveRenderer = memo(function RaceLiveRenderer({
   const worldTrackRef = useRef<HTMLDivElement | null>(null);
   const runnerRefs = useRef<Array<HTMLDivElement | null>>([]);
   const previousObstacleIndexes = useRef<number[] | null>(null);
+  const cameraCorrectionPercentRef = useRef(0);
   const onFrameStateRef = useRef(onFrameState);
   onFrameStateRef.current = onFrameState;
   const raceLanes = useMemo(
     () => contestants.map((_, index) => race.lanes.find((lane) => lane.personaId === contestants[index]?.id) ?? race.lanes[index]),
     [contestants, race],
   );
+  const finalObstacleUnlockMs = useMemo(() => {
+    const finalObstacleId = race.obstacles[race.obstacles.length - 1]?.id;
+    if (!finalObstacleId) return null;
+    const unlockTimes = raceLanes
+      .map((lane) => lane?.reactionWindows.find((window) => window.obstacleId === finalObstacleId)?.endMs)
+      .filter((value): value is number => typeof value === 'number');
+    return unlockTimes.length ? Math.min(...unlockTimes) : null;
+  }, [race.obstacles, raceLanes]);
   const introRunnerPositions = useMemo(
     () => raceLanes.map((lane) => lane?.positions.intro ?? 5),
     [raceLanes],
@@ -1727,7 +1740,7 @@ const RaceLiveRenderer = memo(function RaceLiveRenderer({
     finale: getRaceRunnerScreenAnchors(raceLanes.map((lane) => lane?.positions.finale ?? 78), introRunnerPositions, RACE_FINISH_THRESHOLD_POSITION),
   }), [introRunnerPositions, raceLanes]);
 
-  const getFramePresentation = (clockMs: number) => {
+  const getFramePresentation = (clockMs: number, cameraCorrectionPercent = cameraCorrectionPercentRef.current) => {
     const getLaneProgress = (lane: RaceLaneSimulation | undefined) => {
       if (!lane) return 0;
       if (step === 'winner' || finishCrossed) return lane.positions.winner;
@@ -1737,7 +1750,7 @@ const RaceLiveRenderer = memo(function RaceLiveRenderer({
         prefersReducedMotion ? RACE_RACE_DURATION_MS : clockMs,
       );
     };
-    const worldTravelPercent = getRaceWorldTravelPercentAtRaceTime(
+    const baseWorldTravelPercent = getRaceWorldTravelPercentAtRaceTime(
       clockMs,
       prefersReducedMotion,
     );
@@ -1746,12 +1759,25 @@ const RaceLiveRenderer = memo(function RaceLiveRenderer({
       clockMs,
       prefersReducedMotion,
     );
-    const currentRunnerAnchors = getRaceRunnerScreenAnchors(
+    const rawRunnerAnchors = getRaceRunnerScreenAnchors(
       laneProgresses,
       introRunnerPositions,
       RACE_FINISH_THRESHOLD_POSITION,
       runnerFinishScreenAnchor,
     );
+    const raceProgress = Math.max(0, Math.min(1, clockMs / RACE_RACE_DURATION_MS));
+    const finalObstacleResolved = prefersReducedMotion
+      || step === 'winner'
+      || finishCrossed
+      || (finalObstacleUnlockMs !== null && clockMs >= finalObstacleUnlockMs);
+    const runnerScreenCap = getRaceRunnerScreenCap(raceProgress, finalObstacleResolved);
+    const worldTravelPercent = Math.min(
+      RACE_FINALE_WORLD_END_PERCENT,
+      baseWorldTravelPercent + cameraCorrectionPercent / RACE_WORLD_TRACK_WIDTH_MULTIPLIER,
+    );
+    const currentRunnerAnchors = rawRunnerAnchors.map((anchor) => (
+      Math.max(RACE_RUNNER_SCREEN_MIN_PERCENT, anchor - cameraCorrectionPercent)
+    ));
     const getCurrentLaneObstacleIndex = (lane: RaceLaneSimulation | undefined, laneIndex: number) => {
       if (!lane || step === 'intro' || step === 'winner') return -1;
       const activeWindow = lane.reactionWindows.find((window) => (
@@ -1803,7 +1829,14 @@ const RaceLiveRenderer = memo(function RaceLiveRenderer({
           && clockMs >= lane.finishCrossingMs,
       };
     });
-    return { worldTravelPercent, presentations };
+    return {
+      worldTravelPercent,
+      presentations,
+      rawRunnerAnchors,
+      runnerScreenCap,
+      finalObstacleResolved,
+      cameraCorrectionPercent,
+    };
   };
 
   const [presentations, setPresentations] = useState<RaceRunnerPresentation[]>(() => (
@@ -1811,6 +1844,7 @@ const RaceLiveRenderer = memo(function RaceLiveRenderer({
   ));
 
   useEffect(() => {
+    cameraCorrectionPercentRef.current = 0;
     previousObstacleIndexes.current = null;
     setPresentations(getFramePresentation(raceStartedAt ? Math.max(0, Date.now() - raceStartedAt) : 0).presentations);
   }, [finishCrossed, prefersReducedMotion, raceStartedAt, step, winner]);
@@ -1826,10 +1860,28 @@ const RaceLiveRenderer = memo(function RaceLiveRenderer({
     let frame = 0;
     const applyFrame = () => {
       const clockMs = raceStartedAt ? Math.max(0, Date.now() - raceStartedAt) : 0;
-      const frameState = getFramePresentation(clockMs);
+      if (!activeMotion) cameraCorrectionPercentRef.current = 0;
+      const preCorrectionState = getFramePresentation(clockMs);
+      if (activeMotion && preCorrectionState.runnerScreenCap !== null) {
+        const leaderScreenAnchor = Math.max(...preCorrectionState.rawRunnerAnchors, RACE_RUNNER_SCREEN_MIN_PERCENT);
+        const overflow = getRaceRunnerCameraOverflow(
+          leaderScreenAnchor,
+          preCorrectionState.runnerScreenCap,
+        );
+        cameraCorrectionPercentRef.current = Math.max(
+          cameraCorrectionPercentRef.current,
+          overflow,
+        );
+      }
+      const frameState = getFramePresentation(clockMs, cameraCorrectionPercentRef.current);
       if (worldTrackRef.current) {
         worldTrackRef.current.style.transform = `translate3d(-${frameState.worldTravelPercent}%, 0, 0)`;
         worldTrackRef.current.dataset.worldTravelPercent = frameState.worldTravelPercent.toFixed(3);
+        worldTrackRef.current.dataset.runnerScreenCap = frameState.runnerScreenCap === null
+          ? 'unlocked'
+          : frameState.runnerScreenCap.toFixed(3);
+        worldTrackRef.current.dataset.cameraCorrectionPercent = frameState.cameraCorrectionPercent.toFixed(3);
+        worldTrackRef.current.dataset.finalObstacleUnlocked = String(frameState.finalObstacleResolved);
       }
       frameState.presentations.forEach((presentation, index) => {
         const runner = runnerRefs.current[index];

@@ -65,6 +65,9 @@ export const RACE_MATCHUP_WORLD_END_PERCENT = RACE_FINALE_WORLD_END_PERCENT
 export const RACE_FINALE_WORLD_START_PERCENT = RACE_MATCHUP_WORLD_END_PERCENT;
 export const RACE_RUNNER_SCREEN_MIN_PERCENT = 12;
 export const RACE_RUNNER_VISUAL_START_PERCENT = 14;
+export const RACE_RUNNER_FIRST_CAP_PROGRESS = 0.5;
+export const RACE_RUNNER_FIRST_SCREEN_CAP_PERCENT = 40;
+export const RACE_RUNNER_SECOND_SCREEN_CAP_PERCENT = 55;
 export const RACE_RUNNER_RENDER_WIDTH_PX = 216;
 export const RACE_RUNNER_LEADING_EDGE_OFFSET_PERCENT =
   (RACE_RUNNER_RENDER_WIDTH_PX / RACE_BACKGROUND_CANVAS_WIDTH_PX) * 50;
@@ -88,6 +91,25 @@ export const RACE_RUNNER_NORMALIZED_BASELINE_MAX_PX = 220;
 export const RACE_FINISH_VISIBLE_FRACTION = 0.98;
 export const RACE_FINISH_THRESHOLD_POSITION = RACE_BACKGROUND_FINISH_WORLD_POSITION;
 export const RACE_OBSTACLE_ENTRY_SCREEN_ANCHOR_PERCENT = 100;
+
+export function getRaceRunnerScreenCap(
+  raceProgress: number,
+  finalObstacleResolved: boolean,
+) {
+  if (finalObstacleResolved) return null;
+  return raceProgress < RACE_RUNNER_FIRST_CAP_PROGRESS
+    ? RACE_RUNNER_FIRST_SCREEN_CAP_PERCENT
+    : RACE_RUNNER_SECOND_SCREEN_CAP_PERCENT;
+}
+
+export function getRaceRunnerCameraOverflow(
+  leaderScreenAnchor: number,
+  screenCap: number | null,
+) {
+  return screenCap === null
+    ? 0
+    : Math.max(0, leaderScreenAnchor - screenCap);
+}
 
 export const RACE_STAGE_OBSTACLE_INDICES: Record<Exclude<RaceTimelineStage, 'intro' | 'winner'>, number[]> = {
   warmup: [0],

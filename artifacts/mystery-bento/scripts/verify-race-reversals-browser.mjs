@@ -168,6 +168,7 @@ try {
   assert(metadata.leadChanges.some(({ kind }) => kind === 'reversal'), 'expected a resolved lead reversal');
 
   const liveSamples = [];
+  const cameraSamples = [];
   const jumpReactionPersonas = new Set();
   const jumpAnimationPersonas = new Set();
   let sampling = true;
@@ -183,9 +184,15 @@ try {
       return {
         order: lanes.slice().sort((a, b) => b.anchor - a.anchor).map((lane) => lane.id),
         lanes,
+        runnerScreenCap: document.querySelector('.race-world-track')?.dataset.runnerScreenCap ?? '',
+        cameraCorrectionPercent: Number(document.querySelector('.race-world-track')?.dataset.cameraCorrectionPercent ?? NaN),
+        finalObstacleUnlocked: document.querySelector('.race-world-track')?.dataset.finalObstacleUnlocked === 'true',
       };
     })()`);
-    if (sample?.lanes?.every((lane) => Number.isFinite(lane.anchor))) liveSamples.push(sample);
+    if (sample?.lanes?.every((lane) => Number.isFinite(lane.anchor))) {
+      liveSamples.push(sample);
+      if (Number.isFinite(sample.cameraCorrectionPercent)) cameraSamples.push(sample);
+    }
     sample?.lanes?.forEach((lane) => {
       if (lane.reaction === 'jump') {
         jumpReactionPersonas.add(lane.id);
@@ -261,6 +268,19 @@ try {
   const liveLeaderTransitions = liveLeaders.filter((leader, index) => index === 0 || leader !== liveLeaders[index - 1]);
   assert(liveLeadChanges >= 2, `expected repeated live lead changes, got ${liveOrders.join(' | ')}`);
   assert(liveReversal, `expected a live leader reversal, got ${liveLeaders.join(' -> ')}`);
+  const observedCaps = new Set(cameraSamples.map((sample) => sample.runnerScreenCap));
+  assert(observedCaps.has('40.000'), `expected the first race cap to render, got ${[...observedCaps].join(', ')}`);
+  assert(observedCaps.has('55.000'), `expected the second race cap to render, got ${[...observedCaps].join(', ')}`);
+  assert(observedCaps.has('unlocked'), `expected the final obstacle to unlock the runners, got ${[...observedCaps].join(', ')}`);
+  const cappedCorrections = cameraSamples
+    .filter((sample) => sample.runnerScreenCap !== 'unlocked')
+    .map((sample) => sample.cameraCorrectionPercent);
+  assert(cappedCorrections.every((value) => value >= -0.001), 'camera correction should never move the scenery backward');
+  assert(
+    cappedCorrections.slice(1).every((value, index) => value >= cappedCorrections[index] - 0.05),
+    'camera correction should grow monotonically while a runner presses against a cap',
+  );
+  assert(cappedCorrections.some((value) => value > 0.5), 'the live race never needed a scenery correction beyond the runner cap');
   const missingJumpAnimations = [...jumpReactionPersonas].filter((id) => !jumpAnimationPersonas.has(id));
   assert(missingJumpAnimations.length === 0, `jump reactions never rendered the jump sheet for ${missingJumpAnimations.join(', ')}`);
   const finish = await evaluate(cdp, `(() => {
@@ -293,6 +313,9 @@ try {
          && markerRect.left <= viewport.right + 2,
        ),
        finishMarkerLeft: markerRect?.left ?? null,
+        cameraCorrectionPercent: Number(worldTrack?.dataset.cameraCorrectionPercent ?? NaN),
+        runnerScreenCap: worldTrack?.dataset.runnerScreenCap ?? '',
+        finalObstacleUnlocked: worldTrack?.dataset.finalObstacleUnlocked === 'true',
        runnerLeadingEdges: [...document.querySelectorAll('.race-runner')].map((runner) => {
          const rect = runner.getBoundingClientRect();
          return { id: runner.closest('.race-runner-lane')?.dataset.personaId, right: rect.right };
