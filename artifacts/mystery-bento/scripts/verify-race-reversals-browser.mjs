@@ -321,6 +321,22 @@ try {
   assert(observed.some(({ resolvedPairVisible }) => resolvedPairVisible), 'no resolved checkpoint pair appeared ahead in the rendered anchors');
 
   await waitFor(
+    () => evaluate(cdp, 'Boolean(document.querySelector(".contest-race[data-finish-visible=\\"true\\"]"))'),
+    20000,
+    'finish line to become visible',
+    150,
+  );
+  await new Promise((resolve) => setTimeout(resolve, 80));
+  const finishBeforeCrossing = await evaluate(cdp, `(() => ({
+    finishCrossed: document.querySelector('.contest-race')?.dataset.finishCrossed === 'true',
+    runners: [...document.querySelectorAll('.race-runner')].map((runner) => ({
+      id: runner.closest('.race-runner-lane')?.dataset.personaId,
+      right: runner.getBoundingClientRect().right,
+      anchor: Number(runner.dataset.runnerAnchor ?? NaN),
+    })),
+  }))()`);
+  assert(!finishBeforeCrossing.finishCrossed, 'finish crossing resolved before the finish-stability sample');
+  await waitFor(
     () => evaluate(cdp, 'Boolean(document.querySelector(".contest-race[data-finish-crossed=\\"true\\"]"))'),
     20000,
     'finish crossing to resolve',
@@ -424,7 +440,14 @@ try {
      `winner sprite crossed beyond the finish marker: ${JSON.stringify({ winnerRunner, finishMarkerLeft: finish.finishMarkerLeft })}`,
    );
   assert(finish.winnerId === metadata.winnerId, 'finish winner did not match the resolved race winner');
-   assert(finish.visibleCrossers[0] === metadata.winnerId, `first rendered finish crossing did not match the resolved winner: ${JSON.stringify(finish)}`);
+    assert(finish.visibleCrossers.includes(metadata.winnerId), `resolved winner did not appear on the finish line: ${JSON.stringify(finish)}`);
+    for (const before of finishBeforeCrossing.runners) {
+      const after = finish.runnerLeadingEdges.find((runner) => runner.id === before.id);
+      assert(
+        after && Math.abs(after.right - before.right) <= 0.5,
+        `runner ${before.id} moved across the finish state: ${JSON.stringify({ before, after })}`,
+      );
+    }
    assert(finish.lanes.find((lane) => lane.id === metadata.winnerId)?.resolvedCrossed, 'resolved winner lane did not report its crossing');
   assert(finish.revealText.includes(finish.winnerId === 'pip' ? 'Pip Porridge' : finish.winnerId === 'sencha' ? 'Lady Sencha' : 'Nori Nib'), 'winner reveal did not name the resolved winner');
   assert(browserErrors.length === 0, `browser reported ${browserErrors.length} exception(s): ${browserErrors.join('; ')}`);
@@ -449,6 +472,7 @@ try {
      },
     observed,
     finish,
+       finishBeforeCrossing,
   }, null, 2));
 } finally {
   socket?.close();

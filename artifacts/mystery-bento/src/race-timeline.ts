@@ -116,6 +116,21 @@ export function getRaceRunnerCameraOverflow(
     : Math.max(0, leaderScreenAnchor - screenCap);
 }
 
+export function getRaceRunnerCameraCorrection(
+  requestedCorrectionPercent: number,
+  worldTravelPercent: number,
+  finalWorldTravelPercent = RACE_FINALE_WORLD_END_PERCENT,
+) {
+  const remainingWorldTravelPercent = Math.max(
+    0,
+    finalWorldTravelPercent - Math.max(0, worldTravelPercent),
+  );
+  return Math.min(
+    Math.max(0, requestedCorrectionPercent),
+    remainingWorldTravelPercent * RACE_WORLD_TRACK_WIDTH_MULTIPLIER,
+  );
+}
+
 export const RACE_STAGE_OBSTACLE_INDICES: Record<Exclude<RaceTimelineStage, 'intro' | 'winner'>, number[]> = {
   warmup: [0],
   matchup: [1],

@@ -13,6 +13,7 @@ import {
   getRaceStageAnnouncerCue,
   getRaceLaneProgressAtTime,
   getRaceRunnerCameraOverflow,
+  getRaceRunnerCameraCorrection,
   getRaceRunnerScreenCap,
   getRaceRunnerScreenAnchors,
   getRaceRunnerObstacleContactOffset,
@@ -133,6 +134,20 @@ assert.equal(
   getRaceRunnerCameraOverflow(71, 55),
   16,
   'scenery correction should equal the leader movement beyond the active cap',
+);
+assert.equal(
+  getRaceRunnerCameraCorrection(16, RACE_FINALE_WORLD_END_PERCENT),
+  0,
+  'camera correction must not keep shifting runners after the scenery reaches the finish endpoint',
+);
+assert.ok(
+  Math.abs(
+    getRaceRunnerCameraCorrection(
+      16,
+      RACE_FINALE_WORLD_END_PERCENT - 4 / RACE_WORLD_TRACK_WIDTH_MULTIPLIER,
+    ) - 4,
+  ) < 1e-9,
+  'camera correction must be limited by the scenery travel remaining before the finish',
 );
 
 const lineups: RaceTimelineLane[][] = [

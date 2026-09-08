@@ -74,6 +74,19 @@ early.
 **How to apply:** Expose the authored endpoint in race diagnostics and assert
 that the finish marker is inside the viewport when the shared crossing fires.
 
+Camera correction must be bounded by the panorama travel remaining before its
+authored endpoint, and the finish-crossed frame must reuse the terminal
+trajectory rather than a shared early-crossing snapshot.
+
+**Why:** An accumulated correction can saturate the scenery at the finish while
+continuing to subtract from runner anchors, making racers appear to slow or
+stop short; switching to a different finish position can then visibly move
+them after crossing.
+
+**How to apply:** Clamp effective correction by remaining world travel and
+derive the post-finish frame from the same terminal trajectory used at the end
+of the live race.
+
 Finish marker coordinates are authored in panorama/world pixels but runner
 transforms are viewport pixels; convert the marker through the completed track
 translation before deriving the runner leading-edge anchor.

@@ -87,6 +87,7 @@ import {
   getRaceStartHandoffTiming,
   getRaceStageAnnouncerCue,
   getRaceRunnerScreenAnchors,
+   getRaceRunnerCameraCorrection,
    getRaceRunnerFinishScreenAnchorAtRaceTime,
    getRaceRunnerCameraOverflow,
    getRaceRunnerScreenCap,
@@ -1737,7 +1738,9 @@ const RaceLiveRenderer = memo(function RaceLiveRenderer({
   const getFramePresentation = (clockMs: number, cameraCorrectionPercent = cameraCorrectionPercentRef.current) => {
     const getLaneProgress = (lane: RaceLaneSimulation | undefined) => {
       if (!lane) return 0;
-      if (step === 'winner' || finishCrossed) return lane.positions.winner;
+      if (step === 'winner' || finishCrossed) {
+        return getRunnerTrajectoryPositionAtTime(lane.trajectory, RACE_RACE_DURATION_MS);
+      }
       if (step === 'intro') return lane.positions.intro;
       return getRunnerTrajectoryPositionAtTime(
         lane.trajectory,
@@ -1765,12 +1768,16 @@ const RaceLiveRenderer = memo(function RaceLiveRenderer({
       || finishCrossed
       || (finalObstacleUnlockMs !== null && clockMs >= finalObstacleUnlockMs);
     const runnerScreenCap = getRaceRunnerScreenCap(raceProgress, finalObstacleResolved);
+    const effectiveCameraCorrectionPercent = getRaceRunnerCameraCorrection(
+      cameraCorrectionPercent,
+      baseWorldTravelPercent,
+    );
     const worldTravelPercent = Math.min(
       RACE_FINALE_WORLD_END_PERCENT,
-      baseWorldTravelPercent + cameraCorrectionPercent / RACE_WORLD_TRACK_WIDTH_MULTIPLIER,
+      baseWorldTravelPercent + effectiveCameraCorrectionPercent / RACE_WORLD_TRACK_WIDTH_MULTIPLIER,
     );
     const currentRunnerAnchors = rawRunnerAnchors.map((anchor) => (
-      Math.max(RACE_RUNNER_SCREEN_MIN_PERCENT, anchor - cameraCorrectionPercent)
+      Math.max(RACE_RUNNER_SCREEN_MIN_PERCENT, anchor - effectiveCameraCorrectionPercent)
     ));
     const getCurrentLaneObstacleIndex = (laneIndex: number) => {
       if (step === 'intro' || step === 'winner') return -1;
@@ -1824,7 +1831,7 @@ const RaceLiveRenderer = memo(function RaceLiveRenderer({
       rawRunnerAnchors,
       runnerScreenCap,
       finalObstacleResolved,
-      cameraCorrectionPercent,
+      cameraCorrectionPercent: effectiveCameraCorrectionPercent,
     };
   };
 
