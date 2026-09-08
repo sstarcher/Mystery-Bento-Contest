@@ -42,8 +42,19 @@ import saffyGarnishPlate from './assets/derived/curios/saffy-garnish-plate.png';
 import saffyPlatingTweezers from './assets/derived/curios/saffy-plating-tweezers.png';
 import saffyPresentationFan from './assets/derived/curios/saffy-presentation-fan.png';
 import { getMovementSpriteSheet, type MovementAction } from './movement-sprite-config';
+import { movementActions } from './movement-sprite-actions';
 import { MovementSprite } from './movement-sprite';
 import { getMatchedEncounterResultAudio } from './announcer-result-audio';
+import {
+  getRaceAudioResource,
+  scheduleRaceAudioPreload,
+  scheduleRaceImagePreload,
+} from './race-resource-cache';
+import {
+  getCurrentRaceDeviceSignals,
+  getRaceRenderingProfile,
+  isRaceDebugEnabled,
+} from './race-rendering-profile';
 import {
   RACE_BACKGROUND_FINISH_MARKER_ANGLE_DEG,
   RACE_BACKGROUND_FINISH_SCREEN_ANCHOR_PERCENT,
@@ -235,6 +246,15 @@ type ContestOutcome = { winner: Persona; memorableEvent: string; contestName: st
 type RacePositionStep = 'intro' | 'warmup' | 'matchup' | 'finale' | 'winner';
 type ContestStep = 'intro' | 'race' | 'winner';
 
+function getRaceImageSources(contestants: Persona[], race: RaceSimulation) {
+  return [
+    ...contestants.flatMap((persona) => movementActions
+      .map((action) => getMovementSpriteSheet(persona.id, action)?.src)
+      .filter((src): src is string => Boolean(src))),
+    ...RACE_BACKGROUND_SEQUENCE.map((scene) => `${RACE_BACKGROUND_BASE}/${scene.file}`),
+    ...race.obstacles.map((obstacle) => obstacle.imageSrc),
+  ];
+}
 const queryClient = new QueryClient();
 const METER_KEY = 'mystery-bento-meter';
 const LEDGER_KEY = 'mystery-bento-ledger';
@@ -1671,10 +1691,30 @@ const RaceLiveRenderer = memo(function RaceLiveRenderer({
   const cameraCorrectionPercentRef = useRef(0);
   const onFrameStateRef = useRef(onFrameState);
   onFrameStateRef.current = onFrameState;
-  const raceLanes = useMemo(
-    () => contestants.map((_, index) => race.lanes.find((lane) => lane.personaId === contestants[index]?.id) ?? race.lanes[index]),
-    [contestants, race],
+  const renderingProfile = useMemo(
+    () => getRaceRenderingProfile(getCurrentRaceDeviceSignals()),
+    [],
   );
+  const raceDebugEnabled = useMemo(() => isRaceDebugEnabled(window.location.search), []);
+  const racePlan = useMemo(() => {
+    const lanes = contestants.map((_, index) => (
+      race.lanes.find((lane) => lane.personaId === contestants[index]?.id) ?? race.lanes[index]
+    ));
+    const obstacleIndexes = new Map(race.obstacles.map((obstacle, index) => [obstacle.id, index]));
+    return {
+      lanes,
+      runnerProfiles: lanes.map((lane) => ({
+        startPosition: lane?.positions.intro ?? 0,
+        baseSpeedMultiplier: lane?.baseSpeedMultiplier ?? 1,
+        events: lane?.speedEvents ?? [],
+      })),
+      reactionWindows: lanes.map((lane) => (lane?.reactionWindows ?? []).map((window) => ({
+        ...window,
+        obstacleIndex: obstacleIndexes.get(window.obstacleId) ?? -1,
+      }))),
+    };
+  }, [contestants, race]);
+  const raceLanes = racePlan.lanes;
   const finalObstacleUnlockMs = useMemo(() => {
     const finalObstacleId = race.obstacles[race.obstacles.length - 1]?.id;
     if (!finalObstacleId) return null;
@@ -1732,25 +1772,20 @@ const RaceLiveRenderer = memo(function RaceLiveRenderer({
     const currentRunnerAnchors = rawRunnerAnchors.map((anchor) => (
       Math.max(RACE_RUNNER_SCREEN_MIN_PERCENT, anchor - cameraCorrectionPercent)
     ));
-    const getCurrentLaneObstacleIndex = (lane: RaceLaneSimulation | undefined, laneIndex: number) => {
-      if (!lane || step === 'intro' || step === 'winner') return -1;
-      const activeWindow = lane.reactionWindows.find((window) => (
-        clockMs >= window.triggerMs && clockMs < window.endMs
-      ));
-      return activeWindow
-        ? race.obstacles.findIndex((obstacle) => obstacle.id === activeWindow.obstacleId)
-        : -1;
+    const getCurrentLaneObstacleIndex = (laneIndex: number) => {
+      if (step === 'intro' || step === 'winner') return -1;
+      const windows = racePlan.reactionWindows[laneIndex] ?? [];
+      for (const window of windows) {
+        if (clockMs >= window.triggerMs && clockMs < window.endMs) return window.obstacleIndex;
+      }
+      return -1;
     };
 
     const presentations = raceLanes.map((lane, index): RaceRunnerPresentation => {
-      const laneCurrentObstacleIndex = getCurrentLaneObstacleIndex(lane, index);
+      const laneCurrentObstacleIndex = getCurrentLaneObstacleIndex(index);
       const laneCurrentObstacle = laneCurrentObstacleIndex >= 0 ? race.obstacles[laneCurrentObstacleIndex] : null;
       const encounter = laneCurrentObstacle ? lane?.encounters[laneCurrentObstacle.id] : undefined;
-      const runnerProfile = {
-        startPosition: lane?.positions.intro ?? 0,
-        baseSpeedMultiplier: lane?.baseSpeedMultiplier ?? 1,
-        events: lane?.speedEvents ?? [],
-      };
+      const runnerProfile = racePlan.runnerProfiles[index];
       const runnerSpeedMultiplier = getRunnerEffectiveSpeed(runnerProfile, clockMs);
       const runnerReaction = encounter?.reaction ?? 'ready';
       const isWinner = (winner?.id ?? race.winnerId) === contestants[index]?.id;
@@ -1801,7 +1836,7 @@ const RaceLiveRenderer = memo(function RaceLiveRenderer({
     cameraCorrectionPercentRef.current = 0;
     previousObstacleIndexes.current = null;
     setPresentations(getFramePresentation(raceStartedAt ? Math.max(0, Date.now() - raceStartedAt) : 0).presentations);
-  }, [finishCrossed, prefersReducedMotion, raceStartedAt, step, winner]);
+  }, [finishCrossed, prefersReducedMotion, racePlan, raceStartedAt, step, winner]);
 
   useEffect(() => {
     const activeMotion = Boolean(
@@ -1812,8 +1847,17 @@ const RaceLiveRenderer = memo(function RaceLiveRenderer({
       && !finishCrossed,
     );
     let frame = 0;
+    let lastAppliedAt = Number.NEGATIVE_INFINITY;
     const applyFrame = () => {
       const clockMs = raceStartedAt ? Math.max(0, Date.now() - raceStartedAt) : 0;
+      if (
+        activeMotion
+        && clockMs - lastAppliedAt < renderingProfile.transformSampleIntervalMs
+      ) {
+        frame = window.requestAnimationFrame(applyFrame);
+        return;
+      }
+      lastAppliedAt = clockMs;
       if (!activeMotion) cameraCorrectionPercentRef.current = 0;
       const preCorrectionState = getFramePresentation(clockMs);
       if (activeMotion && preCorrectionState.runnerScreenCap !== null) {
@@ -1830,19 +1874,23 @@ const RaceLiveRenderer = memo(function RaceLiveRenderer({
       const frameState = getFramePresentation(clockMs, cameraCorrectionPercentRef.current);
       if (worldTrackRef.current) {
         worldTrackRef.current.style.transform = `translate3d(-${frameState.worldTravelPercent}%, 0, 0)`;
-        worldTrackRef.current.dataset.worldTravelPercent = frameState.worldTravelPercent.toFixed(3);
-        worldTrackRef.current.dataset.runnerScreenCap = frameState.runnerScreenCap === null
-          ? 'unlocked'
-          : frameState.runnerScreenCap.toFixed(3);
-        worldTrackRef.current.dataset.cameraCorrectionPercent = frameState.cameraCorrectionPercent.toFixed(3);
-        worldTrackRef.current.dataset.finalObstacleUnlocked = String(frameState.finalObstacleResolved);
+        if (raceDebugEnabled) {
+          worldTrackRef.current.dataset.worldTravelPercent = frameState.worldTravelPercent.toFixed(3);
+          worldTrackRef.current.dataset.runnerScreenCap = frameState.runnerScreenCap === null
+            ? 'unlocked'
+            : frameState.runnerScreenCap.toFixed(3);
+          worldTrackRef.current.dataset.cameraCorrectionPercent = frameState.cameraCorrectionPercent.toFixed(3);
+          worldTrackRef.current.dataset.finalObstacleUnlocked = String(frameState.finalObstacleResolved);
+        }
       }
       frameState.presentations.forEach((presentation, index) => {
         const runner = runnerRefs.current[index];
         if (!runner) return;
         runner.style.transform = `translate3d(${presentation.anchor / 100 * RACE_CANVAS_WIDTH_PX - RACE_RUNNER_RENDER_WIDTH_PX / 2}px, 0, 0)`;
-        runner.dataset.runnerAnchor = presentation.anchor.toFixed(3);
-         runner.dataset.runnerFinishCrossed = String(presentation.finishCrossed);
+        if (raceDebugEnabled) {
+          runner.dataset.runnerAnchor = presentation.anchor.toFixed(3);
+          runner.dataset.runnerFinishCrossed = String(presentation.finishCrossed);
+        }
       });
       const obstacleIndexes = frameState.presentations.map(({ obstacleIndex }) => obstacleIndex);
       const priorObstacleIndexes = previousObstacleIndexes.current;
@@ -1855,10 +1903,13 @@ const RaceLiveRenderer = memo(function RaceLiveRenderer({
     };
     applyFrame();
     return () => window.cancelAnimationFrame(frame);
-  }, [finishCrossed, prefersReducedMotion, raceStartedAt, step, winner]);
+  }, [finishCrossed, prefersReducedMotion, raceDebugEnabled, racePlan, raceStartedAt, renderingProfile, step, winner]);
 
   return (
-    <div className="race-course-viewport">
+    <div
+      className={`race-course-viewport${renderingProfile.constrained ? ' race-rendering-constrained' : ''}`}
+      data-rendering-profile={raceDebugEnabled ? (renderingProfile.constrained ? 'constrained' : 'standard') : undefined}
+    >
       <div
         ref={worldTrackRef}
         className="race-world-track"
@@ -1972,6 +2023,10 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
   });
   const [audioNeedsGesture, setAudioNeedsGesture] = useState(false);
   const [spokenBeatLabel, setSpokenBeatLabel] = useState('Waiting for the starting lantern');
+  const renderingProfile = useMemo(
+    () => getRaceRenderingProfile(getCurrentRaceDeviceSignals()),
+    [],
+  );
   const announcerAudio = useRef<HTMLAudioElement | null>(null);
   const pendingAudio = useRef<{
     audio: HTMLAudioElement;
@@ -1985,19 +2040,14 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
   const spokenBeatIds = useRef(new Set<string>());
   const announcerSessionStartedAt = useRef<number | null>(null);
   const announcerSessionResetKey = useRef<number | null>(null);
-  useEffect(() => {
-    const movementActions: MovementAction[] = ['idle', 'walk', 'run', 'jump', 'fall', 'victory'];
-    contestants.forEach((persona) => {
-      movementActions.forEach((action) => {
-        const spriteSheet = getMovementSpriteSheet(persona.id, action);
-        if (!spriteSheet) return;
-        const image = new Image();
-        image.decoding = 'async';
-        image.src = spriteSheet.src;
-      });
-    });
-  }, [contestants]);
   const announcerSequence = useMemo(() => buildAnnouncerSequence(contestants, race, prefersReducedMotion), [contestants, race, prefersReducedMotion]);
+  useEffect(() => {
+    const imagePreload = scheduleRaceImagePreload(getRaceImageSources(contestants, race));
+    void scheduleRaceAudioPreload(
+      announcerSequence.flatMap((beat) => beat.clips.map((clip) => clip.src)),
+    );
+    return () => imagePreload.cancel();
+  }, [announcerSequence, contestants, race]);
   const announcerBeatCallback = useRef(onAnnouncerBeat);
   announcerBeatCallback.current = onAnnouncerBeat;
   const raceStartCallback = useRef(onRaceStart);
@@ -2274,9 +2324,6 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
     const beatDeadlines = new Map(beats.map(({ beat, deadlineAt }) => [beat.id, deadlineAt]));
     let cancelled = false;
     let activeBeat: { beat: AnnouncerBeat; clipIndex: number } | null = null;
-    const metadataAudio = new Map<string, HTMLAudioElement>();
-    const metadataDurations = new Map<string, number>();
-    const failedSources = new Set<string>();
     const announcedNameClips = new Set<string>();
     let raceStartGraphicLeadOutScheduled = false;
 
@@ -2309,23 +2356,6 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
       pendingAudio.current = null;
     };
 
-    const uniqueClips = Array.from(new Map(
-      beats.flatMap(({ beat }) => beat.clips).map((clip) => [clip.src, clip]),
-    ).values());
-    uniqueClips.forEach((clip) => {
-      const audio = new Audio();
-      audio.preload = 'metadata';
-      audio.addEventListener('loadedmetadata', () => {
-        if (Number.isFinite(audio.duration) && audio.duration > 0) {
-          metadataDurations.set(clip.src, audio.duration * 1000);
-        }
-      }, { once: true });
-      audio.addEventListener('error', () => failedSources.add(clip.src), { once: true });
-      audio.src = clip.src;
-      audio.load();
-      metadataAudio.set(clip.src, audio);
-    });
-
     const schedule = (callback: () => void, delay: number) => {
       const timer = window.setTimeout(callback, Math.max(0, delay));
       timers.push(timer);
@@ -2352,7 +2382,7 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
     }
 
     function clipDurationMs(clip: AnnouncerClip) {
-      return metadataDurations.get(clip.src) ?? clip.durationMs;
+      return getRaceAudioResource(clip.src)?.durationMs ?? clip.durationMs;
     }
 
     function fitsBeforeDeadline(beat: AnnouncerBeat, clip: AnnouncerClip, now: number) {
@@ -2381,7 +2411,7 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
         return;
       }
       announceRaceStartClip(clip);
-      if (failedSources.has(clip.src) || !fitsBeforeDeadline(beat, clip, Date.now())) {
+      if (getRaceAudioResource(clip.src)?.status === 'failed' || !fitsBeforeDeadline(beat, clip, Date.now())) {
         if (beat.id === 'race-start') {
           schedule(
             () => announcementCompleteCallback.current(),
@@ -2520,10 +2550,6 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
       cancelled = true;
       timers.forEach((timer) => window.clearTimeout(timer));
       stopAudio();
-      metadataAudio.forEach((audio) => {
-        audio.pause();
-        audio.src = '';
-      });
     };
   }, [announcerResetKey, announcerSequence, contestStartedAt, prefersReducedMotion, raceStartedAt, voiceEnabled]);
 
@@ -2539,7 +2565,7 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
 
   return (
     <div className="contest-backdrop contest-race-backdrop fixed inset-0 z-30 flex items-stretch justify-center" role="dialog" aria-modal="true" aria-labelledby="contest-title">
-      <div className="contest-stage w-full p-3 sm:p-5">
+      <div className={`contest-stage w-full p-3 sm:p-5${renderingProfile.useBackdropEffects ? '' : ' contest-stage-constrained'}`}>
         <div className="contest-header">
           <h2 id="contest-title" className="font-display text-3xl font-bold tracking-tight sm:text-5xl">{contestName}</h2>
           <button type="button" className="flex items-center gap-2 border border-[#806a85] px-3 py-2 text-xs font-bold text-[#f8e7c6] hover:bg-[#f5c968] hover:text-[#30223c]" onClick={onSkip} data-testid="button-skip-contest"><SkipForward className="h-4 w-4" aria-hidden="true" />Skip scene</button>
@@ -2873,6 +2899,10 @@ function Home() {
       rng,
       isRaceReversalCheck ? { startingOffsets: [6, 0, 0] } : undefined,
     );
+    // Begin decoding the selected race only when the contest is actually
+    // launched. Restaurant, shelf, and unselected contestant assets stay out
+    // of this cache.
+    void scheduleRaceImagePreload(getRaceImageSources(selected, outcome.race)).promise;
     contestOutcome.current = outcome;
     completionGuard.current = false;
     contestIntroStartedAt.current = Date.now();

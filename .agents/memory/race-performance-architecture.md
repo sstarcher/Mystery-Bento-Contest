@@ -83,3 +83,15 @@ the runner offscreen and hides the real alignment error.
 
 **How to apply:** Compare final DOM right-edge and marker-left geometry in the
 browser check, allowing no positive overshoot for the winning sprite.
+
+Race resource preparation should be shared by source URL and staged during the
+announcement, while constrained-device sampling may lower transform writes but
+must not alter simulation clocks or authored sprite cadence.
+
+**Why:** Repeated overlay mounts otherwise recreate large image/audio decode
+bursts, and a slower device needs a steadier presentation budget without
+changing the race story or its timing contract.
+
+**How to apply:** Keep image readiness/failure entries reusable across contests,
+use transient audio elements only for playback, and gate per-frame diagnostics
+behind an explicit race debug path.

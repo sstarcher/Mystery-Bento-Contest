@@ -69,3 +69,42 @@ The race timeline assertions also lock the starting-lantern lead-out and the
 zero-extra-delay movement boundary. The managed-Chromium race check observes
 the popup while the call is active, its lead-out while the intro remains
 stationary, and the first moving frame after the race class appears.
+
+## Second-wave tablet profile
+
+Use this repeatable profile for before/after captures. It is intentionally
+separate from the authored race plan: throttling changes the browser budget,
+never the contest seed, timestamps, obstacle outcomes, or finish ordering.
+
+| Setting | Low-end tablet profile | Target tablet |
+| --- | --- | --- |
+| Viewport | 1024 × 768, fixed 1280px canvas cropped | native portrait/landscape viewport |
+| CPU | 4× slowdown | device default |
+| Network | Fast 3G, cache disabled for the first run; cache enabled for repeat | device default |
+| Memory signals | `deviceMemory: 2`, `hardwareConcurrency: 4`, touch enabled | record reported values |
+| Motion/audio | normal motion, then reduced motion; muted and blocked-audio runs | repeat both |
+| Seed | `raceCheck=109` | same deterministic seed where possible |
+
+Record one JSON row per run for announcement, active motion, each obstacle
+reaction, finish crossing, and winner reveal:
+
+- frame count, median/p95 frame interval, and dropped-frame percentage;
+- long-task count and total duration;
+- `Performance` style/layout/paint/composite timing where the browser exposes it;
+- image/audio resource count, transfer size, decode duration, and failed source
+  count;
+- time from a Skip, voice, or finish-control event to its visible DOM state.
+
+The implementation's expected comparison is explicit: normal devices keep a
+16ms transform sample budget, constrained devices use a steady 32ms sample
+budget, both preserve the same simulation timestamps, and only
+`raceDebug=1` or the deterministic `raceCheck=109` run writes per-frame
+diagnostic attributes. The shared resource cache should show one image/audio
+setup per source across repeated contests, with no restaurant, shelf, or
+unselected contestant sources in the race request list.
+
+For a browser capture, use the managed Chromium binary used by
+`verify:race-browser`, enable the Performance panel, and save the trace with
+the profile settings above. Run the normal and reduced-motion paths before
+comparing cached repeat-contest runs; a first-load decode burst is not a fair
+comparison for the shared-cache path.
