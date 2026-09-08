@@ -47,6 +47,16 @@ const rerouteProfile: ContinuousRunnerProfile = {
   ...baseProfile,
   events: [{ obstacleId: 'reroute', result: 'reroute', triggerMs: 4_000 }],
 };
+const finishBoostProfile: ContinuousRunnerProfile = {
+  ...baseProfile,
+  events: [{
+    obstacleId: 'finish',
+    result: 'clear',
+    triggerMs: 16_000,
+    speedMultiplier: 1.08,
+    durationMs: 8_000,
+  }],
+};
 
 assert.equal(getRunnerMovementState(baseProfile, 2_000), 'run');
 assert.equal(getRunnerMovementState(slowProfile, 4_500), 'run');
@@ -80,10 +90,26 @@ assert.equal(
   getRunnerEffectiveSpeed(baseProfile, 7_000),
   'reroute should recover only after its full authored window',
 );
+assert.ok(
+  getRunnerEffectiveSpeed(finishBoostProfile, 16_500)
+    > getRunnerEffectiveSpeed(baseProfile, 16_500),
+  'custom finish boosts should increase effective speed during their authored window',
+);
+assert.equal(
+  getRunnerEffectiveSpeed(finishBoostProfile, 24_000),
+  getRunnerEffectiveSpeed(baseProfile, 24_000),
+  'custom finish boosts should end at their explicit duration',
+);
 
 const normalAtEnd = getContinuousRunnerPosition(baseProfile, raceDurationMs, courseTravelEnd, raceDurationMs);
 const slowAtEnd = getContinuousRunnerPosition(slowProfile, raceDurationMs, courseTravelEnd, raceDurationMs);
 const surgeAtEnd = getContinuousRunnerPosition(surgeProfile, raceDurationMs, courseTravelEnd, raceDurationMs);
+const finishBoostAtEnd = getContinuousRunnerPosition(
+  finishBoostProfile,
+  raceDurationMs,
+  courseTravelEnd + 24,
+  raceDurationMs,
+);
 const normalDuringImpact = getContinuousRunnerPosition(baseProfile, 7_000, courseTravelEnd, raceDurationMs);
 const surgeDuringImpact = getContinuousRunnerPosition(surgeProfile, 7_000, courseTravelEnd, raceDurationMs);
 assert.ok(slowAtEnd < normalAtEnd, 'slow should leave the runner behind the reference pace');
@@ -99,6 +125,10 @@ assert.ok(
 assert.ok(
   surgeAtEnd - normalAtEnd >= 4,
   'surge obstacles should preserve a visible lead by the finish',
+);
+assert.ok(
+  finishBoostAtEnd > normalAtEnd,
+  'custom finish boosts should preserve an authored lead at the shared finish timestamp',
 );
 assert.ok(
   getContinuousRunnerPosition(baseProfile, 0, courseTravelEnd, raceDurationMs) === baseProfile.startPosition,

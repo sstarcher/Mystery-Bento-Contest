@@ -239,6 +239,14 @@ type RaceSimulation = {
   winnerId: string;
   finishOrder: string[];
   finishCrossings: Record<string, number | null>;
+  finishGapBoost: {
+    applied: boolean;
+    initialGapPx: number | null;
+    targetGapPx: number | null;
+    finalGapPx: number | null;
+    speedMultiplier: number | null;
+    finalObstacleTriggerMs: number | null;
+  };
   checkpointLeaders: Record<string, { beforeId: string; afterId: string }>;
   leadChanges: RaceLeadChange[];
 };
@@ -534,7 +542,14 @@ const contestNames = [
 const contestDurations = RACE_STAGE_DURATIONS;
 
 const RACE_RUNNER_TRAVEL_END_POSITION = RACE_FINISH_THRESHOLD_POSITION + 40;
+const RACE_RUNNER_BOOSTED_TRAVEL_END_POSITION = RACE_RUNNER_TRAVEL_END_POSITION + 10;
 const RACE_FINISH_ANNOUNCEMENT_DELAY_MS = 120;
+const RACE_CANVAS_WIDTH_PX = 1280;
+const RACE_FINISH_MIN_GAP_PX = 50;
+const RACE_FINISH_GAP_DEVIATION_MIN_PX = 6;
+const RACE_FINISH_GAP_DEVIATION_MAX_PX = 20;
+const RACE_FINISH_BOOST_MIN_MULTIPLIER = 1.02;
+const RACE_FINISH_BOOST_MAX_MULTIPLIER = 8;
 
 function getRacePlaybackFinishCrossingMs(race: RaceSimulation, prefersReducedMotion: boolean) {
   return prefersReducedMotion
@@ -1175,6 +1190,178 @@ function buildRaceSimulation(
     );
   });
 
+  let finishOrder = resolveRunnerFinishOrder(lanes);
+  const initialWinnerLane = lanes.find((lane) => lane.personaId === finishOrder[0]);
+  const initialRunnerUpLane = lanes.find((lane) => lane.personaId === finishOrder[1]);
+  const initialWinnerCrossingMs = initialWinnerLane?.finishCrossingMs;
+  const getScreenGapAtTime = (
+    winnerTrajectory: RunnerTrajectoryPoint[],
+    runnerUpTrajectory: RunnerTrajectoryPoint[],
+    winnerStartPosition: number,
+    runnerUpStartPosition: number,
+    elapsedMs: number,
+    finishPosition = RACE_FINISH_THRESHOLD_POSITION,
+  ) => {
+    const anchors = getRaceRunnerScreenAnchors(
+      [
+        getRunnerTrajectoryPositionAtTime(winnerTrajectory, elapsedMs),
+        getRunnerTrajectoryPositionAtTime(runnerUpTrajectory, elapsedMs),
+      ],
+      [winnerStartPosition, runnerUpStartPosition],
+      finishPosition,
+      RACE_RUNNER_SCREEN_MAX_PERCENT,
+    );
+    return Math.max(0, ((anchors[0] ?? 0) - (anchors[1] ?? 0)) / 100 * RACE_CANVAS_WIDTH_PX);
+  };
+
+  // A close finish gets a deterministic, slightly varied winner surge on the
+  // final obstacle. The boost is part of the resolved plan, so every playback
+  // path sees the same finish gap without changing the race after it starts.
+  let finishGapBoost: RaceSimulation['finishGapBoost'] = {
+    applied: false,
+    initialGapPx: null,
+    targetGapPx: null,
+    finalGapPx: null,
+    speedMultiplier: null,
+    finalObstacleTriggerMs: null,
+  };
+  if (
+    initialWinnerLane
+    && initialRunnerUpLane
+    && typeof initialWinnerCrossingMs === 'number'
+  ) {
+    const initialGapPx = getScreenGapAtTime(
+      initialWinnerLane.trajectory,
+      initialRunnerUpLane.trajectory,
+      initialWinnerLane.positions.intro,
+      initialRunnerUpLane.positions.intro,
+      RACE_RACE_DURATION_MS,
+      RACE_RUNNER_TRAVEL_END_POSITION,
+    );
+    if (initialGapPx < RACE_FINISH_MIN_GAP_PX) {
+      const targetGapPx = RACE_FINISH_MIN_GAP_PX
+        + Math.round(
+          RACE_FINISH_GAP_DEVIATION_MIN_PX
+          + rng() * (RACE_FINISH_GAP_DEVIATION_MAX_PX - RACE_FINISH_GAP_DEVIATION_MIN_PX),
+        );
+      const finalObstacleId = obstacles[obstacles.length - 1]?.id;
+      const finalEventIndex = finalObstacleId
+        ? initialWinnerLane.speedEvents.findIndex((event) => event.obstacleId === finalObstacleId)
+        : -1;
+      const finalEvent = finalEventIndex >= 0
+        ? initialWinnerLane.speedEvents[finalEventIndex]
+        : undefined;
+      if (finalEvent) {
+        const evaluateBoost = (speedMultiplier: number) => {
+          const speedEvents = initialWinnerLane.speedEvents.map((event, index) => (
+            index === finalEventIndex
+              ? {
+                ...event,
+                speedMultiplier,
+                durationMs: Math.max(1, RACE_RACE_DURATION_MS - event.triggerMs),
+              }
+              : event
+          ));
+          const profile = {
+            startPosition: initialWinnerLane.positions.intro,
+            baseSpeedMultiplier: initialWinnerLane.baseSpeedMultiplier,
+            events: speedEvents,
+          };
+          const finishCrossingMs = getRunnerFinishCrossingTime(
+            profile,
+            RACE_FINISH_THRESHOLD_POSITION,
+            RACE_RUNNER_BOOSTED_TRAVEL_END_POSITION,
+            RACE_RACE_DURATION_MS,
+          );
+          const trajectory = buildRunnerTrajectory(
+            profile,
+            RACE_RUNNER_BOOSTED_TRAVEL_END_POSITION,
+            RACE_RACE_DURATION_MS,
+            100,
+            finishCrossingMs,
+          );
+          const sharedFinishPosition = Math.max(
+            RACE_RUNNER_TRAVEL_END_POSITION,
+            getRunnerTrajectoryPositionAtTime(trajectory, RACE_RACE_DURATION_MS),
+            getRunnerTrajectoryPositionAtTime(initialRunnerUpLane.trajectory, RACE_RACE_DURATION_MS),
+          );
+          const gapAtCrossing = getScreenGapAtTime(
+            trajectory,
+            initialRunnerUpLane.trajectory,
+            initialWinnerLane.positions.intro,
+            initialRunnerUpLane.positions.intro,
+            RACE_RACE_DURATION_MS,
+            sharedFinishPosition,
+          );
+          return { speedEvents, finishCrossingMs, trajectory, gapAtCrossing };
+        };
+
+        const minimumBoostMultiplier = finalEvent.result === 'surge'
+          ? 1.4
+          : RACE_FINISH_BOOST_MIN_MULTIPLIER;
+        let selectedBoost = evaluateBoost(minimumBoostMultiplier);
+        if (selectedBoost.gapAtCrossing < targetGapPx) {
+          let low = minimumBoostMultiplier;
+          let high = low;
+          let highResult = selectedBoost;
+          while (
+            highResult.gapAtCrossing < targetGapPx
+            && high < RACE_FINISH_BOOST_MAX_MULTIPLIER
+          ) {
+            high = Math.min(RACE_FINISH_BOOST_MAX_MULTIPLIER, high * 1.5);
+            highResult = evaluateBoost(high);
+          }
+          if (highResult.gapAtCrossing >= targetGapPx) {
+            selectedBoost = highResult;
+            for (let iteration = 0; iteration < 18; iteration += 1) {
+              const middle = (low + high) / 2;
+              const middleResult = evaluateBoost(middle);
+              if (middleResult.gapAtCrossing >= targetGapPx) {
+                high = middle;
+                selectedBoost = middleResult;
+              } else {
+                low = middle;
+              }
+            }
+          }
+        }
+
+        if (selectedBoost.gapAtCrossing >= RACE_FINISH_MIN_GAP_PX) {
+          initialWinnerLane.speedEvents = selectedBoost.speedEvents;
+          initialWinnerLane.finishCrossingMs = selectedBoost.finishCrossingMs;
+          initialWinnerLane.trajectory = selectedBoost.trajectory;
+          finishGapBoost = {
+            applied: true,
+            initialGapPx,
+            targetGapPx,
+            finalGapPx: selectedBoost.gapAtCrossing,
+            speedMultiplier: selectedBoost.speedEvents[finalEventIndex]?.speedMultiplier ?? null,
+            finalObstacleTriggerMs: finalEvent.triggerMs,
+          };
+          finishOrder = resolveRunnerFinishOrder(lanes);
+        } else {
+          finishGapBoost = {
+            applied: false,
+            initialGapPx,
+            targetGapPx,
+            finalGapPx: selectedBoost.gapAtCrossing,
+            speedMultiplier: null,
+            finalObstacleTriggerMs: finalEvent.triggerMs,
+          };
+        }
+      }
+    } else {
+      finishGapBoost = {
+        applied: false,
+        initialGapPx,
+        targetGapPx: null,
+        finalGapPx: initialGapPx,
+        speedMultiplier: null,
+        finalObstacleTriggerMs: null,
+      };
+    }
+  }
+
   // The lane crossings determine the winner order, but the shared visible
   // finish cannot fire until the panorama has completed its final background.
   const firstFinishCrossingMs = Math.min(
@@ -1195,10 +1382,17 @@ function buildRaceSimulation(
       RACE_RACE_DURATION_MS,
     ));
   });
+  if (finishGapBoost.applied) {
+    lanes.forEach((lane) => {
+      lane.positions.winner = getRunnerTrajectoryPositionAtTime(
+        lane.trajectory,
+        RACE_RACE_DURATION_MS,
+      );
+    });
+  }
 
   // Near-simultaneous crossings use the roster order as an explicit,
   // serializable tie-break instead of relying on engine sort stability.
-  const finishOrder = resolveRunnerFinishOrder(lanes);
   const winnerLane = lanes.find((lane) => lane.personaId === finishOrder[0]) ?? lanes[0];
   const winnerId = winnerLane?.personaId ?? contestants[0]?.id ?? spriteSheetContestants[0]?.id;
   if (!winnerId) throw new Error('Cannot build a race without a sprite-sheet contestant.');
@@ -1209,6 +1403,7 @@ function buildRaceSimulation(
     winnerId,
     finishOrder,
     finishCrossings: Object.fromEntries(lanes.map((lane) => [lane.personaId, lane.finishCrossingMs])),
+    finishGapBoost,
     checkpointLeaders,
     leadChanges,
   };
@@ -1675,7 +1870,6 @@ type RaceLiveRendererProps = {
   onFrameState: (obstacleIndexes: number[]) => void;
 };
 
-const RACE_CANVAS_WIDTH_PX = 1280;
 const RaceLiveRenderer = memo(function RaceLiveRenderer({
   contestants,
   winner,
@@ -1736,10 +1930,14 @@ const RaceLiveRenderer = memo(function RaceLiveRenderer({
   }), [introRunnerPositions, raceLanes]);
 
   const getFramePresentation = (clockMs: number, cameraCorrectionPercent = cameraCorrectionPercentRef.current) => {
+    const finishSnapshotStartMs = Math.max(
+      0,
+      race.finishCrossingMs - FINISH_CROSSING_SETTLE_MS,
+    );
     const getLaneProgress = (lane: RaceLaneSimulation | undefined) => {
       if (!lane) return 0;
-      if (step === 'winner' || finishCrossed) {
-        return getRunnerTrajectoryPositionAtTime(lane.trajectory, RACE_RACE_DURATION_MS);
+      if (step === 'winner' || finishCrossed || clockMs >= finishSnapshotStartMs) {
+        return lane.positions.winner;
       }
       if (step === 'intro') return lane.positions.intro;
       return getRunnerTrajectoryPositionAtTime(
@@ -1756,10 +1954,15 @@ const RaceLiveRenderer = memo(function RaceLiveRenderer({
       clockMs,
       prefersReducedMotion,
     );
+    const finishSnapshotPosition = race.finishGapBoost.applied
+      ? Math.max(
+        ...race.lanes.map((lane) => lane.positions.winner),
+      )
+      : RACE_FINISH_THRESHOLD_POSITION;
     const rawRunnerAnchors = getRaceRunnerScreenAnchors(
       laneProgresses,
       introRunnerPositions,
-      RACE_FINISH_THRESHOLD_POSITION,
+      finishSnapshotPosition,
       runnerFinishScreenAnchor,
     );
     const raceProgress = Math.max(0, Math.min(1, clockMs / RACE_RACE_DURATION_MS));
@@ -2612,6 +2815,7 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
            data-race-obstacle-order={JSON.stringify(race.obstacles.map((obstacle) => obstacle.id))}
            data-race-finish-order={JSON.stringify(race.finishOrder)}
            data-race-finish-crossings={JSON.stringify(race.finishCrossings)}
+            data-race-finish-gap-boost={JSON.stringify(race.finishGapBoost)}
             data-race-duration-ms={RACE_RACE_DURATION_MS}
             data-race-background-end-percent={RACE_FINALE_WORLD_END_PERCENT}
             data-race-playback-finish-crossing-ms={race.finishCrossingMs}
@@ -2628,6 +2832,7 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
             data-race-trace={JSON.stringify({
               finishOrder: race.finishOrder,
               finishCrossings: race.finishCrossings,
+               finishGapBoost: race.finishGapBoost,
               obstacles: race.obstacles.map(({ id, kind, position }) => ({ id, kind, position })),
               lanes: race.lanes.map((lane) => ({
                 personaId: lane.personaId,
@@ -2894,17 +3099,25 @@ function Home() {
 
   const launchContest = () => {
     const isRaceReversalCheck = raceCheckMode === '109';
-    const seed = isRaceReversalCheck ? 1 : Date.now() ^ Math.floor(Math.random() * 0xffffffff);
+    const isCloseFinishCheck = raceCheckMode === 'close-finish';
+    const seed = isRaceReversalCheck || isCloseFinishCheck
+      ? 1
+      : Date.now() ^ Math.floor(Math.random() * 0xffffffff);
     const rng = createRng(seed);
-    const selected = isRaceReversalCheck
+    const selected = isRaceReversalCheck || isCloseFinishCheck
       ? ['pip', 'sencha', 'nori']
         .map((id) => spriteSheetContestants.find((persona) => persona.id === id))
         .filter((persona): persona is Persona => Boolean(persona))
       : selectContestants(spriteSheetContestants, lastWinner?.id, rng, 3);
+    const raceResolutionOptions = isRaceReversalCheck
+      ? { startingOffsets: [6, 0, 0] }
+      : isCloseFinishCheck
+        ? { startingOffsets: [0, 4, 0] }
+        : undefined;
     const outcome = resolveContest(
       selected,
       rng,
-      isRaceReversalCheck ? { startingOffsets: [6, 0, 0] } : undefined,
+      raceResolutionOptions,
     );
     // Begin decoding the selected race only when the contest is actually
     // launched. Restaurant, shelf, and unselected contestant assets stay out

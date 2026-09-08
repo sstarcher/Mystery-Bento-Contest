@@ -217,6 +217,7 @@ try {
       leadChanges: JSON.parse(race?.dataset.raceLeadChanges ?? '[]'),
        finishOrder: JSON.parse(race?.dataset.raceFinishOrder ?? '[]'),
        finishCrossings: JSON.parse(race?.dataset.raceFinishCrossings ?? '{}'),
+       finishGapBoost: JSON.parse(race?.dataset.raceFinishGapBoost ?? '{}'),
        raceDurationMs: Number(race?.dataset.raceDurationMs ?? NaN),
        playbackFinishCrossingMs: Number(race?.dataset.racePlaybackFinishCrossingMs ?? NaN),
        trace: JSON.parse(race?.dataset.raceTrace ?? '{}'),
@@ -225,6 +226,13 @@ try {
    assert(metadata.planReady, 'race did not expose its resolved playback plan');
    assert(metadata.finishOrder[0] === metadata.winnerId, `finish order winner did not match race winner: ${metadata.finishOrder.join(', ')}`);
    assert(Number.isFinite(Number(metadata.finishCrossings[metadata.winnerId])), 'resolved winner did not expose a finish crossing time');
+   if (metadata.finishGapBoost.applied) {
+     assert(
+       metadata.finishGapBoost.targetGapPx > 50
+       && metadata.finishGapBoost.finalGapPx >= 50,
+       `finish gap boost did not clear the minimum gap: ${JSON.stringify(metadata.finishGapBoost)}`,
+     );
+   }
    assert(Number.isFinite(metadata.raceDurationMs), 'race did not expose its continuous duration');
    assert(
      metadata.playbackFinishCrossingMs === metadata.raceDurationMs,
@@ -316,7 +324,10 @@ try {
 
   const renderedOrders = observed.map(({ renderedOrder }) => renderedOrder.join('>'));
   const renderedLeadChanges = renderedOrders.slice(1).filter((order, index) => order !== renderedOrders[index]).length;
-  assert(renderedLeadChanges >= 1, `expected a rendered lead change at checkpoints, got ${renderedOrders.join(' | ')}`);
+  assert(
+    renderedLeadChanges >= 1 || metadata.finishGapBoost.applied,
+    `expected a rendered lead change at checkpoints unless the finish boost branch is active, got ${renderedOrders.join(' | ')}`,
+  );
   assert(observed.some(({ matchesResolvedLeader }) => matchesResolvedLeader), 'no obstacle checkpoint matched the resolved rendered leader');
   assert(observed.some(({ resolvedPairVisible }) => resolvedPairVisible), 'no resolved checkpoint pair appeared ahead in the rendered anchors');
 
@@ -441,6 +452,16 @@ try {
    );
   assert(finish.winnerId === metadata.winnerId, 'finish winner did not match the resolved race winner');
     assert(finish.visibleCrossers.includes(metadata.winnerId), `resolved winner did not appear on the finish line: ${JSON.stringify(finish)}`);
+     if (metadata.finishGapBoost.applied) {
+       const winnerRight = finish.runnerLeadingEdges.find((runner) => runner.id === metadata.finishOrder[0])?.right;
+       const runnerUpRight = finish.runnerLeadingEdges.find((runner) => runner.id === metadata.finishOrder[1])?.right;
+       assert(
+         typeof winnerRight === 'number'
+         && typeof runnerUpRight === 'number'
+         && winnerRight - runnerUpRight >= metadata.finishGapBoost.targetGapPx - 1,
+         `finish boost did not render the target gap: ${JSON.stringify({ winnerRight, runnerUpRight, finishGapBoost: metadata.finishGapBoost })}`,
+       );
+     }
     for (const before of finishBeforeCrossing.runners) {
       const after = finish.runnerLeadingEdges.find((runner) => runner.id === before.id);
       assert(
@@ -457,6 +478,7 @@ try {
     initialOrder: metadata.initialOrder,
     initialGap: Number(metadata.initialGap.toFixed(2)),
     leadChanges: metadata.leadChanges,
+    finishGapBoost: metadata.finishGapBoost,
     renderedLeadChanges,
     liveLeadChanges,
     liveLeaderTransitions,

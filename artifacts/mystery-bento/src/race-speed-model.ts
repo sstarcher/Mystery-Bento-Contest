@@ -5,6 +5,8 @@ export type RunnerSpeedEvent = {
   obstacleId: string;
   result: RunnerSpeedEventResult;
   triggerMs: number;
+  speedMultiplier?: number;
+  durationMs?: number;
 };
 
 export type RunnerTrajectoryPoint = {
@@ -53,7 +55,7 @@ export const RUNNER_SLOW_FRAME_CADENCE_FLOOR = 0.58;
 export const RUNNER_EVENT_DISTANCE_GAIN = 2.8;
 export const RUNNER_MAX_POSITION = 100;
 
-function getEventDuration(result: RunnerSpeedEventResult) {
+function getDefaultEventDuration(result: RunnerSpeedEventResult) {
   if (result === 'slow') return RUNNER_SLOW_DURATION_MS;
   if (result === 'reroute') return RUNNER_REROUTE_DURATION_MS;
   if (result === 'surge') return RUNNER_SURGE_DURATION_MS;
@@ -61,14 +63,22 @@ function getEventDuration(result: RunnerSpeedEventResult) {
 }
 
 export function getRunnerSpeedEventDuration(result: RunnerSpeedEventResult) {
-  return getEventDuration(result);
+  return getDefaultEventDuration(result);
 }
 
-function getEventMultiplier(result: RunnerSpeedEventResult) {
+function getDefaultEventMultiplier(result: RunnerSpeedEventResult) {
   if (result === 'slow') return RUNNER_SLOW_SPEED_MULTIPLIER;
   if (result === 'reroute') return RUNNER_REROUTE_SPEED_MULTIPLIER;
   if (result === 'surge') return RUNNER_SURGE_SPEED_MULTIPLIER;
   return 1;
+}
+
+function getEventDuration(event: RunnerSpeedEvent) {
+  return event.durationMs ?? getDefaultEventDuration(event.result);
+}
+
+function getEventMultiplier(event: RunnerSpeedEvent) {
+  return event.speedMultiplier ?? getDefaultEventMultiplier(event.result);
 }
 
 function clamp(value: number, min: number, max: number) {
@@ -82,10 +92,10 @@ export function getRunnerBaseSpeedMultiplier(speedTrait: number) {
 export function getRunnerEffectiveSpeed(profile: ContinuousRunnerProfile, elapsedMs: number) {
   const activeEvents = profile.events.filter((event) => {
     const elapsed = elapsedMs - event.triggerMs;
-    return elapsed >= 0 && elapsed < getEventDuration(event.result);
+    return elapsed >= 0 && elapsed < getEventDuration(event);
   });
   const eventMultiplier = activeEvents.reduce(
-    (multiplier, event) => multiplier * getEventMultiplier(event.result),
+    (multiplier, event) => multiplier * getEventMultiplier(event),
     1,
   );
   return profile.baseSpeedMultiplier * eventMultiplier;
@@ -114,15 +124,19 @@ export function getContinuousRunnerPosition(
   const courseSpeed = courseTravelEndPosition / raceDurationMs;
   const baseTravel = courseSpeed * elapsed * profile.baseSpeedMultiplier;
   const eventTravel = profile.events.reduce((distance, event) => {
-    const eventElapsed = clamp(elapsed - event.triggerMs, 0, getEventDuration(event.result));
-    const multiplierDelta = getEventMultiplier(event.result) - 1;
+    const eventElapsed = clamp(elapsed - event.triggerMs, 0, getEventDuration(event));
+    const multiplierDelta = getEventMultiplier(event) - 1;
     return distance + courseSpeed
       * profile.baseSpeedMultiplier
       * multiplierDelta
       * eventElapsed
       * RUNNER_EVENT_DISTANCE_GAIN;
   }, 0);
-  return clamp(profile.startPosition + baseTravel + eventTravel, 4, RUNNER_MAX_POSITION);
+  return clamp(
+    profile.startPosition + baseTravel + eventTravel,
+    4,
+    Math.max(RUNNER_MAX_POSITION, courseTravelEndPosition),
+  );
 }
 
 /**
@@ -143,7 +157,7 @@ export function buildRunnerTrajectory(
   }
   profile.events.forEach((event) => {
     sampleTimes.add(Math.max(0, Math.min(raceDurationMs, event.triggerMs)));
-    const endMs = event.triggerMs + getEventDuration(event.result);
+    const endMs = event.triggerMs + getEventDuration(event);
     sampleTimes.add(Math.max(0, Math.min(raceDurationMs, endMs)));
   });
   if (finishCrossingMs !== null) {

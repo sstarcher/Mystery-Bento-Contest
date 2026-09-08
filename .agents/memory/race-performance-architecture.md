@@ -108,3 +108,19 @@ changing the race story or its timing contract.
 **How to apply:** Keep image readiness/failure entries reusable across contests,
 use transient audio elements only for playback, and gate per-frame diagnostics
 behind an explicit race debug path.
+
+Shared finish-gap guarantees should be solved before playback against the
+completed race timestamp, not patched after the winner state renders. When the
+normal endpoint clamps both runners to one screen anchor, allow only the
+boosted winner's resolved travel endpoint to extend and use that endpoint as
+the final projection bound; keep the winner on the marker and the runner-up
+at a deterministic target above 50px.
+
+**Why:** Measuring the earliest threshold crossing misses final-obstacle boosts
+that resolve late, while the ordinary endpoint collapses close runners to the
+same anchor and makes a post-finish pixel patch unstable.
+
+**How to apply:** Choose a deterministic target with a small deviation, solve
+the final-obstacle multiplier against 1280px screen geometry, serialize the
+boosted trajectory, and assert both the rendered gap and finish-state stability
+in the browser check.
