@@ -71,6 +71,13 @@ assert.match(appSource, /clear: \{ headline: 'clean line'/);
 assert.match(appSource, /slow: \{ headline: 'slowed down'/);
 assert.match(appSource, /surge: \{ headline: 'found a break'/);
 assert.match(appSource, /reroute: \{ headline: 'rerouted'/);
+assert.doesNotMatch(appSource, /paceAnnouncerClips/);
+assert.doesNotMatch(appSource, /id: `pace-/);
+assert.match(
+  appSource,
+  /id: `obstacle-callout-\$\{obstacle\.id\}`,[\s\S]{0,180}timelineStage: stage/,
+  'obstacle callouts must use the stage clock where their obstacle is rendered',
+);
 
 assert.equal(
   getMatchedEncounterResultAudio('clear', 'clean line'),

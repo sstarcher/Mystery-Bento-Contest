@@ -5,6 +5,7 @@ import { join } from 'node:path';
 
 const browserUrl = process.env.RACE_BROWSER_URL
   ?? `http://127.0.0.1:${process.env.PORT ?? '5173'}/?raceCheck=109`;
+const voiceSetting = process.env.RACE_BROWSER_VOICE === 'on' ? 'on' : 'off';
 const chromiumPath = process.env.CHROMIUM_PATH ?? '/repl/tools/bin/chromium';
 const cdpPort = Number(process.env.CDP_PORT ?? 9229);
 const profileDir = await mkdtemp(join(tmpdir(), 'mystery-bento-race-check-'));
@@ -117,7 +118,7 @@ try {
     15000,
     'Mystery Bento to load',
   );
-  await evaluate(cdp, `localStorage.setItem('mystery-bento-voice-announcer', 'off'); localStorage.setItem('mystery-bento-meter', JSON.stringify({ progress: 100, lastAcknowledgement: 'race check ready' })); location.reload();`);
+  await evaluate(cdp, `localStorage.setItem('mystery-bento-voice-announcer', ${JSON.stringify(voiceSetting)}); localStorage.setItem('mystery-bento-meter', JSON.stringify({ progress: 100, lastAcknowledgement: 'race check ready' })); location.reload();`);
   await waitFor(
     () => evaluate(cdp, 'Boolean(document.querySelector("[data-testid=\\"meter-shell\\"]"))'),
     15000,
@@ -239,6 +240,7 @@ try {
 
   const liveSamples = [];
   const cameraSamples = [];
+  const announcerLabels = new Set();
   const jumpReactionPersonas = new Set();
   const jumpAnimationPersonas = new Set();
   let sampling = true;
@@ -257,11 +259,13 @@ try {
         runnerScreenCap: document.querySelector('.race-world-track')?.dataset.runnerScreenCap ?? '',
         cameraCorrectionPercent: Number(document.querySelector('.race-world-track')?.dataset.cameraCorrectionPercent ?? NaN),
         finalObstacleUnlocked: document.querySelector('.race-world-track')?.dataset.finalObstacleUnlocked === 'true',
+        status: document.querySelector('[data-testid="live-contest-status"]')?.textContent ?? '',
       };
     })()`);
     if (sample?.lanes?.every((lane) => Number.isFinite(lane.anchor))) {
       liveSamples.push(sample);
       if (Number.isFinite(sample.cameraCorrectionPercent)) cameraSamples.push(sample);
+      if (sample.status.startsWith('Announcer: ')) announcerLabels.add(sample.status);
     }
     sample?.lanes?.forEach((lane) => {
       if (lane.reaction === 'jump') {
@@ -351,6 +355,18 @@ try {
     'camera correction should grow monotonically while a runner presses against a cap',
   );
   assert(cappedCorrections.some((value) => value > 0.5), 'the live race never needed a scenery correction beyond the runner cap');
+  const forbiddenPaceLabels = [...announcerLabels].filter((label) => /pack is still together|field is beginning to stretch|lead changed hands|new leader takes the lantern route|one contender finds another gear/i.test(label));
+  assert(forbiddenPaceLabels.length === 0, `generic pace announcements should not play during the race: ${forbiddenPaceLabels.join(', ')}`);
+  if (voiceSetting === 'on') {
+    const spokenObstacleLabels = [...announcerLabels].filter((label) => /ahead|across the course|coming into the lane|narrowed the final lane/i.test(label));
+    assert(spokenObstacleLabels.length > 0, `voice-enabled race did not announce a visible obstacle: ${[...announcerLabels].join(' | ')}`);
+    const firstObstacleIndex = spokenObstacleLabels.findIndex((label) => /Napkin gust ahead/i.test(label));
+    const secondObstacleIndex = spokenObstacleLabels.findIndex((label) => /Tea puddle ahead/i.test(label));
+    assert(
+      firstObstacleIndex === -1 || secondObstacleIndex === -1 || firstObstacleIndex < secondObstacleIndex,
+      `obstacle announcements played out of order: ${spokenObstacleLabels.join(' | ')}`,
+    );
+  }
   const missingJumpAnimations = [...jumpReactionPersonas].filter((id) => !jumpAnimationPersonas.has(id));
   assert(missingJumpAnimations.length === 0, `jump reactions never rendered the jump sheet for ${missingJumpAnimations.join(', ')}`);
   const finish = await evaluate(cdp, `(() => {
@@ -421,6 +437,7 @@ try {
     renderedLeadChanges,
     liveLeadChanges,
     liveLeaderTransitions,
+    announcerLabels: [...announcerLabels],
      handoff: {
        startGraphicSeenAt,
        popupClearedAt,

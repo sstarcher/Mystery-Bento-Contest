@@ -404,14 +404,6 @@ const obstacleAnnouncerClips: Record<RaceObstacleKind, [AnnouncerClip, Announcer
   ],
 };
 
-const paceAnnouncerClips = [
-  announcerClip('pace-lead-changes', 'pack-still-together', 'The pack is still together'),
-  announcerClip('pace-lead-changes', 'field-beginning-to-stretch', 'The field is beginning to stretch'),
-  announcerClip('pace-lead-changes', 'lead-changed-hands', 'The lead changed hands'),
-  announcerClip('pace-lead-changes', 'new-leader-lantern-route', 'A new leader takes the lantern route'),
-  announcerClip('pace-lead-changes', 'one-contender-finding-another-gear', 'One contender finds another gear'),
-];
-
 const cookingSpriteSheetFrameCounts: Record<string, number> = {
   bibi: 52,
   toro: 25,
@@ -749,7 +741,8 @@ function buildAnnouncerSequence(contestants: Persona[], race: RaceSimulation, pr
       if (canCallout) {
         beats.push({
           id: `obstacle-callout-${obstacle.id}`,
-      step: 'race',
+          step: 'race',
+          timelineStage: stage,
           label: `${obstacle.label} callout`,
           offset: entryOffset,
           deadlineOffset: obstacleMilestones[obstacleOrder + 1]?.entryOffset ?? stageDuration,
@@ -769,47 +762,6 @@ function buildAnnouncerSequence(contestants: Persona[], race: RaceSimulation, pr
       }
     });
 
-    const stageObstacleIds = obstacleIndices
-      .map((obstacleIndex) => race.obstacles[obstacleIndex]?.id)
-      .filter((obstacleId): obstacleId is string => Boolean(obstacleId));
-    const stageLeadChanges = race.leadChanges.filter((change) => stageObstacleIds.includes(change.obstacleId));
-    const gap = race.lanes.length > 1
-      ? (Math.max(...race.lanes.map((lane) => lane.positions[stage])) - Math.min(...race.lanes.map((lane) => lane.positions[stage])))
-      : 0;
-    stageLeadChanges.forEach((change) => {
-      const changeObstacle = race.obstacles.find((obstacle) => obstacle.id === change.obstacleId);
-      const changeMilestone = obstacleMilestones.find((milestone) => milestone.obstacle.id === change.obstacleId);
-      if (!changeObstacle || !changeMilestone) return;
-      const paceClip = change.kind === 'reversal' ? paceAnnouncerClips[3] : paceAnnouncerClips[2];
-      const changeIndex = stageLeadChanges.indexOf(change);
-      beats.push({
-        id: `pace-${stage}-${changeObstacle.id}-${changeIndex}`,
-        step: 'race',
-        timelineStage: stage,
-        label: paceClip.label,
-        offset: changeMilestone.offset,
-        deadlineOffset: obstacleMilestones[obstacleMilestones.indexOf(changeMilestone) + 1]?.offset ?? stageDuration,
-        clips: [paceClip],
-      });
-    });
-    if (!stageLeadChanges.length && stage !== 'finale') {
-      const paceClip = stage === 'warmup'
-        ? paceAnnouncerClips[0]
-        : gap > 28
-          ? paceAnnouncerClips[1]
-          : paceAnnouncerClips[4];
-      const paceOffset = stage === 'warmup' ? 4_600 : 5_700;
-      const nextMilestone = obstacleMilestones.find((milestone) => milestone.offset > paceOffset)?.offset ?? stageDuration;
-      beats.push({
-        id: `pace-${stage}`,
-        step: 'race',
-        timelineStage: stage,
-        label: paceClip.label,
-        offset: paceOffset,
-        deadlineOffset: nextMilestone,
-        clips: [paceClip],
-      });
-    }
   });
 
   const winner = contestants.find((persona) => persona.id === race.winnerId);
