@@ -134,3 +134,9 @@ Obstacle speed effects should remain visibly consequential across the next race 
 **Why:** Short, mild windows made the three runners visually bunch together for most of the course and weakened the readable cause-and-effect of hazards.
 
 **How to apply:** Tune the shared continuous speed model before changing per-obstacle logic; preserve multi-second slow/reroute/surge windows and assert both mid-impact separation and finish separation in the deterministic speed tests.
+
+Meter charging and contest launch are separate actions: food selections and sustained holds may fill the meter, but only a distinct click on an already-full meter may launch the contest.
+
+**Why:** Filling the meter should feel like preparation, while the explicit meter click gives the player control over when the race begins.
+
+**How to apply:** Keep a short hold-arming delay before progressive charging, preserve the full-meter state after food or hold completion, suppress the release-generated click from a hold, and require a later full-meter click to queue the contest.
