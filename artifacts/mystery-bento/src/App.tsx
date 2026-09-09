@@ -3176,8 +3176,8 @@ function Home() {
       setFoodSplash(null);
       foodSplashTimer.current = null;
     }, speedUpDurationMs(12600));
-    if (progress >= 100 && !contestQueued.current) {
-      queueContest('The Mystery Bento Meter is full. The curtain is lifting.');
+    if (progress >= 100) {
+      setLiveStatus('The Mystery Bento Meter is full. Click the meter to start the contest.');
     }
   };
 

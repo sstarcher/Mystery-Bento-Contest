@@ -392,7 +392,7 @@
 .food-button:hover { transform: translateY(-5px) rotate(-1deg); filter: drop-shadow(0 8px 0 rgba(245, 201, 104, .12)); }
 .food-button:active { transform: translateY(2px) scale(.98); filter: none; }
 .food-button:disabled { opacity: .5; cursor: not-allowed; transform: none; }
-.food-illustration { height: 96px; display: grid; place-items: center; position: relative; transform: translateY(-22px); }
+.food-illustration { height: 96px; display: grid; place-items: center; position: relative; transform: translateY(-25px); }
 .plate-display { position: relative; width: 148px; height: 96px; display: grid; place-items: center; }
 .plate-display .food-name { position: absolute; top: 17px; left: 50%; z-index: 2; transform: translateX(-50%); }
 .food-plate-image { display: block; width: 76.8px; height: 52.48px; max-width: none; object-fit: contain; image-rendering: pixelated; filter: drop-shadow(5px 6px 0 rgba(14, 8, 20, .3)); transform: translateY(7px); }
@@ -858,7 +858,7 @@
   .kitchen-steam { top: 165px; transform: scale(.7) rotate(7deg); }
   .kitchen-steam-two { transform: scale(.7) rotate(-7deg); }
   .conveyor { transform: translateY(-100px); }
-  .food-illustration { transform: translateY(-42px); }
+  .food-illustration { transform: translateY(-45px); }
   .restaurant-curio-shelf { margin: 18px 0 0; }
   .foreground-seating { height: 118px; margin-top: 6px; }
   .restaurant-chair { bottom: 17px; transform: scale(.78); transform-origin: bottom center; }
