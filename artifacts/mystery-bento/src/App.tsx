@@ -259,6 +259,7 @@ type ContestStep = 'intro' | 'race' | 'winner';
 const RACE_INTRO_READY_ACTIONS: MovementAction[] = ['idle', 'walk', 'run', 'jump'];
 const queryClient = new QueryClient();
 const METER_KEY = 'mystery-bento-meter';
+const METER_HOLD_START_DELAY_MS = 500;
 const METER_HOLD_DURATION_MS = 3000;
 const LEDGER_KEY = 'mystery-bento-ledger';
 const CURIO_KEY = 'mystery-bento-curios';
@@ -2986,7 +2987,8 @@ function Home() {
   const raceCheckMode = useMemo(() => new URLSearchParams(window.location.search).get('raceCheck'), []);
   const [isCurioShowcaseEnabled, setIsCurioShowcaseEnabled] = useState(initialShowcaseEnabled);
   const [isMeterOverlayVisible, setIsMeterOverlayVisible] = useState(true);
-  const holdTimer = useRef<number | null>(null);
+  const holdDelayTimer = useRef<number | null>(null);
+  const holdProgressTimer = useRef<number | null>(null);
   const holdStartedAt = useRef<number | null>(null);
   const holdStartingProgress = useRef(0);
   const contestTimer = useRef<number | null>(null);
