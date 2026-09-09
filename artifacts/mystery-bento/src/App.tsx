@@ -1834,7 +1834,7 @@ function RestaurantControls({
 
 function Meter({ meter, onPointerStart, onPointerEnd, onMeterClick, onMeterKeyDown, onMeterKeyUp, onContextMenu, meterPulse, isHolding }: { meter: MeterState; onPointerStart: (event: PointerEvent<HTMLDivElement>) => void; onPointerEnd: () => void; onMeterClick: () => void; onMeterKeyDown: (event: KeyboardEvent<HTMLDivElement>) => void; onMeterKeyUp: (event: KeyboardEvent<HTMLDivElement>) => void; onContextMenu: (event: MouseEvent<HTMLDivElement>) => void; meterPulse: boolean; isHolding: boolean }) {
   return (
-    <section className={`meter-shell restaurant-meter-shell ${meterPulse ? 'bump' : ''}`} aria-labelledby="meter-heading" onClick={onMeterClick} data-testid="meter-shell">
+    <section className={`meter-shell restaurant-meter-shell ${meter.progress >= 100 ? 'is-full' : ''} ${meterPulse ? 'bump' : ''}`} aria-labelledby="meter-heading" onClick={onMeterClick} data-testid="meter-shell">
       <h2 id="meter-heading" className="sr-only">Mystery Bento Meter</h2>
       <div className="restaurant-meter-images" aria-hidden="true">
         <img
