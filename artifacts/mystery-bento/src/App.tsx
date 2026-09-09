@@ -2991,6 +2991,7 @@ function Home() {
   const holdProgressTimer = useRef<number | null>(null);
   const holdStartedAt = useRef<number | null>(null);
   const holdStartingProgress = useRef(0);
+  const suppressNextMeterClick = useRef(false);
   const contestTimer = useRef<number | null>(null);
   const finishTransitionTimer = useRef<number | null>(null);
   const contestIntroStartedAt = useRef<number | null>(null);
@@ -3066,9 +3067,10 @@ function Home() {
   };
 
   const cancelHold = () => {
-    if (holdTimer.current) window.clearTimeout(holdTimer.current);
-    if (holdTimer.current) window.clearInterval(holdTimer.current);
-    holdTimer.current = null;
+    if (holdDelayTimer.current) window.clearTimeout(holdDelayTimer.current);
+    if (holdProgressTimer.current) window.clearInterval(holdProgressTimer.current);
+    holdDelayTimer.current = null;
+    holdProgressTimer.current = null;
     holdStartedAt.current = null;
     setIsHolding(false);
   };
@@ -3181,53 +3183,57 @@ function Home() {
 
   const selectFood = (item: FoodItem) => charge(item);
   const startHold = () => {
-    if (holdTimer.current || contestOpen) return;
-    if (meter.progress >= 100) {
-      queueContest('The Mystery Bento Meter is already full. The curtain is lifting.');
-      return;
-    }
-    setIsHolding(true);
-    holdStartedAt.current = Date.now();
-    holdStartingProgress.current = meter.progress;
-    const updateHeldMeter = () => {
-      const startedAt = holdStartedAt.current;
-      if (startedAt === null) return;
-      const elapsedMs = Math.max(0, Date.now() - startedAt);
-      const progress = Math.min(
-        100,
-        Math.round(
-          holdStartingProgress.current
-          + (100 - holdStartingProgress.current) * (elapsedMs / METER_HOLD_DURATION_MS),
-        ),
-      );
-      const isFull = progress >= 100;
-      const nextAcknowledgement = isFull ? 'The bento hums warmly…' : 'The bento is charging…';
-      setMeter((current) => current.progress === progress && current.lastAcknowledgement === nextAcknowledgement
-        ? current
-        : { progress, lastAcknowledgement: nextAcknowledgement });
-      setAcknowledgement(nextAcknowledgement);
-      setLiveStatus(isFull
-        ? 'The bento hums warmly. The Mystery Bento Meter is full.'
-        : `Charging the Mystery Bento Meter: ${progress}%`);
-      if (!isFull) return;
-      if (holdTimer.current) window.clearInterval(holdTimer.current);
-      holdTimer.current = null;
-      holdStartedAt.current = null;
-      setIsHolding(false);
-      setMeterPulse(true);
-      window.setTimeout(() => setMeterPulse(false), speedUpDurationMs(420));
-      queueContest('The bento hums warmly. The Mystery Bento Meter is full.');
-    };
-    updateHeldMeter();
-    holdTimer.current = window.setInterval(updateHeldMeter, 100);
+    if (holdDelayTimer.current || holdProgressTimer.current || contestOpen || meter.progress >= 100) return;
+    holdDelayTimer.current = window.setTimeout(() => {
+      holdDelayTimer.current = null;
+      if (contestOpen) return;
+      setIsHolding(true);
+      holdStartedAt.current = Date.now();
+      holdStartingProgress.current = meter.progress;
+      const updateHeldMeter = () => {
+        const startedAt = holdStartedAt.current;
+        if (startedAt === null) return;
+        const elapsedMs = Math.max(0, Date.now() - startedAt);
+        const progress = Math.min(
+          100,
+          Math.round(
+            holdStartingProgress.current
+            + (100 - holdStartingProgress.current) * (elapsedMs / METER_HOLD_DURATION_MS),
+          ),
+        );
+        const isFull = progress >= 100;
+        const nextAcknowledgement = isFull ? 'The bento hums warmly…' : 'The bento is charging…';
+        setMeter((current) => current.progress === progress && current.lastAcknowledgement === nextAcknowledgement
+          ? current
+          : { progress, lastAcknowledgement: nextAcknowledgement });
+        setAcknowledgement(nextAcknowledgement);
+        setLiveStatus(isFull
+          ? 'The Mystery Bento Meter is full. Click the meter to start the contest.'
+          : `Charging the Mystery Bento Meter: ${progress}%`);
+        if (!isFull) return;
+        if (holdProgressTimer.current) window.clearInterval(holdProgressTimer.current);
+        holdProgressTimer.current = null;
+        holdStartedAt.current = null;
+        suppressNextMeterClick.current = true;
+        setIsHolding(false);
+        setMeterPulse(true);
+        window.setTimeout(() => setMeterPulse(false), speedUpDurationMs(420));
+      };
+      updateHeldMeter();
+      holdProgressTimer.current = window.setInterval(updateHeldMeter, 100);
+    }, METER_HOLD_START_DELAY_MS);
   };
   const handleMeterKeyDown = (event: KeyboardEvent<HTMLDivElement>) => { if ((event.key === 'Enter' || event.key === ' ') && !event.repeat) { event.preventDefault(); startHold(); } };
   const handleMeterKeyUp = (event: KeyboardEvent<HTMLDivElement>) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); cancelHold(); } };
   const handleMeterContextMenu = (event: MouseEvent<HTMLDivElement>) => { if (isHolding) event.preventDefault(); };
   const handleMeterClick = () => {
+    if (suppressNextMeterClick.current) {
+      suppressNextMeterClick.current = false;
+      return;
+    }
     if (contestOpen || contestQueued.current) return;
     if (meter.progress >= 100) {
-      queueContest('The Mystery Bento Meter is already full. The curtain is lifting.');
+      queueContest('The Mystery Bento Meter is full. The curtain is lifting.');
       return;
     }
     setLiveStatus('The Mystery Bento Meter is not full yet. Hold to charge it.');
@@ -3252,8 +3258,8 @@ function Home() {
     setLiveStatus('The race is underway. The first hazard is already coming into view.');
   };
   useEffect(() => () => {
-    if (holdTimer.current) window.clearTimeout(holdTimer.current);
-    if (holdTimer.current) window.clearInterval(holdTimer.current);
+    if (holdDelayTimer.current) window.clearTimeout(holdDelayTimer.current);
+    if (holdProgressTimer.current) window.clearInterval(holdProgressTimer.current);
     if (contestTimer.current) window.clearTimeout(contestTimer.current);
     if (finishTransitionTimer.current) window.clearTimeout(finishTransitionTimer.current);
     if (foodSplashTimer.current) window.clearTimeout(foodSplashTimer.current);
