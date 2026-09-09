@@ -137,7 +137,17 @@ try {
     };
     try {
       new PerformanceObserver((list) => {
-        list.getEntries().forEach((entry) => longTasks.push({ name: entry.name, duration: entry.duration }));
+        list.getEntries().forEach((entry) => longTasks.push({
+          name: entry.name,
+          startTime: entry.startTime,
+          duration: entry.duration,
+          attribution: entry.attribution?.map((item) => ({
+            name: item.name,
+            containerType: item.containerType,
+            containerName: item.containerName,
+            containerSrc: item.containerSrc,
+          })) ?? [],
+        }));
       }).observe({ type: 'longtask', buffered: true });
     } catch {}
     try {
@@ -163,18 +173,20 @@ try {
       }
       requestAnimationFrame(sampleFrame);
     };
-    new MutationObserver(inspect).observe(document.documentElement, { childList: true, subtree: true, attributes: true });
     requestAnimationFrame(sampleFrame);
     window.__raceIntroPerformance = {
       snapshot() {
         const resources = performance.getEntriesByType('resource').map((entry) => ({
           name: entry.name,
           initiatorType: entry.initiatorType,
+          startTime: entry.startTime,
+          requestStart: entry.requestStart,
+          responseEnd: entry.responseEnd,
           duration: entry.duration,
           transferSize: entry.transferSize,
           decodedBodySize: entry.decodedBodySize,
         }));
-        const decodeResources = resources.filter((entry) => entry.initiatorType === 'img' || entry.initiatorType === 'video');
+        const mediaResources = resources.filter((entry) => entry.initiatorType === 'img' || entry.initiatorType === 'video');
         const sortedFrames = frameIntervals.slice().sort((a, b) => a - b);
         const percentile = (ratio) => sortedFrames.length
           ? sortedFrames[Math.min(sortedFrames.length - 1, Math.floor(sortedFrames.length * ratio))]
@@ -189,8 +201,9 @@ try {
             : null,
           longTaskCount: longTasks.length,
           longTaskDuration: longTasks.reduce((sum, entry) => sum + entry.duration, 0),
-          decodeCount: decodeResources.length,
-          decodeDuration: decodeResources.reduce((sum, entry) => sum + entry.duration, 0),
+          longTasks,
+          mediaResourceCount: mediaResources.length,
+          mediaResourceTimingDuration: mediaResources.reduce((sum, entry) => sum + entry.duration, 0),
           eventCount: eventDurations.length,
           maxEventDuration: eventDurations.reduce((max, entry) => Math.max(max, entry.duration), 0),
           resources,

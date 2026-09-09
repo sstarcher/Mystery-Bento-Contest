@@ -56,8 +56,12 @@ same contest seed/session where possible:
 The managed-Chromium check also emits an `introPerformance` object in its JSON
 result. It separates `overlayOpen`, `contestantCardReveal`, `startingLantern`,
 and `firstMovingFrame`, and includes frame count/median/p95 interval, dropped
-frame percentage, long-task count and duration, event timing, and resource
-transfer/decode-body activity. Run it against the managed workflow port:
+frame percentage, long-task timing/attribution, event timing, and resource
+transfer/timing/body-size activity. Resource Timing does not expose image decode
+duration, so `mediaResourceTimingDuration` must not be interpreted as decode
+time. The capture avoids a whole-document mutation observer; phases are sampled
+from the existing race-frame loop so the measurement adds less work of its own.
+Run it against the managed workflow port:
 
 ```sh
 PORT=<managed-workflow-port> \
@@ -79,6 +83,26 @@ The code-level before/after indicators are:
 - Sprite timer dependency: `speedMultiplier` → latest `speedMultiplierRef`.
 - Normal-motion frame loop: one loop for DOM transforms only; reduced motion:
   no frame loop.
+
+## Current review conclusion
+
+The current managed-Chromium desktop capture does not identify the live movement
+renderer as the next bottleneck:
+
+- frame cadence stayed at 16.7ms median and 16.8ms p95;
+- sampled drops were about 1% in the repeat capture;
+- the only observed long task was 242ms during intro preparation, before the
+  first moving frame;
+- 41 media resources were prepared for the deterministic contest.
+
+This points to asset preparation, not another transform or React optimization,
+as the next measurable candidate. Do not change the race clock, trajectory
+sampling, or finish projection based on this capture. First repeat the low-end
+tablet profile with a production-like capture and a trace that identifies the
+242ms task. If it is image decode/preload work, test delaying lower-priority
+fall/victory assets until the race handoff or reducing their payloads. If it is
+not asset work, use the trace's style/layout/paint attribution before changing
+the renderer.
 
 ## Regression commands
 
@@ -122,8 +146,9 @@ reaction, finish crossing, and winner reveal:
 - frame count, median/p95 frame interval, and dropped-frame percentage;
 - long-task count and total duration;
 - `Performance` style/layout/paint/composite timing where the browser exposes it;
-- image/audio resource count, transfer size, decode duration, and failed source
-  count;
+- image/audio resource count, transfer size, resource timing, body size, and
+  failed source count; use a DevTools trace or app-level decode marks for actual
+  image decode duration;
 - time from a Skip, voice, or finish-control event to its visible DOM state.
 
 The implementation's expected comparison is explicit: normal devices keep a

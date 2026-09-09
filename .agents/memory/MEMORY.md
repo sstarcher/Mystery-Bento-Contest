@@ -3,5 +3,6 @@
 - [Movement sprite asset pipeline](movement-sprite-assets.md) — preserve high-resolution uploads but render transparent reduced sheets with explicit grids.
 - [Mystery Bento build environment](mystery-bento-build-environment.md) — direct Vite builds need PORT and BASE_PATH from the managed workflow.
 - [Race performance architecture](race-performance-architecture.md) — keep continuous motion in imperative transforms and React updates discrete race presentation changes only.
+- [Race performance measurement](race-performance-measurement.md) — distinguish resource timing from decode cost and keep browser capture overhead narrow.
 - [Curio browser verification](curio-browser-verification.md) — use the managed Chromium binary and CDP when browser dependencies are not installed in the artifact.
 - [Obstacle narration clocks](obstacle-narration-clocks.md) — every obstacle callout and reaction must carry its rendered race stage or it can play out of order near race start.
