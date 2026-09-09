@@ -2,7 +2,10 @@ import { useEffect, useRef, useState } from 'react';
 import { getMovementSpriteSheet, type MovementAction } from './movement-sprite-config';
 import { getMovementFrameIndex, getVictoryFrameIndex } from './movement-sprite-actions';
 import { getMovementSpriteRenderStyle } from './movement-sprite-normalization';
-import { getMovementFrameDurationMs } from './movement-sprite-cadence';
+import {
+  getMovementFrameDurationMs,
+  shouldUseImperativeIntroCadence,
+} from './movement-sprite-cadence';
 
 export type MovementSpritePersona = {
   id: string;
@@ -16,6 +19,7 @@ export function MovementSprite({
   animationKey,
   speedMultiplier = 1,
   scaleMultiplier = 1,
+  isIntro = false,
 }: {
   persona: MovementSpritePersona;
   action: MovementAction;
@@ -23,6 +27,7 @@ export function MovementSprite({
   animationKey?: string;
   speedMultiplier?: number;
   scaleMultiplier?: number;
+  isIntro?: boolean;
 }) {
   const [displayAction, setDisplayAction] = useState<MovementAction>(action);
   const [frameIndex, setFrameIndex] = useState(0);
@@ -51,7 +56,10 @@ export function MovementSprite({
   const previousSpriteSource = useRef<string | null>(null);
   const previousFrameCount = useRef(1);
   const speedMultiplierRef = useRef(speedMultiplier);
+  const frameIndexRef = useRef(frameIndex);
+  const frameElementRef = useRef<HTMLSpanElement | null>(null);
   speedMultiplierRef.current = speedMultiplier;
+  frameIndexRef.current = frameIndex;
 
   useEffect(() => {
     if (action === 'victory') {
@@ -100,10 +108,27 @@ export function MovementSprite({
     });
   }, [effectiveAction, spriteSheet]);
 
+  const useImperativeIntroCadence = shouldUseImperativeIntroCadence(
+    action,
+    isIntro,
+    prefersReducedMotion,
+    spriteSheet?.frameCount ?? 0,
+  );
+
   useEffect(() => {
     if (!spriteSheet || prefersReducedMotion || spriteSheet.frameCount < 2) return;
     let timer: number | null = null;
     let cancelled = false;
+    let currentFrame = useImperativeIntroCadence ? 0 : frameIndexRef.current;
+    const applyFrame = (nextFrame: number) => {
+      if (!frameElementRef.current) return;
+      const column = nextFrame % spriteSheet.columns;
+      const row = Math.floor(nextFrame / spriteSheet.columns);
+      const backgroundPosition = `${spriteSheet.columns > 1 ? (column / (spriteSheet.columns - 1)) * 100 : 0}% ${spriteSheet.rows > 1 ? (row / (spriteSheet.rows - 1)) * 100 : 0}%`;
+      frameElementRef.current.style.backgroundPosition = backgroundPosition;
+      frameElementRef.current.dataset.movementFrame = String(nextFrame);
+      frameElementRef.current.parentElement?.setAttribute('data-movement-frame', String(nextFrame));
+    };
     const scheduleNextFrame = () => {
       if (cancelled) return;
       const frameDurationMs = getMovementFrameDurationMs(
@@ -113,18 +138,31 @@ export function MovementSprite({
       );
       timer = window.setTimeout(() => {
         if (cancelled) return;
-        setFrameIndex((current) => isOneShot
-          ? getMovementFrameIndex(current + 1, spriteSheet.frameCount, false)
-          : getMovementFrameIndex(current + 1, spriteSheet.frameCount, true));
+        const nextFrame = isOneShot
+          ? getMovementFrameIndex(currentFrame + 1, spriteSheet.frameCount, false)
+          : getMovementFrameIndex(currentFrame + 1, spriteSheet.frameCount, true);
+        if (useImperativeIntroCadence) {
+          currentFrame = nextFrame;
+          applyFrame(nextFrame);
+        } else {
+          setFrameIndex((current) => {
+            const next = isOneShot
+              ? getMovementFrameIndex(current + 1, spriteSheet.frameCount, false)
+              : getMovementFrameIndex(current + 1, spriteSheet.frameCount, true);
+            currentFrame = next;
+            return next;
+          });
+        }
         scheduleNextFrame();
       }, frameDurationMs);
     };
+    if (useImperativeIntroCadence) applyFrame(currentFrame);
     scheduleNextFrame();
     return () => {
       cancelled = true;
       if (timer !== null) window.clearTimeout(timer);
     };
-  }, [action, effectiveAction, prefersReducedMotion, spriteSheet, isOneShot]);
+  }, [action, effectiveAction, prefersReducedMotion, spriteSheet, isOneShot, useImperativeIntroCadence]);
 
   useEffect(() => {
     if (!spriteSheet || !isOneShot || !prefersReducedMotion) return;
@@ -168,6 +206,7 @@ export function MovementSprite({
       style={{ transform: renderStyle.spriteTransform }}
     >
       <span
+        ref={frameElementRef}
         className="race-movement-frame"
         aria-hidden="true"
         style={{

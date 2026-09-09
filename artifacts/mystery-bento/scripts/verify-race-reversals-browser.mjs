@@ -124,6 +124,80 @@ try {
     15000,
     'full meter to reload',
   );
+  await evaluate(cdp, `(() => {
+    const phases = {};
+    const frameIntervals = [];
+    const longTasks = [];
+    const eventDurations = [];
+    let lastFrameAt = null;
+    const markPhase = (name) => {
+      if (phases[name] !== undefined) return;
+      phases[name] = performance.now();
+      performance.mark('race-intro-' + name);
+    };
+    try {
+      new PerformanceObserver((list) => {
+        list.getEntries().forEach((entry) => longTasks.push({ name: entry.name, duration: entry.duration }));
+      }).observe({ type: 'longtask', buffered: true });
+    } catch {}
+    try {
+      new PerformanceObserver((list) => {
+        list.getEntries().forEach((entry) => eventDurations.push({ name: entry.name, duration: entry.duration }));
+      }).observe({ type: 'event', buffered: true, durationThreshold: 16 });
+    } catch {}
+    const inspect = () => {
+      if (document.querySelector('[data-testid="button-skip-contest"]')) markPhase('overlayOpen');
+      if (document.querySelectorAll('.contest-announcement-card').length) markPhase('contestantCardReveal');
+      if (document.querySelector('.contest-start-graphic')) markPhase('startingLantern');
+      const race = document.querySelector('.contest-race-race');
+      const worldTravel = Number(race?.querySelector('.race-world-track')?.dataset.worldTravelPercent ?? 0);
+      if (race && worldTravel > 0) markPhase('firstMovingFrame');
+    };
+    const sampleFrame = (timestamp) => {
+      inspect();
+      if (document.querySelector('.contest-race')) {
+        if (lastFrameAt !== null) frameIntervals.push(timestamp - lastFrameAt);
+        lastFrameAt = timestamp;
+      } else {
+        lastFrameAt = null;
+      }
+      requestAnimationFrame(sampleFrame);
+    };
+    new MutationObserver(inspect).observe(document.documentElement, { childList: true, subtree: true, attributes: true });
+    requestAnimationFrame(sampleFrame);
+    window.__raceIntroPerformance = {
+      snapshot() {
+        const resources = performance.getEntriesByType('resource').map((entry) => ({
+          name: entry.name,
+          initiatorType: entry.initiatorType,
+          duration: entry.duration,
+          transferSize: entry.transferSize,
+          decodedBodySize: entry.decodedBodySize,
+        }));
+        const decodeResources = resources.filter((entry) => entry.initiatorType === 'img' || entry.initiatorType === 'video');
+        const sortedFrames = frameIntervals.slice().sort((a, b) => a - b);
+        const percentile = (ratio) => sortedFrames.length
+          ? sortedFrames[Math.min(sortedFrames.length - 1, Math.floor(sortedFrames.length * ratio))]
+          : null;
+        return {
+          phases,
+          frameCount: frameIntervals.length,
+          medianFrameInterval: percentile(.5),
+          p95FrameInterval: percentile(.95),
+          droppedFramePercent: frameIntervals.length
+            ? frameIntervals.filter((interval) => interval > 24).length / frameIntervals.length * 100
+            : null,
+          longTaskCount: longTasks.length,
+          longTaskDuration: longTasks.reduce((sum, entry) => sum + entry.duration, 0),
+          decodeCount: decodeResources.length,
+          decodeDuration: decodeResources.reduce((sum, entry) => sum + entry.duration, 0),
+          eventCount: eventDurations.length,
+          maxEventDuration: eventDurations.reduce((max, entry) => Math.max(max, entry.duration), 0),
+          resources,
+        };
+      },
+    };
+  })()`);
   await evaluate(cdp, 'document.querySelector("[data-testid=\\"meter-shell\\"]")?.click(); true;');
   await waitFor(
     () => evaluate(cdp, 'Boolean(document.querySelector("[data-testid=\\"button-skip-contest\\"]"))'),
@@ -245,6 +319,13 @@ try {
   assert(metadata.initialOrder[0] === 'pip', `expected Pip to start in front, got ${metadata.initialOrder.join(', ')}`);
   assert(metadata.leadChanges.length >= 2, `expected at least two resolved lead changes, got ${metadata.leadChanges.length}`);
   assert(metadata.leadChanges.some(({ kind }) => kind === 'reversal'), 'expected a resolved lead reversal');
+
+  const introPerformance = await evaluate(cdp, 'window.__raceIntroPerformance?.snapshot() ?? null');
+  assert(introPerformance, `race intro performance capture did not initialize${browserErrors.length ? `: ${browserErrors.join('; ')}` : ''}`);
+  for (const phase of ['overlayOpen', 'contestantCardReveal', 'startingLantern', 'firstMovingFrame']) {
+    assert(Number.isFinite(introPerformance.phases?.[phase]), `race intro performance capture missed ${phase}`);
+  }
+  assert(introPerformance.frameCount > 0, 'race intro performance capture recorded no frame cadence');
 
   const liveSamples = [];
   const cameraSamples = [];
@@ -495,6 +576,7 @@ try {
     observed,
     finish,
        finishBeforeCrossing,
+     introPerformance,
   }, null, 2));
 } finally {
   socket?.close();

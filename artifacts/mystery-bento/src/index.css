@@ -456,6 +456,7 @@
 .ledger-entry { border-left: 4px solid hsl(var(--primary)); background: rgba(255,255,255,.45); }
 
 .contest-backdrop { background: rgba(28, 19, 37, .76); backdrop-filter: blur(5px); }
+.contest-race-backdrop { backdrop-filter: none; }
 .contest-race-backdrop { overflow: auto; justify-content: flex-start; }
 .contest-stage { width: 100%; min-height: var(--fixed-canvas-height); background: #30223c; border: 0; box-shadow: none; border-radius: 0; color: #f8e7c6; position: relative; overflow-x: hidden; overflow-y: auto; }
 .contest-stage::before { content: ''; position: absolute; inset: 0; background-image: radial-gradient(circle at 50% 15%, rgba(244,190,68,.18), transparent 16rem), repeating-linear-gradient(90deg, rgba(255,255,255,.025) 0 1px, transparent 1px 8px); pointer-events: none; }
@@ -1055,6 +1056,17 @@
   right: 32px;
   bottom: 24px;
   z-index: 16;
+}
+
+/* The race stage fully covers the restaurant scene. Keep the scene mounted so
+   it resumes without a rebuild, but stop its compositor and animation work
+   while the contest owns the screen. */
+.bento-app.is-contest-active .conveyor-track,
+.bento-app.is-contest-active .displayed-curio-latest .curio-glyph-image,
+.bento-app.is-contest-active .curio-award-marker,
+.bento-app.is-contest-active .selection-splash,
+.bento-app.is-contest-active .meter-track.is-holding .meter-fill {
+  animation-play-state: paused;
 }
 
 /* Keep the visual language lively without making any one interaction feel

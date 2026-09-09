@@ -20,6 +20,18 @@ The current path keeps the authored timeline and simulation data unchanged:
   reads the latest speed from a ref on each frame.
 - Narrow tablet layouts skip the full-screen backdrop blur while retaining the
   same opaque stage color and contrast.
+- While the contest owns the screen, the restaurant scene stays mounted for an
+  immediate resume but pauses its conveyor, chef video/sprite cadence, curio
+  shimmer, meter hold effect, and selection splash. The race backdrop also
+  avoids backdrop filtering because the fixed stage is already opaque.
+- Race image preparation now shares one URL cache and uses a priority queue:
+  contestant portraits, idle sheets, first-movement sheets, and the first
+  course panels start first; fall/victory sheets, later panels, and obstacles
+  yield through bounded idle-time work. Audio metadata uses the same bounded
+  pattern.
+- Intro idle sheets advance by imperative background-position writes on their
+  existing frame nodes. React still owns discrete action changes, reactions,
+  finish poses, debug attributes, and all post-start transforms.
 - The starting-lantern handoff keeps its popup visible through the authored
   race-start call, leads it out by 360 ms, and starts the race clock on the
   announcement completion boundary with no extra post-call pause.
@@ -40,6 +52,25 @@ same contest seed/session where possible:
 | Narrow tablet crop | Full-screen blur competed with the fixed canvas | Blur is removed below 1100px; the fixed 1280px canvas still crops identically |
 | Skip scene / voice | Controls competed with per-frame overlay work | Skip and voice handlers stay in the static overlay and do not wait on movement reconciliation |
 | Race-start handoff | Popup and movement waited through an extra announcer gap | Popup leads out shortly before the call ends; intro, clock, panorama, and runners share the exact completion boundary |
+
+The managed-Chromium check also emits an `introPerformance` object in its JSON
+result. It separates `overlayOpen`, `contestantCardReveal`, `startingLantern`,
+and `firstMovingFrame`, and includes frame count/median/p95 interval, dropped
+frame percentage, long-task count and duration, event timing, and resource
+transfer/decode-body activity. Run it against the managed workflow port:
+
+```sh
+PORT=<managed-workflow-port> \
+RACE_BROWSER_URL=http://127.0.0.1:<managed-workflow-port>/?raceCheck=109 \
+pnpm --filter @workspace/mystery-bento run verify:race-browser
+```
+
+For a before/after comparison, save one JSON result from the previous build and
+one from the optimized build using the same browser profile and seed. Compare
+the four phase timestamps relative to `overlayOpen`, the intro frame cadence,
+long-task totals, and the image resource list. The first movement sheets should
+appear before the deferred fall/victory and course-obstacle resources, while a
+repeat contest should reuse the same cached URLs.
 
 The code-level before/after indicators are:
 

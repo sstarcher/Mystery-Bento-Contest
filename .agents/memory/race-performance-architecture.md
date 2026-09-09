@@ -124,3 +124,17 @@ same anchor and makes a post-finish pixel patch unstable.
 the final-obstacle multiplier against 1280px screen geometry, serialize the
 boosted trajectory, and assert both the rendered gap and finish-state stability
 in the browser check.
+
+Intro preload priority is part of the authored handoff budget: portraits, idle
+poses, and the first movement sheets should be dispatched before later course
+art, obstacle art, and terminal poses. Restaurant animation should be paused by
+state while the fixed race stage owns the screen, not unmounted.
+
+**Why:** A single decode wave and a live conveyor/chef scene compete with the
+starting-lantern presentation on constrained canvases; unmounting would add
+resume churn and risk changing the restaurant scene after the contest.
+
+**How to apply:** Keep the shared URL cache, use bounded idle-time scheduling
+for lower-priority resources, and preserve a fallback when a late resource
+fails. Treat overlay open/close as suspend/resume boundaries for background
+animation.

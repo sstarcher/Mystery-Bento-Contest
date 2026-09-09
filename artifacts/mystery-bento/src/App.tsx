@@ -46,9 +46,10 @@ import { movementActions } from './movement-sprite-actions';
 import { MovementSprite } from './movement-sprite';
 import { getMatchedEncounterResultAudio } from './announcer-result-audio';
 import {
+  createRaceImagePreloadPlan,
   getRaceAudioResource,
   scheduleRaceAudioPreload,
-  scheduleRaceImagePreload,
+  scheduleRaceImagePreloadPlan,
 } from './race-resource-cache';
 import {
   getCurrentRaceDeviceSignals,
@@ -255,15 +256,7 @@ type ContestOutcome = { winner: Persona; memorableEvent: string; contestName: st
 type RacePositionStep = 'intro' | 'warmup' | 'matchup' | 'finale' | 'winner';
 type ContestStep = 'intro' | 'race' | 'winner';
 
-function getRaceImageSources(contestants: Persona[], race: RaceSimulation) {
-  return [
-    ...contestants.flatMap((persona) => movementActions
-      .map((action) => getMovementSpriteSheet(persona.id, action)?.src)
-      .filter((src): src is string => Boolean(src))),
-    ...RACE_BACKGROUND_SEQUENCE.map((scene) => `${RACE_BACKGROUND_BASE}/${scene.file}`),
-    ...race.obstacles.map((obstacle) => obstacle.imageSrc),
-  ];
-}
+const RACE_INTRO_READY_ACTIONS: MovementAction[] = ['idle', 'walk', 'run', 'jump'];
 const queryClient = new QueryClient();
 const METER_KEY = 'mystery-bento-meter';
 const LEDGER_KEY = 'mystery-bento-ledger';
@@ -1656,7 +1649,7 @@ function CurioBacksplash({ collectibles, showReturnSign }: { collectibles: Colle
   );
 }
 
-function AnimatedChefSprite({ persona }: { persona: Persona }) {
+function AnimatedChefSprite({ persona, suspended = false }: { persona: Persona; suspended?: boolean }) {
   const frames = persona.foodAnimationFrameSrcs ?? [];
   const spriteSheetSrc = persona.foodAnimationSpriteSheetSrc;
   const spriteSheetColumns = persona.foodAnimationSpriteSheetColumns ?? 1;
@@ -1667,16 +1660,27 @@ function AnimatedChefSprite({ persona }: { persona: Persona }) {
   );
   const frameCount = spriteSheetSrc ? spriteSheetFrameCount : frames.length;
   const [frameIndex, setFrameIndex] = useState(0);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
   const aspectRatio = persona.foodAnimationAspectRatio ?? '362 / 724';
   const frameDurationMs = speedUpDurationMs(persona.foodAnimationFrameDurationMs ?? 300);
 
   useEffect(() => {
-    if (frameCount < 2 || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    if (frameCount < 2 || suspended || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     const timer = window.setInterval(() => {
       setFrameIndex((current) => (current + 1) % frameCount);
     }, frameDurationMs);
     return () => window.clearInterval(timer);
-  }, [frameCount, frameDurationMs]);
+  }, [frameCount, frameDurationMs, suspended]);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+    if (suspended) {
+      video.pause();
+      return;
+    }
+    void video.play().catch(() => undefined);
+  }, [persona.foodAnimationVideoSrc, suspended]);
 
   if (persona.foodAnimationVideoSrc) {
     return (
@@ -1687,6 +1691,7 @@ function AnimatedChefSprite({ persona }: { persona: Persona }) {
         style={{ aspectRatio: '848 / 480' }}
       >
         <video
+          ref={videoRef}
           className="counter-chef-frame-video"
           src={persona.foodAnimationVideoSrc}
           autoPlay
@@ -2205,6 +2210,7 @@ const RaceLiveRenderer = memo(function RaceLiveRenderer({
                     speedMultiplier={presentation.speedMultiplier}
                     scaleMultiplier={persona.id === 'panko' ? 0.8 : undefined}
                     prefersReducedMotion={prefersReducedMotion}
+                    isIntro={step === 'intro'}
                   />
                 </span>
               </div>
@@ -2252,12 +2258,17 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
   const announcerSessionResetKey = useRef<number | null>(null);
   const announcerSequence = useMemo(() => buildAnnouncerSequence(contestants, race, prefersReducedMotion), [contestants, race, prefersReducedMotion]);
   useEffect(() => {
-    const imagePreload = scheduleRaceImagePreload(getRaceImageSources(contestants, race));
+    const imagePreload = scheduleRaceImagePreloadPlan(getRaceImagePreloadPlan(contestants, race), {
+      concurrency: renderingProfile.constrained ? 1 : 2,
+      idleDelayMs: renderingProfile.constrained ? 40 : 24,
+    });
+    return () => imagePreload.cancel();
+  }, [contestants, race, renderingProfile.constrained]);
+  useEffect(() => {
     void scheduleRaceAudioPreload(
       announcerSequence.flatMap((beat) => beat.clips.map((clip) => clip.src)),
     );
-    return () => imagePreload.cancel();
-  }, [announcerSequence, contestants, race]);
+  }, [announcerSequence]);
   const announcerBeatCallback = useRef(onAnnouncerBeat);
   announcerBeatCallback.current = onAnnouncerBeat;
   const raceStartCallback = useRef(onRaceStart);
@@ -3122,7 +3133,6 @@ function Home() {
     // Begin decoding the selected race only when the contest is actually
     // launched. Restaurant, shelf, and unselected contestant assets stay out
     // of this cache.
-    void scheduleRaceImagePreload(getRaceImageSources(selected, outcome.race)).promise;
     contestOutcome.current = outcome;
     completionGuard.current = false;
     contestIntroStartedAt.current = Date.now();
@@ -3277,7 +3287,7 @@ function Home() {
   };
 
   return (
-    <div className="bento-app">
+      <div className={`bento-app${contestOpen ? ' is-contest-active' : ''}`}>
       <main className="min-h-[100dvh]" aria-label="Mystery Bento night market">
         <section className="scene-shell min-h-[100dvh] p-4 sm:p-6 md:p-10" aria-label="Mystery Bento night market">
           <CurioBacksplash collectibles={collectibles} showReturnSign={!ledger.length && !winner && !contestOpen} />
@@ -3285,7 +3295,7 @@ function Home() {
             <div className="restaurant-chef-layer" aria-hidden="true">
               <div className={`counter-chef counter-chef-${activeChef.id}`}>
                 {activeChef.foodAnimationVideoSrc || activeChef.foodAnimationFrameSrcs || activeChef.foodAnimationSpriteSheetSrc ? (
-                  <AnimatedChefSprite persona={activeChef} />
+                  <AnimatedChefSprite persona={activeChef} suspended={contestOpen} />
                 ) : null}
               </div>
             </div>
@@ -3368,3 +3378,29 @@ function App() {
 }
 
 export default App;
+
+function getRaceImagePreloadPlan(contestants: Persona[], race: RaceSimulation) {
+  const introSources = contestants.flatMap((persona) => [
+    persona.portraitSrc,
+    ...RACE_INTRO_READY_ACTIONS
+      .map((action) => getMovementSpriteSheet(persona.id, action)?.src)
+      .filter((src): src is string => Boolean(src)),
+  ]);
+  const deferredActionSources = contestants.flatMap((persona) => movementActions
+    .filter((action) => !RACE_INTRO_READY_ACTIONS.includes(action))
+    .map((action) => getMovementSpriteSheet(persona.id, action)?.src)
+    .filter((src): src is string => Boolean(src)));
+  const backgroundSources = RACE_BACKGROUND_SEQUENCE.map((scene) => `${RACE_BACKGROUND_BASE}/${scene.file}`);
+  const obstacleSources = race.obstacles.map((obstacle) => obstacle.imageSrc);
+  return createRaceImagePreloadPlan(
+    [
+      ...introSources,
+      ...backgroundSources.slice(0, 2),
+    ],
+    [
+      ...deferredActionSources,
+      ...backgroundSources.slice(2),
+      ...obstacleSources,
+    ],
+  );
+}

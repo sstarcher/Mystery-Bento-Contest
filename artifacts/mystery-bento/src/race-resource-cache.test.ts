@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import {
   clearRaceResourceCacheForTests,
+  createRaceImagePreloadPlan,
   getUniqueRaceResourceSources,
   getRaceAudioResource,
   preloadRaceAudioMetadata,
@@ -11,6 +12,13 @@ assert.deepEqual(
   getUniqueRaceResourceSources(['selected-run.png', 'selected-run.png', '', 'obstacle.png']),
   ['selected-run.png', 'obstacle.png'],
 );
+
+const preloadPlan = createRaceImagePreloadPlan(
+  ['portrait.png', 'idle.png', 'portrait.png'],
+  ['course.png', 'idle.png', 'obstacle.png'],
+);
+assert.deepEqual(preloadPlan.prioritySources, ['portrait.png', 'idle.png']);
+assert.deepEqual(preloadPlan.deferredSources, ['course.png', 'obstacle.png']);
 
 const originalImage = globalThis.Image;
 let imageConstructed = 0;
