@@ -76,6 +76,10 @@ export const RACE_RUNNER_SECOND_SCREEN_CAP_PERCENT = 55;
 export const RACE_RUNNER_RENDER_WIDTH_PX = 216;
 export const RACE_RUNNER_LEADING_EDGE_OFFSET_PERCENT =
   (RACE_RUNNER_RENDER_WIDTH_PX / RACE_BACKGROUND_CANVAS_WIDTH_PX) * 50;
+// Keep this in sync with the fixed-canvas `.race-obstacle-art` box. Contact
+// begins when the visible artwork boxes meet, not when their centers enter an
+// arbitrary narrative window.
+export const RACE_OBSTACLE_RENDER_WIDTH_PX = 248;
 // The runner transform is centered on the sprite. Keep the sprite's leading
 // edge aligned with the marker's final viewport pixel position instead of
 // placing its center on the authored screen percentage.
@@ -88,7 +92,12 @@ export const RACE_RUNNER_SCREEN_MAX_PERCENT =
 export const RACE_RUNNER_MAX_SPREAD_PERCENT =
   RACE_RUNNER_SCREEN_MAX_PERCENT - RACE_RUNNER_VISUAL_START_PERCENT;
 export const RACE_RUNNER_VISUAL_MAX_DISTANCE = 90;
-export const RACE_OBSTACLE_CONTACT_WINDOW_PERCENT = 11;
+export const RACE_OBSTACLE_CONTACT_WINDOW_PERCENT =
+  (
+    (RACE_OBSTACLE_RENDER_WIDTH_PX + RACE_RUNNER_RENDER_WIDTH_PX)
+    / 2
+    / RACE_BACKGROUND_CANVAS_WIDTH_PX
+  ) * 100;
 export const RACE_RUNNER_PRESENTATION_TOP_PX = 470;
 export const RACE_RUNNER_OVERLAY_TOP_PX = 460;
 export const RACE_RUNNER_LANE_HEIGHT_PX = 87;
@@ -455,10 +464,15 @@ export function getRaceRunnerObstacleContactOffset(
     + (horizontalOffsetPx / RACE_BACKGROUND_TRACK_WIDTH_PX) * 100;
   const getObstacleToRunnerDistance = (stageElapsedMs: number) => {
     const runnerPosition = getRunnerPositionAtRaceTime(stageOffset + stageElapsedMs);
+    const runnerFinishScreenAnchor = getRaceRunnerFinishScreenAnchorAtRaceTime(
+      stageOffset + stageElapsedMs,
+      false,
+    );
     const runnerAnchor = getRaceRunnerScreenAnchors(
       [runnerPosition],
       [runnerStartPosition],
       RACE_FINISH_THRESHOLD_POSITION,
+      runnerFinishScreenAnchor,
     )[0] ?? RACE_RUNNER_VISUAL_START_PERCENT;
     const worldTravelPercent = getRaceWorldTravelPercentAtTime(stage, stageElapsedMs, false);
     const obstacleAnchor = Number.parseFloat(getRaceWorldScreenAnchor(obstacleWorldPosition, worldTravelPercent));

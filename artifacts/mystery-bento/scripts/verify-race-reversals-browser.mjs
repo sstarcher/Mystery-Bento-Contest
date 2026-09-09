@@ -329,6 +329,7 @@ try {
    );
    assert(metadata.trace.lanes?.length === metadata.initialOrder.length, 'resolved trace did not include every lane');
    assert(metadata.trace.lanes.every((lane) => Number.isFinite(Number(lane.finishCrossingMs))), 'resolved trace left a lane without a finish crossing');
+   assert(metadata.trace.lanes.every((lane) => Number(lane.terminalPosition) >= 88), 'resolved trace did not carry every lane through the terminal finish position');
    assert(metadata.trace.lanes.every((lane) => Object.keys(lane.encounters ?? {}).length === metadata.trace.obstacles?.length), 'resolved trace did not cover every obstacle for every lane');
   assert(metadata.initialGap >= 10, `expected a large initial gap, got ${metadata.initialGap.toFixed(2)}`);
   assert(metadata.initialOrder[0] === 'pip', `expected Pip to start in front, got ${metadata.initialOrder.join(', ')}`);
@@ -342,21 +343,37 @@ try {
   }
   assert(introPerformance.frameCount > 0, 'race intro performance capture recorded no frame cadence');
 
-  const liveSamples = [];
-  const cameraSamples = [];
+   const liveSamples = [];
+   const cameraSamples = [];
+   const firstFallByLaneObstacle = new Set();
+   const fallContactSamples = [];
   const announcerLabels = new Set();
   const jumpReactionPersonas = new Set();
   const jumpAnimationPersonas = new Set();
   let sampling = true;
   const sampleLiveOrder = async () => {
     if (!sampling) return;
-    const sample = await evaluate(cdp, `(() => {
-      const lanes = [...document.querySelectorAll('.race-runner-lane')].map((lane) => ({
-        id: lane.dataset.personaId,
-        anchor: Number(lane.querySelector('.race-runner')?.dataset.runnerAnchor ?? NaN),
-        reaction: lane.dataset.runnerReaction,
-        movementAction: lane.querySelector('.race-movement-sprite')?.dataset.movementAction,
-      }));
+     const sample = await evaluate(cdp, `(() => {
+       const lanes = [...document.querySelectorAll('.race-runner-lane')].map((lane) => {
+         const runner = lane.querySelector('.race-runner');
+         const runnerRect = runner?.getBoundingClientRect();
+         const obstacleIndex = Number(lane.dataset.obstacleIndex ?? -1);
+         const obstacle = obstacleIndex >= 0
+           ? document.querySelector('.race-obstacle[data-obstacle-index="' + obstacleIndex + '"] .race-obstacle-art')
+           : null;
+         const obstacleRect = obstacle?.getBoundingClientRect();
+         return {
+           id: lane.dataset.personaId,
+           anchor: Number(runner?.dataset.runnerAnchor ?? NaN),
+           obstacleIndex,
+           reaction: lane.dataset.runnerReaction,
+           movementAction: lane.querySelector('.race-movement-sprite')?.dataset.movementAction,
+           runnerAnchor: Number(runner?.dataset.runnerAnchor ?? NaN),
+           runnerRight: runnerRect?.right ?? null,
+           obstacleLeft: obstacleRect?.left ?? null,
+           obstacleCenter: obstacleRect ? (obstacleRect.left + obstacleRect.width / 2) : null,
+         };
+       });
       return {
         order: lanes.slice().sort((a, b) => b.anchor - a.anchor).map((lane) => lane.id),
         lanes,
@@ -371,7 +388,26 @@ try {
       if (Number.isFinite(sample.cameraCorrectionPercent)) cameraSamples.push(sample);
       if (sample.status.startsWith('Announcer: ')) announcerLabels.add(sample.status);
     }
-    sample?.lanes?.forEach((lane) => {
+     sample?.lanes?.forEach((lane) => {
+       if (
+         lane.movementAction === 'fall'
+         && lane.obstacleIndex >= 0
+         && typeof lane.runnerRight === 'number'
+         && typeof lane.obstacleLeft === 'number'
+       ) {
+         const key = lane.id + ':' + lane.obstacleIndex;
+         if (!firstFallByLaneObstacle.has(key)) {
+           firstFallByLaneObstacle.add(key);
+           fallContactSamples.push({
+             id: lane.id,
+             obstacleIndex: lane.obstacleIndex,
+             runnerAnchor: lane.runnerAnchor,
+             runnerRight: lane.runnerRight,
+             obstacleLeft: lane.obstacleLeft,
+             obstacleCenter: lane.obstacleCenter,
+           });
+         }
+       }
       if (lane.reaction === 'jump') {
         jumpReactionPersonas.add(lane.id);
         if (lane.movementAction === 'jump') jumpAnimationPersonas.add(lane.id);
@@ -426,6 +462,11 @@ try {
   );
   assert(observed.some(({ matchesResolvedLeader }) => matchesResolvedLeader), 'no obstacle checkpoint matched the resolved rendered leader');
   assert(observed.some(({ resolvedPairVisible }) => resolvedPairVisible), 'no resolved checkpoint pair appeared ahead in the rendered anchors');
+   assert(fallContactSamples.length > 0, 'normal-motion race did not render a negative obstacle fall');
+   assert(
+     fallContactSamples.every((sample) => sample.runnerRight >= sample.obstacleLeft - 1),
+     `a fall began before the visible runner/obstacle contact boundary: ${JSON.stringify(fallContactSamples)}`,
+   );
 
   await waitFor(
     () => evaluate(cdp, 'Boolean(document.querySelector(".contest-race[data-finish-visible=\\"true\\"]"))'),

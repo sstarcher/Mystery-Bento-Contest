@@ -1357,32 +1357,17 @@ function buildRaceSimulation(
 
   // The lane crossings determine the winner order, but the shared visible
   // finish cannot fire until the panorama has completed its final background.
-  const firstFinishCrossingMs = Math.min(
-    ...lanes
-      .map((lane) => lane.finishCrossingMs)
-      .filter((crossingMs): crossingMs is number => crossingMs !== null),
-  );
   const resolvedFinishCrossingMs = RACE_RACE_DURATION_MS;
   lanes.forEach((lane) => {
-    lane.positions.winner = clampRacePosition(getContinuousRunnerPosition(
-      {
-        startPosition: lane.positions.intro,
-        baseSpeedMultiplier: lane.baseSpeedMultiplier,
-        events: lane.speedEvents,
-      },
-      firstFinishCrossingMs,
-      RACE_RUNNER_TRAVEL_END_POSITION,
+    // Winner order is resolved from each lane's first threshold crossing, but
+    // the visible finish handoff must use the completed lane trajectory. This
+    // keeps slower lanes moving through the final interval instead of freezing
+    // every runner at the earliest crossing snapshot.
+    lane.positions.winner = getRunnerTrajectoryPositionAtTime(
+      lane.trajectory,
       RACE_RACE_DURATION_MS,
-    ));
+    );
   });
-  if (finishGapBoost.applied) {
-    lanes.forEach((lane) => {
-      lane.positions.winner = getRunnerTrajectoryPositionAtTime(
-        lane.trajectory,
-        RACE_RACE_DURATION_MS,
-      );
-    });
-  }
 
   // Near-simultaneous crossings use the roster order as an explicit,
   // serializable tie-break instead of relying on engine sort stability.
@@ -2154,7 +2139,9 @@ const RaceLiveRenderer = memo(function RaceLiveRenderer({
                   ? {}
                   : { bottom: `${getRaceObstacleBottomPx(obstacleIndex)}px` }),
               }}
-              key={obstacle.id}
+               data-obstacle-index={obstacleIndex}
+               data-obstacle-id={obstacle.id}
+               key={obstacle.id}
               title={obstacle.label}
               aria-hidden="true"
             >
@@ -2847,7 +2834,8 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
               obstacles: race.obstacles.map(({ id, kind, position }) => ({ id, kind, position })),
               lanes: race.lanes.map((lane) => ({
                 personaId: lane.personaId,
-                finishCrossingMs: lane.finishCrossingMs,
+                 finishCrossingMs: lane.finishCrossingMs,
+                 terminalPosition: lane.positions.winner,
                 trajectoryPoints: lane.trajectory.length,
                 encounters: lane.encounters,
               })),

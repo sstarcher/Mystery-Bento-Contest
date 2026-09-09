@@ -17,6 +17,7 @@ import {
   getRaceRunnerScreenCap,
   getRaceRunnerScreenAnchors,
   getRaceRunnerObstacleContactOffset,
+  getRaceRunnerFinishScreenAnchorAtRaceTime,
   getRaceStartHandoffTiming,
   getRaceStageObstacleMilestones,
   getRaceWorldScreenAnchor,
@@ -27,6 +28,7 @@ import {
   RACE_START_POST_ANNOUNCEMENT_GAP_MS,
   RACE_MATCHUP_WORLD_END_PERCENT,
   RACE_OBSTACLE_CONTACT_WINDOW_PERCENT,
+  RACE_OBSTACLE_RENDER_WIDTH_PX,
   RACE_OBSTACLE_ENTRY_SCREEN_ANCHOR_PERCENT,
   RACE_FINISH_THRESHOLD_POSITION,
   RACE_RACE_DURATION_MS,
@@ -35,6 +37,8 @@ import {
   RACE_RUNNER_SCREEN_MIN_PERCENT,
   RACE_RUNNER_VISUAL_START_PERCENT,
   RACE_RUNNER_VISUAL_MAX_DISTANCE,
+  RACE_RUNNER_RENDER_WIDTH_PX,
+  RACE_RUNNER_LEADING_EDGE_OFFSET_PERCENT,
   RACE_WORLD_TRACK_WIDTH_MULTIPLIER,
   RACE_STAGE_DURATIONS,
   RACE_WARMUP_WORLD_END_PERCENT,
@@ -462,6 +466,7 @@ const contactRunnerAnchor = (elapsedMs: number) => getRaceRunnerScreenAnchors(
       * Math.min(1, Math.max(0, elapsedMs / RACE_STAGE_DURATIONS.warmup))],
   [contactLane.positions.intro],
   RACE_FINISH_THRESHOLD_POSITION,
+  getRaceRunnerFinishScreenAnchorAtRaceTime(elapsedMs, false),
 )[0];
 const contactObstacleAnchor = (elapsedMs: number) => Number.parseFloat(getRaceWorldScreenAnchor(
   contactObstacle.position,
@@ -469,12 +474,17 @@ const contactObstacleAnchor = (elapsedMs: number) => Number.parseFloat(getRaceWo
 ));
 assert.ok(
   Math.abs((contactObstacleAnchor(contactOffset) ?? 0) - (contactRunnerAnchor(contactOffset) ?? 0)) <= RACE_OBSTACLE_CONTACT_WINDOW_PERCENT,
-  'speed triggers should begin inside the same rendered contact window as live reactions',
+  'speed triggers should begin inside the same rendered artwork boundary as live reactions',
 );
 assert.ok(
   contactOffset === 0
     || (contactObstacleAnchor(contactOffset - 1) ?? 0) - (contactRunnerAnchor(contactOffset - 1) ?? 0) > RACE_OBSTACLE_CONTACT_WINDOW_PERCENT,
-  'contact solving should choose the first entry into the rendered contact window',
+  'the frame before contact should still leave a visible runner/art gap',
+);
+assert.ok(
+  RACE_OBSTACLE_CONTACT_WINDOW_PERCENT
+    === ((RACE_OBSTACLE_RENDER_WIDTH_PX + RACE_RUNNER_RENDER_WIDTH_PX) / 2 / 1280) * 100,
+  'contact boundary should be derived from the rendered obstacle and runner widths',
 );
 assert.equal(
   contactOffset,
@@ -504,6 +514,11 @@ const shiftedContactOffset = getRaceRunnerObstacleContactOffset(
 assert.ok(
   shiftedContactOffset > contactOffset,
   'rendered horizontal obstacle offsets should delay contact timing with the visible hazard',
+);
+assert.ok(
+  (contactObstacleAnchor(contactOffset) ?? 0) - (contactRunnerAnchor(contactOffset) ?? 0)
+    <= RACE_OBSTACLE_CONTACT_WINDOW_PERCENT + 0.001,
+  'the trigger frame should be inside the visible contact boundary',
 );
 
 const resolvedContest = {
@@ -629,6 +644,18 @@ assert.deepEqual(
     RACE_RUNNER_VISUAL_START_PERCENT + RACE_RUNNER_MAX_SPREAD_PERCENT]
     .map((anchor) => Number(anchor.toFixed(3))),
   'visual travel should stop at a bounded forward finish position',
+);
+const terminalRunnerAnchors = getRaceRunnerScreenAnchors(
+  sharedStart.map(() => RACE_FINISH_THRESHOLD_POSITION + 40),
+  sharedStart,
+  RACE_FINISH_THRESHOLD_POSITION,
+);
+assert.ok(
+  terminalRunnerAnchors.every((anchor) => (
+    anchor + RACE_RUNNER_LEADING_EDGE_OFFSET_PERCENT
+      <= getRaceFinishMarkerScreenAnchor(RACE_FINALE_WORLD_END_PERCENT) + 0.001
+  )),
+  'terminal runner leading edges should not overshoot the completed finish marker',
 );
 const beforeAdvance = getRaceRunnerScreenAnchors([24, 27, 22, 30], sharedStart);
 const afterAdvance = getRaceRunnerScreenAnchors([31, 35, 29, 38], sharedStart);

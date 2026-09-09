@@ -167,6 +167,16 @@ assert.equal(
   getContinuousRunnerPosition(baseProfile, baseFinishCrossingTime ?? 0, courseTravelEnd, raceDurationMs),
   'resolved trajectory should include the exact finish crossing point',
 );
+assert.ok(
+  getRunnerTrajectoryPositionAtTime(baseFinishTrajectory, raceDurationMs)
+    > getRunnerTrajectoryPositionAtTime(baseFinishTrajectory, baseFinishCrossingTime ?? 0),
+  'the terminal trajectory should continue beyond the first finish crossing',
+);
+assert.equal(
+  getRunnerTrajectoryPositionAtTime(baseFinishTrajectory, raceDurationMs),
+  getContinuousRunnerPosition(baseProfile, raceDurationMs, courseTravelEnd, raceDurationMs),
+  'the terminal finish frame should use the completed continuous trajectory',
+);
 assert.deepEqual(
   resolveRunnerFinishOrder([
     { personaId: 'first', finishCrossingMs: 10_000 },

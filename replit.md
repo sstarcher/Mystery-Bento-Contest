@@ -47,9 +47,9 @@ server, database, accounts, or environment secrets.
 
 - The first version is frontend-only; localStorage is intentional because the experience is personal and does not require accounts or a server.
 - Contest outcomes are resolved once at launch with a seeded RNG so the animated, skipped, and reduced-motion paths share the same result.
-- The first contestant to reach the marker-derived finish threshold wins; all
-  lanes are frozen at that crossing snapshot rather than being moved to
-  synthetic finish anchors.
+- The first contestant to reach the marker-derived finish threshold wins; lane
+  crossing timestamps resolve order, while the visible finish handoff carries
+  every lane through its serialized terminal trajectory.
 - The announcer uses the contest-open clock only for the roster intro. Moving
   race narration starts from the actual starting-lantern handoff; obstacle
   callouts use right-edge entry, reactions use rendered contact, and lead
