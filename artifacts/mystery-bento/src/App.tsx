@@ -3175,7 +3175,7 @@ function Home() {
     foodSplashTimer.current = window.setTimeout(() => {
       setFoodSplash(null);
       foodSplashTimer.current = null;
-    }, speedUpDurationMs(12600));
+    }, speedUpDurationMs(8000));
     if (progress >= 100) {
       setLiveStatus('The Mystery Bento Meter is full. Click the meter to start the contest.');
     }

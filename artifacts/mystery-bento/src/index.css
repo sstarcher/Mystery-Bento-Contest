@@ -678,7 +678,7 @@
 .race-obstacle-list i { color: #a34d43; font-style: normal; }
 .race-obstacle-list span.is-current { color: #f5c968; border-color: #f5c968; }
 .race-obstacle-list span.is-cleared { color: #83a66f; border-color: rgba(131,166,111,.5); }
-.selection-splash { position: absolute; inset: 0; z-index: 30; display: grid; place-items: center; pointer-events: none; padding: 20px; background: radial-gradient(circle at center, rgba(28,19,37,.45), transparent 58%); animation: splash-backdrop 12.6s ease-out both; }
+.selection-splash { position: absolute; inset: 0; z-index: 30; display: grid; place-items: center; pointer-events: none; padding: 20px; background: radial-gradient(circle at center, rgba(28,19,37,.45), transparent 58%); animation: splash-backdrop 8s ease-out both; }
 .selection-card { position: relative; z-index: 1; isolation: isolate; width: min(100%, 520px); padding: 19px 22px 17px; background: #30223c; border: 3px solid #17121e; color: #f8e7c6; box-shadow: 8px 8px 0 rgba(15,9,20,.42); animation: selection-card-pop .8s cubic-bezier(.18,.9,.24,1) both; }
 .selection-card-main { display: flex; align-items: center; gap: 18px; margin-top: 13px; }
 .selection-plate { flex: 0 0 104px; display: grid; place-items: center; }
@@ -1075,7 +1075,7 @@
 .float-in { animation-duration: .51s; }
 .bump { animation-duration: .37s; }
 .race-winner-reveal-card { animation-duration: .72s; }
-.selection-splash { animation-duration: 11.67s; }
+.selection-splash { animation-duration: 8s; }
 .selection-card { animation-duration: .74s; }
 .splash-particle { animation-duration: .97s; }
 .splash-particle-two { animation-delay: .07s; }
