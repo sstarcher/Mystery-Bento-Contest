@@ -275,6 +275,7 @@ const PIP_POCKET_WATCH_SRC = `${import.meta.env.BASE_URL}runtime/images/keepsake
 const PIP_RICE_BOWL_SRC = `${import.meta.env.BASE_URL}runtime/images/keepsakes/pip-rice-bowl.png`;
 const PIP_SATCHEL_TAG_SRC = `${import.meta.env.BASE_URL}runtime/images/keepsakes/pip-satchel-tag.png`;
 const RESTAURANT_BACKDROP_SRC = `${import.meta.env.BASE_URL}runtime/images/restaurant/background.png`;
+const MYSTERY_METER_FULL_SRC = `${import.meta.env.BASE_URL}runtime/images/restaurant/mystery-meter-full.png`;
 const SUSHI_PLATE_WARM_SRC = `${import.meta.env.BASE_URL}runtime/images/plates/sushi-plate-warm.png`;
 const SUSHI_PLATE_COOL_SRC = `${import.meta.env.BASE_URL}runtime/images/plates/sushi-plate-cool.png`;
 const SUSHI_PLATE_SHRIMP_SRC = `${import.meta.env.BASE_URL}runtime/images/plates/sushi-plate-shrimp.png`;
@@ -1775,6 +1776,8 @@ function RestaurantControls({
   isDebugMode,
   isCurioShowcaseEnabled,
   onCurioShowcaseChange,
+  isMeterOverlayVisible,
+  onMeterOverlayChange,
 }: {
   onOpenCurio: (view: 'shelf' | 'ledger') => void;
   ledgerCount: number;
@@ -1782,6 +1785,8 @@ function RestaurantControls({
   isDebugMode: boolean;
   isCurioShowcaseEnabled: boolean;
   onCurioShowcaseChange: (enabled: boolean) => void;
+  isMeterOverlayVisible: boolean;
+  onMeterOverlayChange: (visible: boolean) => void;
 }) {
   return (
     <div className="restaurant-controls">
@@ -1798,6 +1803,9 @@ function RestaurantControls({
         </button>
         <button type="button" onClick={() => onOpenCurio('ledger')} className="curio-button" data-testid="button-open-ledger">
           <BookOpen className="h-3.5 w-3.5 text-[#f5c968]" aria-hidden="true" /><span>Ledger</span><span className="font-mono-ui text-[#f5c968]">{ledgerCount}</span>
+        </button>
+        <button type="button" onClick={() => onMeterOverlayChange(!isMeterOverlayVisible)} className="curio-button meter-overlay-toggle" aria-pressed={isMeterOverlayVisible} data-testid="toggle-meter-overlay">
+          <span>{isMeterOverlayVisible ? 'Hide' : 'Show'} meter</span>
         </button>
         {isDebugMode && (
           <>
@@ -1819,22 +1827,23 @@ function RestaurantControls({
   );
 }
 
-function Meter({ meter, onPointerStart, onPointerEnd, onMeterClick, onMeterKeyDown, onMeterKeyUp, onContextMenu, meterPulse, isHolding, compact = false }: { meter: MeterState; onPointerStart: (event: PointerEvent<HTMLDivElement>) => void; onPointerEnd: () => void; onMeterClick: () => void; onMeterKeyDown: (event: KeyboardEvent<HTMLDivElement>) => void; onMeterKeyUp: (event: KeyboardEvent<HTMLDivElement>) => void; onContextMenu: (event: MouseEvent<HTMLDivElement>) => void; meterPulse: boolean; isHolding: boolean; compact?: boolean }) {
+function Meter({ meter, onPointerStart, onPointerEnd, onMeterClick, onMeterKeyDown, onMeterKeyUp, onContextMenu, meterPulse, isHolding }: { meter: MeterState; onPointerStart: (event: PointerEvent<HTMLDivElement>) => void; onPointerEnd: () => void; onMeterClick: () => void; onMeterKeyDown: (event: KeyboardEvent<HTMLDivElement>) => void; onMeterKeyUp: (event: KeyboardEvent<HTMLDivElement>) => void; onContextMenu: (event: MouseEvent<HTMLDivElement>) => void; meterPulse: boolean; isHolding: boolean }) {
   return (
-    <section className={`meter-shell rounded-xl bg-[#f2d7a0] p-4 text-[#30223c] ${compact ? 'compact-meter' : ''} ${meterPulse ? 'bump' : ''}`} aria-labelledby="meter-heading" onClick={onMeterClick} data-testid="meter-shell">
-      <div className="mb-2 flex items-end justify-between gap-3">
-        <div>
-          <h2 id="meter-heading" className="font-display text-sm font-bold uppercase tracking-[.12em]">Mystery Bento Meter</h2>
-          <p className="mt-1 text-xs text-[#6c4d51]">Fill the tray. Something curious is waiting.</p>
-        </div>
-        <div className="meter-rune" role="img" aria-label={`${meter.progress} percent charged`}><span>{meter.progress}</span></div>
+    <section className={`meter-shell restaurant-meter-shell ${meterPulse ? 'bump' : ''}`} aria-labelledby="meter-heading" onClick={onMeterClick} data-testid="meter-shell">
+      <h2 id="meter-heading" className="sr-only">Mystery Bento Meter</h2>
+      <div className="restaurant-meter-images" aria-hidden="true">
+        <img
+          className="restaurant-meter-image restaurant-meter-image-full"
+          src={MYSTERY_METER_FULL_SRC}
+          alt=""
+          draggable="false"
+          style={{ clipPath: `inset(${100 - meter.progress}% 0 0 0)` }}
+        />
       </div>
-      <div className={`meter-track ${isHolding ? 'is-holding' : ''}`} role="progressbar" aria-label="Mystery Bento Meter" aria-valuemin={0} aria-valuemax={100} aria-valuenow={meter.progress} tabIndex={0} onPointerDown={onPointerStart} onPointerUp={onPointerEnd} onPointerCancel={onPointerEnd} onPointerLeave={onPointerEnd} onKeyDown={onMeterKeyDown} onKeyUp={onMeterKeyUp} onContextMenu={onContextMenu} data-testid="meter-charge-control">
-        <div className={`meter-fill ${meter.progress >= 100 ? 'is-full' : ''}`} style={{ width: `${meter.progress}%` }} />
+      <div className="restaurant-meter-status sr-only" id="meter-status" role="status" aria-live="polite">
+        {meter.lastAcknowledgement} {meter.progress >= 100 ? 'Contest ready.' : `${meter.progress} percent charged.`}
       </div>
-      <div className="mt-2 flex items-center justify-between font-mono-ui text-[10px] uppercase tracking-wider text-[#765752]">
-        <span data-testid="status-meter-acknowledgement">{meter.lastAcknowledgement}</span><span>{meter.progress >= 100 ? 'contest ready' : 'collecting'}</span>
-      </div>
+      <div className={`meter-track restaurant-meter-track ${isHolding ? 'is-holding' : ''}`} role="progressbar" aria-label="Mystery Bento Meter" aria-describedby="meter-status" aria-valuemin={0} aria-valuemax={100} aria-valuenow={meter.progress} aria-valuetext={`${meter.progress} percent charged`} tabIndex={0} onPointerDown={onPointerStart} onPointerUp={onPointerEnd} onPointerCancel={onPointerEnd} onPointerLeave={onPointerEnd} onKeyDown={onMeterKeyDown} onKeyUp={onMeterKeyUp} onContextMenu={onContextMenu} data-testid="meter-charge-control" />
     </section>
   );
 }
@@ -2971,6 +2980,7 @@ function Home() {
   const { isDebugMode, initialShowcaseEnabled } = getCurioDebugState(window.location.search);
   const raceCheckMode = useMemo(() => new URLSearchParams(window.location.search).get('raceCheck'), []);
   const [isCurioShowcaseEnabled, setIsCurioShowcaseEnabled] = useState(initialShowcaseEnabled);
+  const [isMeterOverlayVisible, setIsMeterOverlayVisible] = useState(true);
   const holdTimer = useRef<number | null>(null);
   const contestTimer = useRef<number | null>(null);
   const finishTransitionTimer = useRef<number | null>(null);
@@ -3279,6 +3289,9 @@ function Home() {
       <main className="min-h-[100dvh]" aria-label="Mystery Bento night market">
         <section className="scene-shell min-h-[100dvh] p-4 sm:p-6 md:p-10" aria-label="Mystery Bento night market">
           <CurioBacksplash collectibles={collectibles} showReturnSign={!ledger.length && !winner && !contestOpen} />
+          <div className={`restaurant-meter-layer${isMeterOverlayVisible ? '' : ' is-overlay-hidden'}`}>
+            <Meter meter={meter} onPointerStart={(event) => { event.currentTarget.setPointerCapture?.(event.pointerId); startHold(); }} onPointerEnd={cancelHold} onMeterClick={handleMeterClick} onMeterKeyDown={handleMeterKeyDown} onMeterKeyUp={handleMeterKeyUp} onContextMenu={handleMeterContextMenu} meterPulse={meterPulse} isHolding={isHolding} />
+          </div>
           {activeChef && (
             <div className="restaurant-chef-layer" aria-hidden="true">
               <div className={`counter-chef counter-chef-${activeChef.id}`}>
@@ -3298,6 +3311,8 @@ function Home() {
                 isDebugMode={isDebugMode}
                 isCurioShowcaseEnabled={isCurioShowcaseEnabled}
                 onCurioShowcaseChange={setIsCurioShowcaseEnabled}
+                isMeterOverlayVisible={isMeterOverlayVisible}
+                onMeterOverlayChange={setIsMeterOverlayVisible}
               />
               <div className="restaurant-meter-bay">
                 <div className="lantern relative" aria-hidden="true" />
@@ -3334,10 +3349,6 @@ function Home() {
                           </div>
                         ))}
                       </div>
-                    </div>
-                    <div className="bar-meter-rail">
-                      <span className="font-mono-ui text-[8px] uppercase tracking-[.14em]">mystery bento meter</span>
-                      <Meter compact meter={meter} onPointerStart={(event) => { event.currentTarget.setPointerCapture?.(event.pointerId); startHold(); }} onPointerEnd={cancelHold} onMeterClick={handleMeterClick} onMeterKeyDown={handleMeterKeyDown} onMeterKeyUp={handleMeterKeyUp} onContextMenu={handleMeterContextMenu} meterPulse={meterPulse} isHolding={isHolding} />
                     </div>
                   </div>
                 </div>
