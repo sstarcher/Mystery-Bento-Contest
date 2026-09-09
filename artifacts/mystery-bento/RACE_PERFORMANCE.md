@@ -104,6 +104,33 @@ fall/victory assets until the race handoff or reducing their payloads. If it is
 not asset work, use the trace's style/layout/paint attribution before changing
 the renderer.
 
+### 4× CPU comparison
+
+The browser check supports `RACE_CPU_THROTTLE=4` through Chrome DevTools
+Protocol CPU throttling. Using the same `raceCheck=109` fixture and a fresh
+browser profile:
+
+| Metric | Default CPU | 4× CPU |
+| --- | ---: | ---: |
+| First moving frame | 11.69s | 12.65s |
+| Median frame interval | 16.7ms | 16.7ms |
+| P95 frame interval | 16.8ms | 16.8ms |
+| Sampled dropped frames | 0.5% | 3.0% |
+| Long tasks | 3 / 335ms | 7 / 968ms |
+| Media resources | 41 | 41 |
+
+The slowdown increases intro long tasks and raises sampled drops, but the
+active motion cadence remains near the display's 60Hz schedule. The observed
+long tasks occur during announcement and preload work before the first moving
+frame, so the next optimization target remains intro asset preparation rather
+than the race transform loop. Reproduce the comparison with:
+
+```sh
+RACE_CPU_THROTTLE=4 \
+RACE_BROWSER_URL=http://127.0.0.1:<managed-workflow-port>/?raceCheck=109 \
+pnpm --filter @workspace/mystery-bento run verify:race-browser
+```
+
 ## Regression commands
 
 Run from the workspace root:
