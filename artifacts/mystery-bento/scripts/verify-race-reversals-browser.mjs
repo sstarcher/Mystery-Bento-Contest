@@ -8,6 +8,7 @@ const browserUrl = process.env.RACE_BROWSER_URL
 const voiceSetting = process.env.RACE_BROWSER_VOICE === 'on' ? 'on' : 'off';
 const chromiumPath = process.env.CHROMIUM_PATH ?? '/repl/tools/bin/chromium';
 const cdpPort = Number(process.env.CDP_PORT ?? 9229);
+const cpuThrottleRate = Math.max(1, Number(process.env.RACE_CPU_THROTTLE ?? 1));
 const profileDir = await mkdtemp(join(tmpdir(), 'mystery-bento-race-check-'));
 
 function assert(condition, message) {
@@ -107,6 +108,7 @@ try {
   const cdp = new CdpClient(socket);
   await cdp.command('Page.enable');
   await cdp.command('Runtime.enable');
+  await cdp.command('Emulation.setCPUThrottlingRate', { rate: cpuThrottleRate });
   const browserErrors = [];
   cdp.on('Runtime.exceptionThrown', ({ exceptionDetails }) => {
     browserErrors.push(exceptionDetails?.text ?? 'uncaught browser exception');
@@ -569,6 +571,7 @@ try {
 
   console.log(JSON.stringify({
     status: 'passed',
+    cpuThrottleRate,
     initialOrder: metadata.initialOrder,
     initialGap: Number(metadata.initialGap.toFixed(2)),
     leadChanges: metadata.leadChanges,
