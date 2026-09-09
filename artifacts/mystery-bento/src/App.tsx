@@ -259,6 +259,7 @@ type ContestStep = 'intro' | 'race' | 'winner';
 const RACE_INTRO_READY_ACTIONS: MovementAction[] = ['idle', 'walk', 'run', 'jump'];
 const queryClient = new QueryClient();
 const METER_KEY = 'mystery-bento-meter';
+const METER_HOLD_DURATION_MS = 3000;
 const LEDGER_KEY = 'mystery-bento-ledger';
 const CURIO_KEY = 'mystery-bento-curios';
 const CURIO_PLACEMENTS_KEY = 'mystery-bento-curio-placements';
@@ -2986,6 +2987,8 @@ function Home() {
   const [isCurioShowcaseEnabled, setIsCurioShowcaseEnabled] = useState(initialShowcaseEnabled);
   const [isMeterOverlayVisible, setIsMeterOverlayVisible] = useState(true);
   const holdTimer = useRef<number | null>(null);
+  const holdStartedAt = useRef<number | null>(null);
+  const holdStartingProgress = useRef(0);
   const contestTimer = useRef<number | null>(null);
   const finishTransitionTimer = useRef<number | null>(null);
   const contestIntroStartedAt = useRef<number | null>(null);
@@ -3062,7 +3065,9 @@ function Home() {
 
   const cancelHold = () => {
     if (holdTimer.current) window.clearTimeout(holdTimer.current);
+    if (holdTimer.current) window.clearInterval(holdTimer.current);
     holdTimer.current = null;
+    holdStartedAt.current = null;
     setIsHolding(false);
   };
 
@@ -3180,15 +3185,39 @@ function Home() {
       return;
     }
     setIsHolding(true);
-    holdTimer.current = window.setTimeout(() => {
+    holdStartedAt.current = Date.now();
+    holdStartingProgress.current = meter.progress;
+    const updateHeldMeter = () => {
+      const startedAt = holdStartedAt.current;
+      if (startedAt === null) return;
+      const elapsedMs = Math.max(0, Date.now() - startedAt);
+      const progress = Math.min(
+        100,
+        Math.round(
+          holdStartingProgress.current
+          + (100 - holdStartingProgress.current) * (elapsedMs / METER_HOLD_DURATION_MS),
+        ),
+      );
+      const isFull = progress >= 100;
+      const nextAcknowledgement = isFull ? 'The bento hums warmly…' : 'The bento is charging…';
+      setMeter((current) => current.progress === progress && current.lastAcknowledgement === nextAcknowledgement
+        ? current
+        : { progress, lastAcknowledgement: nextAcknowledgement });
+      setAcknowledgement(nextAcknowledgement);
+      setLiveStatus(isFull
+        ? 'The bento hums warmly. The Mystery Bento Meter is full.'
+        : `Charging the Mystery Bento Meter: ${progress}%`);
+      if (!isFull) return;
+      if (holdTimer.current) window.clearInterval(holdTimer.current);
       holdTimer.current = null;
+      holdStartedAt.current = null;
       setIsHolding(false);
-      setMeter({ progress: 100, lastAcknowledgement: 'The bento hums warmly…' });
-      setAcknowledgement('The bento hums warmly…');
-      setLiveStatus('The bento hums warmly. The Mystery Bento Meter is full.');
       setMeterPulse(true);
+      window.setTimeout(() => setMeterPulse(false), speedUpDurationMs(420));
       queueContest('The bento hums warmly. The Mystery Bento Meter is full.');
-    }, speedUpDurationMs(1500));
+    };
+    updateHeldMeter();
+    holdTimer.current = window.setInterval(updateHeldMeter, 100);
   };
   const handleMeterKeyDown = (event: KeyboardEvent<HTMLDivElement>) => { if ((event.key === 'Enter' || event.key === ' ') && !event.repeat) { event.preventDefault(); startHold(); } };
   const handleMeterKeyUp = (event: KeyboardEvent<HTMLDivElement>) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); cancelHold(); } };
@@ -3199,13 +3228,7 @@ function Home() {
       queueContest('The Mystery Bento Meter is already full. The curtain is lifting.');
       return;
     }
-    cancelHold();
-    setMeter({ progress: 100, lastAcknowledgement: 'The bento hums warmly…' });
-    setAcknowledgement('The bento hums warmly…');
-    setLiveStatus('The bento hums warmly. The Mystery Bento Meter is full.');
-    setMeterPulse(true);
-    window.setTimeout(() => setMeterPulse(false), speedUpDurationMs(420));
-    queueContest('The bento hums warmly. The Mystery Bento Meter is full.');
+    setLiveStatus('The Mystery Bento Meter is not full yet. Hold to charge it.');
   };
   const skipContest = () => {
     if (completionGuard.current) return;
@@ -3228,6 +3251,7 @@ function Home() {
   };
   useEffect(() => () => {
     if (holdTimer.current) window.clearTimeout(holdTimer.current);
+    if (holdTimer.current) window.clearInterval(holdTimer.current);
     if (contestTimer.current) window.clearTimeout(contestTimer.current);
     if (finishTransitionTimer.current) window.clearTimeout(finishTransitionTimer.current);
     if (foodSplashTimer.current) window.clearTimeout(foodSplashTimer.current);
