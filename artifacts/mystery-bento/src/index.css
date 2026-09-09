@@ -352,7 +352,7 @@
 .restaurant-meter-bay { display: flex; align-items: center; gap: 12px; padding-top: 4px; }
 .restaurant-meter-bay .lantern { transform: scale(.85); }
 .restaurant-bar-stack { margin-top: auto; }
-.restaurant-meter-layer { position: absolute; top: 362px; left: 287px; z-index: 4; width: 86px; height: 79px; pointer-events: none; }
+.restaurant-meter-layer { position: absolute; top: 360px; left: 291px; z-index: 4; width: 86px; height: 79px; pointer-events: none; }
 .restaurant-meter-shell { position: relative; width: 100%; height: 100%; padding: 0; background: transparent; pointer-events: auto; }
 .restaurant-meter-images { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
 .restaurant-meter-image { position: absolute; inset: 0; display: block; width: 100%; height: 100%; object-fit: fill; image-rendering: pixelated; user-select: none; }
@@ -793,7 +793,7 @@
   .restaurant-brand-mark { width: 29px; height: 29px; }
   .restaurant-nav { justify-content: flex-end; gap: 5px; }
   .restaurant-nav .curio-button { padding: 6px 7px; font-size: 8px; }
-  .restaurant-meter-layer { top: 361px; left: 292px; width: 82px; height: 88px; }
+  .restaurant-meter-layer { top: 359px; left: 296px; width: 82px; height: 88px; }
   .displayed-curio { width: 54px; height: 58px; }
   .displayed-curio .curio-art-box { transform: scale(.76); margin: -3px 0; }
   .displayed-curio .curio-award-marker { top: 3px; right: 1px; }
