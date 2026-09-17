@@ -1841,9 +1841,9 @@ function RestaurantControls({
   );
 }
 
-function Meter({ meter, onPointerStart, onPointerEnd, onMeterClick, onMeterKeyDown, onMeterKeyUp, onContextMenu, meterPulse, isHolding }: { meter: MeterState; onPointerStart: (event: PointerEvent<HTMLDivElement>) => void; onPointerEnd: () => void; onMeterClick: () => void; onMeterKeyDown: (event: KeyboardEvent<HTMLDivElement>) => void; onMeterKeyUp: (event: KeyboardEvent<HTMLDivElement>) => void; onContextMenu: (event: MouseEvent<HTMLDivElement>) => void; meterPulse: boolean; isHolding: boolean }) {
+function Meter({ meter, onPointerStart, onPointerEnd, onMeterClick, onMeterDoubleClick, onMeterKeyDown, onMeterKeyUp, onContextMenu, meterPulse, isHolding }: { meter: MeterState; onPointerStart: (event: PointerEvent<HTMLDivElement>) => void; onPointerEnd: () => void; onMeterClick: () => void; onMeterDoubleClick: () => void; onMeterKeyDown: (event: KeyboardEvent<HTMLDivElement>) => void; onMeterKeyUp: (event: KeyboardEvent<HTMLDivElement>) => void; onContextMenu: (event: MouseEvent<HTMLDivElement>) => void; meterPulse: boolean; isHolding: boolean }) {
   return (
-    <section className={`meter-shell restaurant-meter-shell ${meter.progress >= 100 ? 'is-full' : ''} ${meterPulse ? 'bump' : ''}`} aria-labelledby="meter-heading" onClick={onMeterClick} data-testid="meter-shell">
+    <section className={`meter-shell restaurant-meter-shell ${meter.progress >= 100 ? 'is-full' : ''} ${meterPulse ? 'bump' : ''}`} aria-labelledby="meter-heading" onClick={onMeterClick} onDoubleClick={onMeterDoubleClick} data-testid="meter-shell">
       <h2 id="meter-heading" className="sr-only">Mystery Bento Meter</h2>
       <div className="restaurant-meter-images" aria-hidden="true">
         <img
@@ -3248,7 +3248,17 @@ function Home() {
   };
   const handleMeterKeyDown = (event: KeyboardEvent<HTMLDivElement>) => { if ((event.key === 'Enter' || event.key === ' ') && !event.repeat) { event.preventDefault(); startHold(); } };
   const handleMeterKeyUp = (event: KeyboardEvent<HTMLDivElement>) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); cancelHold(); } };
-  const handleMeterContextMenu = (event: MouseEvent<HTMLDivElement>) => { if (isHolding) event.preventDefault(); };
+  const handleMeterContextMenu = (event: MouseEvent<HTMLDivElement>) => { event.preventDefault(); };
+  const handleMeterDoubleClick = () => {
+    if (contestOpen || contestQueued.current || meter.progress >= 100) return;
+    cancelHold();
+    const nextAcknowledgement = 'The bento hums warmly…';
+    setMeter({ progress: 100, lastAcknowledgement: nextAcknowledgement });
+    setAcknowledgement(nextAcknowledgement);
+    setLiveStatus('The Mystery Bento Meter is full. Click the meter to start the contest.');
+    setMeterPulse(true);
+    window.setTimeout(() => setMeterPulse(false), speedUpDurationMs(420));
+  };
   const handleMeterClick = () => {
     if (suppressNextMeterClick.current) {
       suppressNextMeterClick.current = false;
@@ -3349,7 +3359,7 @@ function Home() {
         <section className="scene-shell min-h-[100dvh] p-4 sm:p-6 md:p-10" aria-label="Mystery Bento night market">
           <CurioBacksplash collectibles={collectibles} showReturnSign={!ledger.length && !winner && !contestOpen} />
           <div className={`restaurant-meter-layer${isMeterOverlayVisible ? '' : ' is-overlay-hidden'}`}>
-            <Meter meter={meter} onPointerStart={(event) => { event.currentTarget.setPointerCapture?.(event.pointerId); startHold(); }} onPointerEnd={cancelHold} onMeterClick={handleMeterClick} onMeterKeyDown={handleMeterKeyDown} onMeterKeyUp={handleMeterKeyUp} onContextMenu={handleMeterContextMenu} meterPulse={meterPulse} isHolding={isHolding} />
+            <Meter meter={meter} onPointerStart={(event) => { event.currentTarget.setPointerCapture?.(event.pointerId); startHold(); }} onPointerEnd={cancelHold} onMeterClick={handleMeterClick} onMeterDoubleClick={handleMeterDoubleClick} onMeterKeyDown={handleMeterKeyDown} onMeterKeyUp={handleMeterKeyUp} onContextMenu={handleMeterContextMenu} meterPulse={meterPulse} isHolding={isHolding} />
           </div>
           {activeChef && (
             <div className="restaurant-chef-layer" aria-hidden="true">

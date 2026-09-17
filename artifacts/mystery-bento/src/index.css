@@ -364,7 +364,7 @@
 }
 .restaurant-meter-layer.is-overlay-hidden .restaurant-meter-images { display: none; }
 .restaurant-meter-layer.is-overlay-hidden .restaurant-meter-shell { pointer-events: none; }
-.restaurant-meter-track { position: absolute; inset: 0; z-index: 2; height: 100%; margin: 0; padding: 0; overflow: hidden; border: 0; background: transparent; outline: none; }
+.restaurant-meter-track { position: absolute; inset: 0; z-index: 2; height: 100%; margin: 0; padding: 0; overflow: hidden; border: 0; background: transparent; outline: none; -webkit-touch-callout: none; }
 .restaurant-meter-track.is-holding { outline: none; filter: brightness(1.08); }
 .restaurant-meter-status { position: absolute; }
 .meter-overlay-toggle { white-space: nowrap; }
