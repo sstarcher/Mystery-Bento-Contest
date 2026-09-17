@@ -161,7 +161,7 @@
 .restaurant-reference-backdrop .open-kitchen > *:not(.kitchen-return-sign) { display: none; }
 .restaurant-chef-layer { position: absolute; inset: 0; z-index: 1; --restaurant-counter-top: calc(62% - 15px); pointer-events: none; }
 .restaurant-chef-layer .counter-chef { top: calc(var(--restaurant-counter-top) - 5px); bottom: auto; left: calc(45% + 20px); transform: translate(-50%, -100%) scale(.7); transform-origin: center bottom; }
-.restaurant-chef-layer .counter-chef-uma { left: calc(45% + 40px); }
+.restaurant-chef-layer .counter-chef-uma { left: calc(45% + 20px); }
 .restaurant-reference-belt { position: absolute; inset: 0 0 205px; z-index: 2; overflow: hidden; clip-path: inset(74% 0 14% 0); pointer-events: none; }
 .restaurant-reference-belt-image { position: absolute; inset: 0; display: block; width: 100%; height: 100%; object-fit: cover; object-position: center center; filter: saturate(.88) brightness(.82); image-rendering: pixelated; transform: scaleX(1.18); }
 .restaurant-background-dressing { position: absolute; inset: 0; transform: translateX(-10px); pointer-events: none; }
