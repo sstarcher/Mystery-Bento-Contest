@@ -1777,6 +1777,8 @@ function RestaurantControls({
   ledgerCount,
   curioCount,
   isDebugMode,
+  activeChefName,
+  onCycleChef,
   isCurioShowcaseEnabled,
   onCurioShowcaseChange,
   isMeterOverlayVisible,
@@ -1786,6 +1788,8 @@ function RestaurantControls({
   ledgerCount: number;
   curioCount: number;
   isDebugMode: boolean;
+  activeChefName: string | null;
+  onCycleChef: () => void;
   isCurioShowcaseEnabled: boolean;
   onCurioShowcaseChange: (enabled: boolean) => void;
   isMeterOverlayVisible: boolean;
@@ -1811,6 +1815,9 @@ function RestaurantControls({
             </button>
             <button type="button" onClick={() => onMeterOverlayChange(!isMeterOverlayVisible)} className="curio-button meter-overlay-toggle" aria-pressed={isMeterOverlayVisible} data-testid="toggle-meter-overlay">
               <span>{isMeterOverlayVisible ? 'Hide' : 'Show'} meter</span>
+            </button>
+            <button type="button" onClick={onCycleChef} className="curio-button" data-testid="button-cycle-chef">
+              <span>Chef</span><span className="font-mono-ui text-[#f5c968]">{activeChefName ?? 'next'}</span>
             </button>
           </>
         )}
@@ -2987,6 +2994,7 @@ function Home() {
   const [foodSplash, setFoodSplash] = useState<{ item: FoodItem; key: number } | null>(null);
   const [contestants, setContestants] = useState<Persona[]>([]);
   const [winner, setWinner] = useState<Persona | null>(null);
+  const [debugChefId, setDebugChefId] = useState<string | null>(null);
   const [liveStatus, setLiveStatus] = useState(acknowledgement);
   const { isDebugMode, initialShowcaseEnabled } = getCurioDebugState(window.location.search);
   const raceCheckMode = useMemo(() => new URLSearchParams(window.location.search).get('raceCheck'), []);
@@ -3016,9 +3024,19 @@ function Home() {
       ?? spriteSheetContestants.find((persona) => persona.name === latestEntry.winner)
       ?? null;
   }, [ledger]);
-  const activeChef = spriteSheetContestants.find((persona) => persona.id === winner?.id)
+  const defaultActiveChef = spriteSheetContestants.find((persona) => persona.id === winner?.id)
     ?? lastWinner
     ?? null;
+  const debugChef = spriteSheetContestants.find((persona) => persona.id === debugChefId) ?? null;
+  const activeChef = isDebugMode && debugChef ? debugChef : defaultActiveChef;
+  const cycleDebugChef = () => {
+    if (!spriteSheetContestants.length) return;
+    const currentIndex = debugChefId
+      ? spriteSheetContestants.findIndex((persona) => persona.id === debugChefId)
+      : spriteSheetContestants.findIndex((persona) => persona.id === defaultActiveChef?.id);
+    const nextIndex = (currentIndex + 1 + spriteSheetContestants.length) % spriteSheetContestants.length;
+    setDebugChefId(spriteSheetContestants[nextIndex]?.id ?? null);
+  };
   const shelfPreviewCollectibles = useMemo(
     () => selectRestaurantShelfCollectibles(collectibles, showcaseCollectibles, {
       isDebugMode,
@@ -3350,6 +3368,8 @@ function Home() {
                 ledgerCount={ledger.length}
                 curioCount={collectibles.length}
                 isDebugMode={isDebugMode}
+                activeChefName={activeChef?.name ?? null}
+                onCycleChef={cycleDebugChef}
                 isCurioShowcaseEnabled={isCurioShowcaseEnabled}
                 onCurioShowcaseChange={setIsCurioShowcaseEnabled}
                 isMeterOverlayVisible={isMeterOverlayVisible}
