@@ -63,7 +63,9 @@ export function preloadRaceImage(src: string): RaceImageResource {
   return resource;
 }
 
-export function preloadRaceAudioMetadata(src: string): RaceAudioResource {
+type RaceAudioPreloadMode = 'metadata' | 'auto';
+
+export function preloadRaceAudioMetadata(src: string, preload: RaceAudioPreloadMode = 'metadata'): RaceAudioResource {
   const existing = audioResources.get(src);
   if (existing) return existing;
 
@@ -91,7 +93,7 @@ export function preloadRaceAudioMetadata(src: string): RaceAudioResource {
   }
 
   const audio = new Audio();
-  audio.preload = 'metadata';
+  audio.preload = preload;
   audio.addEventListener('loadedmetadata', () => {
     const durationMs = Number.isFinite(audio.duration) && audio.duration > 0
       ? audio.duration * 1000
@@ -263,7 +265,10 @@ export function scheduleRaceImagePreload(
   );
 }
 
-export function scheduleRaceAudioPreload(sources: readonly string[]) {
+export function scheduleRaceAudioPreload(
+  sources: readonly string[],
+  preload: RaceAudioPreloadMode = 'metadata',
+) {
   const pendingSources = uniqueSources(sources);
   if (!pendingSources.length) return Promise.resolve([]);
   const results: boolean[] = [];
@@ -275,7 +280,7 @@ export function scheduleRaceAudioPreload(sources: readonly string[]) {
         const index = cursor;
         cursor += 1;
         active += 1;
-        void preloadRaceAudioMetadata(pendingSources[index]).promise.then((ready) => {
+        void preloadRaceAudioMetadata(pendingSources[index], preload).promise.then((ready) => {
           results[index] = ready;
           active -= 1;
           if (cursor >= pendingSources.length && active === 0) {

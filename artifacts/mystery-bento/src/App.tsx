@@ -3069,6 +3069,15 @@ function Home() {
   }, [earnedShelfCurioIds, setCurioPlacements]);
 
   useEffect(() => {
+    const imagePreload = scheduleRaceImagePreloadPlan(getBackgroundRaceImagePreloadPlan(), {
+      concurrency: 2,
+      idleDelayMs: 40,
+    });
+    void scheduleRaceAudioPreload(getBackgroundRaceAudioPreloadSources(), 'auto');
+    return () => imagePreload.cancel();
+  }, []);
+
+  useEffect(() => {
     setCollectibles((current) => {
       const showcaseById = new Map(showcaseCollectibles.map((item) => [item.id, item]));
       const refreshed = current.map((item) => {
@@ -3473,4 +3482,44 @@ function getRaceImagePreloadPlan(contestants: Persona[], race: RaceSimulation) {
       ...obstacleSources,
     ],
   );
+}
+
+function getBackgroundRaceImagePreloadPlan() {
+  const introContestantSources = personas.flatMap((persona) => [
+    persona.portraitSrc,
+    ...RACE_INTRO_READY_ACTIONS
+      .map((action) => getMovementSpriteSheet(persona.id, action)?.src)
+      .filter((src): src is string => Boolean(src)),
+  ]);
+  const deferredContestantSources = personas.flatMap((persona) => movementActions
+    .filter((action) => !RACE_INTRO_READY_ACTIONS.includes(action))
+    .map((action) => getMovementSpriteSheet(persona.id, action)?.src)
+    .filter((src): src is string => Boolean(src)));
+  const backgroundSources = RACE_BACKGROUND_SEQUENCE.map((scene) => `${RACE_BACKGROUND_BASE}/${scene.file}`);
+  const obstacleSources = Object.values(raceObstacleCatalog).map((obstacle) => obstacle.imageSrc);
+  return createRaceImagePreloadPlan(
+    [
+      ...backgroundSources,
+      ...obstacleSources,
+      ...introContestantSources,
+    ],
+    deferredContestantSources,
+  );
+}
+
+function getBackgroundRaceAudioPreloadSources() {
+  const durationSources = Object.keys(announcerClipDurations).map((id) => {
+    const separatorIndex = id.indexOf('/');
+    if (separatorIndex < 0) return '';
+    const family = id.slice(0, separatorIndex);
+    const file = id.slice(separatorIndex + 1);
+    return `${ANNOUNCER_AUDIO_BASE}/${family}/${file}.mp3`;
+  });
+  return [
+    announcerClip('character-intros', 'contestants-are', '').src,
+    announcerClip('race-starts', 'race-start-quiet-kitchen', '').src,
+    ...personas.map((persona) => announcerClip('character-names', persona.id, '').src),
+    ...Object.values(obstacleAnnouncerClips).flat().map((clip) => clip.src),
+    ...durationSources,
+  ];
 }
