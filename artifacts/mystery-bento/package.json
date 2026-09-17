@@ -9,7 +9,7 @@
     "serve": "vite preview --config vite.config.ts --host 0.0.0.0",
     "verify:assets": "node scripts/verify-asset-inventory.mjs",
     "verify:race-browser": "node scripts/verify-race-reversals-browser.mjs",
-    "verify:race": "tsx src/race-timeline.test.ts && tsx src/race-momentum.test.ts && tsx src/race-speed-model.test.ts && tsx src/contest-roster.test.ts && tsx src/race-obstacle-layout.test.ts && tsx src/race-rendering-profile.test.ts && tsx src/race-resource-cache.test.ts && tsx src/race-intro-performance.test.ts",
+    "verify:race": "tsx src/race-timeline.test.ts && tsx src/announcer-audio.test.ts && tsx src/race-momentum.test.ts && tsx src/race-speed-model.test.ts && tsx src/contest-roster.test.ts && tsx src/race-obstacle-layout.test.ts && tsx src/race-rendering-profile.test.ts && tsx src/race-resource-cache.test.ts && tsx src/race-intro-performance.test.ts",
     "verify:sprites": "tsx src/sprite-sheet-audit.test.ts && tsx src/movement-sprite-cadence.test.ts",
     "verify:curios": "tsx src/curio-art-sizing.test.ts && tsx src/curio-footprint-audit.test.ts && tsx src/curio-shelf-placements.test.ts && tsx src/curio-debug.test.ts",
     "typecheck": "tsc -p tsconfig.json --noEmit"

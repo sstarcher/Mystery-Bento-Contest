@@ -16,21 +16,24 @@ export type AnnouncerClip = {
   id: string;
   src: string;
   label: string;
+  /** Conservative duration used before browser media metadata is available. */
+  durationMs?: number;
 };
 
-const AUDIO_BASE = `${import.meta.env.BASE_URL}runtime/audio/announcer`;
+const AUDIO_BASE = `${import.meta.env?.BASE_URL ?? '/'}runtime/audio/announcer`;
 
-const clip = (id: string, path: string, label: string): AnnouncerClip => ({
+const clip = (id: string, path: string, label: string, durationMs?: number): AnnouncerClip => ({
   id,
   src: `${AUDIO_BASE}/${path}`,
   label,
+  durationMs,
 });
 
 export const announcerAudio = {
   raceStarts: [
-    clip('race-start-primary', 'race-starts/race-start-primary.mp3', 'the Mystery Bento Match is underway'),
-    clip('race-start-quiet-kitchen', 'race-starts/race-start-quiet-kitchen.mp3', 'the quiet kitchen opens the course'),
-    clip('race-start-welcome-back', 'race-starts/race-start-welcome-back.mp3', 'the after-hours kitchen welcomes everyone back'),
+    clip('race-start-primary', 'race-starts/race-start-primary.mp3', 'the Mystery Bento Match is underway', 8400),
+    clip('race-start-quiet-kitchen', 'race-starts/race-start-quiet-kitchen.mp3', 'the quiet kitchen opens the course', 6350),
+    clip('race-start-welcome-back', 'race-starts/race-start-welcome-back.mp3', 'the after-hours kitchen welcomes everyone back', 6850),
   ],
   contestantsAre: clip('contestants-are', 'character-intros/contestants-are.mp3', 'tonight’s contestants'),
   characterName: (personaId: string, name: string) => (
@@ -127,3 +130,17 @@ export const announcerAudio = {
   },
   finishResult: clip('finish-takes-the-win', 'finish-results/takes-the-win.mp3', 'takes the win'),
 } as const;
+
+/**
+ * Pick the opening call once when a contest is resolved. Accepting the random
+ * value keeps the selection deterministic in tests and lets the caller use
+ * the contest's already-created random stream without selecting during render.
+ */
+export const selectRaceStartClip = (randomValue = Math.random()): AnnouncerClip => {
+  const normalized = Number.isFinite(randomValue)
+    ? Math.max(0, Math.min(0.999999999, randomValue))
+    : 0;
+  return announcerAudio.raceStarts[
+    Math.floor(normalized * announcerAudio.raceStarts.length)
+  ] ?? announcerAudio.raceStarts[0];
+};

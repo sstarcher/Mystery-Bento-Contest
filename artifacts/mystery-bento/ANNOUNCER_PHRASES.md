@@ -126,12 +126,11 @@ These are interchangeable opening clips. They contain no names.
 - [x] Good evening, night owls, and welcome to the Mystery Bento Match! The
   lanterns are lit, the lanes are set, and our contenders are poised. And
   we’re off! — wired and verified
-- [ ] The kitchen is quiet, the lanterns are glowing, and the course is ready.
-  Contenders to the line — this bento dash is underway! — asset received; not
-  wired or verified
-- [ ] Welcome back to the after-hours kitchen! The route is set, the plates are
-  polished, and the night’s race is about to begin. Let’s go! — asset received;
-  not wired or verified
+- [x] The kitchen is quiet, the lanterns are glowing, and the course is ready.
+  Contenders to the line — this bento dash is underway! — wired and verified
+- [x] Welcome back to the after-hours kitchen! The route is set, the plates are
+  polished, and the night’s race is about to begin. Let’s go! — wired and
+  verified
 
 ### 2. Contest identity
 

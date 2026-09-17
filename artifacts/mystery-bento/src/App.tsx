@@ -45,6 +45,7 @@ import { getMovementSpriteSheet, type MovementAction } from './movement-sprite-c
 import { movementActions } from './movement-sprite-actions';
 import { MovementSprite } from './movement-sprite';
 import { getMatchedEncounterResultAudio } from './announcer-result-audio';
+import { selectRaceStartClip, type AnnouncerClip as CatalogAnnouncerClip } from './announcer-audio';
 import {
   createRaceImagePreloadPlan,
   getRaceAudioResource,
@@ -252,7 +253,13 @@ type RaceSimulation = {
   checkpointLeaders: Record<string, { beforeId: string; afterId: string }>;
   leadChanges: RaceLeadChange[];
 };
-type ContestOutcome = { winner: Persona; memorableEvent: string; contestName: string; race: RaceSimulation };
+type ContestOutcome = {
+  winner: Persona;
+  memorableEvent: string;
+  contestName: string;
+  race: RaceSimulation;
+  raceStartClip: CatalogAnnouncerClip;
+};
 
 type RacePositionStep = 'intro' | 'warmup' | 'matchup' | 'finale' | 'winner';
 type ContestStep = 'intro' | 'race' | 'winner';
@@ -325,7 +332,6 @@ type AnnouncerBeat = {
 // can replace them after preload, but the schedule never has to wait for it.
 const announcerClipDurations: Record<string, number> = {
   'character-intros/contestants-are': 1330,
-  'race-starts/race-start-quiet-kitchen': 6350,
   'character-names/bibi': 850,
   'character-names/kiku': 850,
   'character-names/miso': 800,
@@ -379,6 +385,10 @@ const announcerClip = (family: string, file: string, label: string): AnnouncerCl
   };
 };
 
+const announcerCatalogClip = (catalogClip: CatalogAnnouncerClip): AnnouncerClip => ({
+  ...catalogClip,
+  durationMs: catalogClip.durationMs ?? announcerClipDurations[catalogClip.id] ?? 2000,
+});
 const obstacleAnnouncerClips: Record<RaceObstacleKind, [AnnouncerClip, AnnouncerClip]> = {
   'napkin-gust': [
     announcerClip('obstacles', 'napkin-gust-ahead', 'Napkin gust ahead'),
@@ -640,8 +650,13 @@ function hasNegativeObstacleImpact(result: RaceEncounterResult | undefined) {
   return result === 'slow' || result === 'reroute';
 }
 
-function buildAnnouncerSequence(contestants: Persona[], race: RaceSimulation, prefersReducedMotion = false): AnnouncerBeat[] {
-  const raceStart = announcerClip('race-starts', 'race-start-quiet-kitchen', 'The race is underway');
+function buildAnnouncerSequence(
+  contestants: Persona[],
+  race: RaceSimulation,
+  raceStartClip: CatalogAnnouncerClip,
+  prefersReducedMotion = false,
+): AnnouncerBeat[] {
+  const raceStart = announcerCatalogClip(raceStartClip);
   const rosterOpening = announcerClip('character-intros', 'contestants-are', 'Tonight’s contestants are');
   const nameClips = contestants.map((persona) => announcerClip('character-names', persona.id, persona.name));
   const handoffTiming = getRaceStartHandoffTiming(
@@ -1407,6 +1422,7 @@ function resolveContest(
     memorableEvent: winner.memorableEvent,
     contestName: contestNames[Math.floor(rng() * contestNames.length)] ?? contestNames[0],
     race,
+    raceStartClip: selectRaceStartClip(rng()),
   };
 }
 
@@ -2236,7 +2252,7 @@ const RaceLiveRenderer = memo(function RaceLiveRenderer({
   );
 });
 
-function ContestOverlay({ contestants, winner, step, contestName, memorableEvent, race, finishLineVisible, finishCrossed, contestStartedAt, raceStartedAt, announcerResetKey, onAnnouncerBeat, onRaceStart, onSkip, onClose }: { contestants: Persona[]; winner: Persona | null; step: ContestStep; contestName: string; memorableEvent: string; race: RaceSimulation; finishLineVisible: boolean; finishCrossed: boolean; contestStartedAt: number | null; raceStartedAt: number | null; announcerResetKey: number; onAnnouncerBeat: (label: string) => void; onRaceStart: () => void; onSkip: () => void; onClose: () => void }) {
+function ContestOverlay({ contestants, winner, step, contestName, memorableEvent, race, raceStartClip, finishLineVisible, finishCrossed, contestStartedAt, raceStartedAt, announcerResetKey, onAnnouncerBeat, onRaceStart, onSkip, onClose }: { contestants: Persona[]; winner: Persona | null; step: ContestStep; contestName: string; memorableEvent: string; race: RaceSimulation; raceStartClip: CatalogAnnouncerClip; finishLineVisible: boolean; finishCrossed: boolean; contestStartedAt: number | null; raceStartedAt: number | null; announcerResetKey: number; onAnnouncerBeat: (label: string) => void; onRaceStart: () => void; onSkip: () => void; onClose: () => void }) {
   const [showWinnerReveal, setShowWinnerReveal] = useState(false);
   const [announcedContestantCount, setAnnouncedContestantCount] = useState(0);
   const [announcementCardsVisible, setAnnouncementCardsVisible] = useState(false);
@@ -2270,7 +2286,10 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
   const spokenBeatIds = useRef(new Set<string>());
   const announcerSessionStartedAt = useRef<number | null>(null);
   const announcerSessionResetKey = useRef<number | null>(null);
-  const announcerSequence = useMemo(() => buildAnnouncerSequence(contestants, race, prefersReducedMotion), [contestants, race, prefersReducedMotion]);
+  const announcerSequence = useMemo(
+    () => buildAnnouncerSequence(contestants, race, raceStartClip, prefersReducedMotion),
+    [contestants, race, raceStartClip, prefersReducedMotion],
+  );
   useEffect(() => {
     const imagePreload = scheduleRaceImagePreloadPlan(getRaceImagePreloadPlan(contestants, race), {
       concurrency: renderingProfile.constrained ? 1 : 2,
@@ -2372,7 +2391,10 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
       });
       const raceStartBeat = announcerSequence.find((beat) => beat.id === 'race-start');
       if (raceStartBeat) {
-        const raceStartDurationMs = raceStartBeat.clips[0]?.durationMs ?? 0;
+        const raceStartClip = raceStartBeat.clips[0];
+        const raceStartDurationMs = raceStartClip
+          ? getRaceAudioResource(raceStartClip.src)?.durationMs ?? raceStartClip.durationMs
+          : 0;
         schedule(
           () => raceStartGraphicCallback.current(),
           startedAt + raceStartBeat.offset - Date.now(),
@@ -2569,15 +2591,14 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
       contestantAnnouncedCallback.current(clip.id.slice(prefix.length));
     };
     const announceRaceStartClip = (clip: AnnouncerClip) => {
-      if (clip.id === 'race-starts/race-start-quiet-kitchen') {
-        raceStartGraphicCallback.current();
-        if (!raceStartGraphicLeadOutScheduled) {
-          raceStartGraphicLeadOutScheduled = true;
-          schedule(
-            () => raceStartGraphicHideCallback.current(),
-            Math.max(0, clip.durationMs - RACE_START_POPUP_LEAD_OUT_MS),
-          );
-        }
+      if (!clip.id.startsWith('race-starts/')) return;
+      raceStartGraphicCallback.current();
+      if (!raceStartGraphicLeadOutScheduled) {
+        raceStartGraphicLeadOutScheduled = true;
+        schedule(
+          () => raceStartGraphicHideCallback.current(),
+          Math.max(0, clipDurationMs(clip) - RACE_START_POPUP_LEAD_OUT_MS),
+        );
       }
     };
 
@@ -2650,7 +2671,7 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
         if (beat.id === 'race-start') {
           schedule(
             () => announcementCompleteCallback.current(),
-            getRaceStartAnnouncementCompletionDelay(clip.durationMs),
+            getRaceStartAnnouncementCompletionDelay(clipDurationMs(clip)),
           );
         }
         announceNameClip(clip);
@@ -2694,7 +2715,7 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
         if (beat.id === 'race-start') {
           continueBeat(
             MIN_ANNOUNCER_GAP_MS,
-            getRaceStartAnnouncementCompletionDelay(clip.durationMs),
+            getRaceStartAnnouncementCompletionDelay(clipDurationMs(clip)),
           );
           return;
         }
@@ -2726,7 +2747,7 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
            if (beat.id === 'race-start') {
              continueBeat(
                MIN_ANNOUNCER_GAP_MS,
-              getRaceStartAnnouncementCompletionDelay(clip.durationMs),
+               getRaceStartAnnouncementCompletionDelay(clipDurationMs(clip)),
              );
            } else {
              continueBeat();
@@ -2764,7 +2785,9 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
           announceRaceStartClip(beat.clips[0]);
           schedule(
             () => announcementCompleteCallback.current(),
-            getRaceStartAnnouncementCompletionDelay(beat.clips[0]?.durationMs ?? 0),
+            getRaceStartAnnouncementCompletionDelay(
+              beat.clips[0] ? clipDurationMs(beat.clips[0]) : 0,
+            ),
           );
         }
         pendingBeatIds.delete(beat.id);
@@ -3440,7 +3463,7 @@ function Home() {
 
       </main>
       <div className="sr-only" role="status" aria-live="polite" data-testid="live-contest-status">{liveStatus}</div>
-      {contestOpen && contestOutcome.current && <ContestOverlay contestants={contestants} winner={winner} step={contestStep} contestName={contestOutcome.current.contestName} memorableEvent={contestOutcome.current.memorableEvent} race={contestOutcome.current.race} finishLineVisible={finishLineVisible} finishCrossed={finishCrossed} contestStartedAt={contestIntroStartedAt.current} raceStartedAt={contestRaceStartedAt.current} announcerResetKey={announcerResetKey} onAnnouncerBeat={(label) => setLiveStatus(`Announcer: ${label}.`)} onRaceStart={startRace} onSkip={skipContest} onClose={finishContest} />}
+      {contestOpen && contestOutcome.current && <ContestOverlay contestants={contestants} winner={winner} step={contestStep} contestName={contestOutcome.current.contestName} memorableEvent={contestOutcome.current.memorableEvent} race={contestOutcome.current.race} raceStartClip={contestOutcome.current.raceStartClip} finishLineVisible={finishLineVisible} finishCrossed={finishCrossed} contestStartedAt={contestIntroStartedAt.current} raceStartedAt={contestRaceStartedAt.current} announcerResetKey={announcerResetKey} onAnnouncerBeat={(label) => setLiveStatus(`Announcer: ${label}.`)} onRaceStart={startRace} onSkip={skipContest} onClose={finishContest} />}
       {curioView && <CurioOverlay view={curioView} ledger={ledger} collectibles={collectibles} onClose={() => setCurioView(null)} onReset={resetMemory} />}
       <span className="sr-only">{selectedCount ? `${selectedCount} memories kept nearby` : 'local memory is empty'}</span>
     </div>
