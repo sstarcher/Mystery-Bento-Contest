@@ -99,6 +99,7 @@ import {
     RACE_WORLD_TRACK_WIDTH_MULTIPLIER,
    RACE_RUNNER_RENDER_WIDTH_PX,
    RACE_RUNNER_LEADING_EDGE_OFFSET_PERCENT,
+   RACE_RUNNER_FINISH_VISUAL_OFFSET_PX,
   RACE_LAST_CONTESTANT_PAUSE_MS,
   RACE_START_POPUP_LEAD_OUT_MS,
   RACE_START_POST_ANNOUNCEMENT_GAP_MS,
@@ -1958,6 +1959,10 @@ const RaceLiveRenderer = memo(function RaceLiveRenderer({
     const runnerFinishScreenAnchor = getRaceRunnerFinishScreenAnchorAtRaceTime(
       clockMs,
       prefersReducedMotion,
+    ) + (
+      finishCrossed || clockMs >= finishSnapshotStartMs
+        ? (RACE_RUNNER_FINISH_VISUAL_OFFSET_PX / RACE_CANVAS_WIDTH_PX) * 100
+        : 0
     );
     const finishSnapshotPosition = race.finishGapBoost.applied
       ? Math.max(

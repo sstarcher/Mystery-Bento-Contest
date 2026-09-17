@@ -76,6 +76,10 @@ export const RACE_RUNNER_SECOND_SCREEN_CAP_PERCENT = 55;
 export const RACE_RUNNER_RENDER_WIDTH_PX = 216;
 export const RACE_RUNNER_LEADING_EDGE_OFFSET_PERCENT =
   (RACE_RUNNER_RENDER_WIDTH_PX / RACE_BACKGROUND_CANVAS_WIDTH_PX) * 50;
+// Movement sprite canvases include transparent padding ahead of the visible
+// character silhouette. Move the presentation endpoint forward so the
+// character, not the padded box, reaches the authored finish marker.
+export const RACE_RUNNER_FINISH_VISUAL_OFFSET_PX = 50;
 // Keep this in sync with the fixed-canvas `.race-obstacle-art` box. Contact
 // begins when the visible artwork boxes meet, not when their centers enter an
 // arbitrary narrative window.
