@@ -1517,11 +1517,31 @@ function alignCurioTooltipToViewport(hotspot: HTMLButtonElement) {
   const viewportRight = viewportLeft + (visualViewport?.width ?? window.innerWidth);
   const viewportBottom = viewportTop + (visualViewport?.height ?? window.innerHeight);
   const appRect = document.querySelector('.bento-app')?.getBoundingClientRect();
-  const visibleLeft = Math.max(viewportLeft, appRect?.left ?? 0);
-  const visibleTop = Math.max(viewportTop, appRect?.top ?? 0);
-  const visibleRight = Math.min(viewportRight, appRect?.right ?? window.innerWidth);
-  const visibleBottom = Math.min(viewportBottom, appRect?.bottom ?? window.innerHeight);
-  card.style.setProperty('--curio-visible-viewport-width', `${viewportRight - viewportLeft}px`);
+  const sceneRect = document.querySelector('.scene-shell')?.getBoundingClientRect();
+  const visibleLeft = Math.max(
+    viewportLeft,
+    appRect?.left ?? 0,
+    sceneRect?.left ?? 0,
+  );
+  const visibleTop = Math.max(
+    viewportTop,
+    appRect?.top ?? 0,
+    sceneRect?.top ?? 0,
+  );
+  const visibleRight = Math.min(
+    viewportRight,
+    appRect?.right ?? window.innerWidth,
+    sceneRect?.right ?? window.innerWidth,
+  );
+  const visibleBottom = Math.min(
+    viewportBottom,
+    appRect?.bottom ?? window.innerHeight,
+    sceneRect?.bottom ?? window.innerHeight,
+  );
+  card.style.setProperty(
+    '--curio-visible-viewport-width',
+    `${Math.max(0, visibleRight - visibleLeft)}px`,
+  );
 
   const tooltipSlot = hotspot.parentElement?.classList.contains('curio-hotspot-slot')
     ? hotspot.parentElement
@@ -1547,11 +1567,12 @@ function alignCurioTooltipToViewport(hotspot: HTMLButtonElement) {
   const currentShift = Number.parseFloat(card.style.getPropertyValue('--curio-tooltip-shift-x')) || 0;
   const centeredLeft = rect.left - currentShift;
   const centeredRight = rect.right - currentShift;
-  const shift = centeredLeft < visibleLeft + gutter
+  const rawShift = centeredLeft < visibleLeft + gutter
     ? visibleLeft + gutter - centeredLeft
     : centeredRight > visibleRight - gutter
       ? visibleRight - gutter - centeredRight
       : 0;
+  const shift = Math.max(visibleLeft + gutter - centeredLeft, rawShift);
   if (shift !== currentShift) {
     card.style.setProperty('--curio-tooltip-shift-x', `${shift}px`);
   }
@@ -1570,13 +1591,16 @@ function CurioHotspot({ item, className, style }: { item: Collectible; className
       }
     };
     const visualViewport = window.visualViewport;
+    const scrollport = document.querySelector('.bento-app');
     window.addEventListener('resize', alignActiveTooltip);
     visualViewport?.addEventListener('resize', alignActiveTooltip);
     visualViewport?.addEventListener('scroll', alignActiveTooltip);
+    scrollport?.addEventListener('scroll', alignActiveTooltip);
     return () => {
       window.removeEventListener('resize', alignActiveTooltip);
       visualViewport?.removeEventListener('resize', alignActiveTooltip);
       visualViewport?.removeEventListener('scroll', alignActiveTooltip);
+      scrollport?.removeEventListener('scroll', alignActiveTooltip);
     };
   }, []);
 

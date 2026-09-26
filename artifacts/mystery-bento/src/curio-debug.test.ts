@@ -288,10 +288,11 @@ async function inspectCurio(
       const viewportRight = viewportLeft + (viewport?.width ?? window.innerWidth);
       const viewportBottom = viewportTop + (viewport?.height ?? window.innerHeight);
       const appRect = document.querySelector('.bento-app')?.getBoundingClientRect();
-      const left = Math.max(viewportLeft, appRect?.left ?? 0);
-      const right = Math.min(viewportRight, appRect?.right ?? window.innerWidth);
-      const top = Math.max(viewportTop, appRect?.top ?? 0);
-      const bottom = Math.min(viewportBottom, appRect?.bottom ?? window.innerHeight);
+      const sceneRect = document.querySelector('.scene-shell')?.getBoundingClientRect();
+      const left = Math.max(viewportLeft, appRect?.left ?? 0, sceneRect?.left ?? 0);
+      const right = Math.min(viewportRight, appRect?.right ?? window.innerWidth, sceneRect?.right ?? window.innerWidth);
+      const top = Math.max(viewportTop, appRect?.top ?? 0, sceneRect?.top ?? 0);
+      const bottom = Math.min(viewportBottom, appRect?.bottom ?? window.innerHeight, sceneRect?.bottom ?? window.innerHeight);
       return {
         x: Math.max(left + 1, Math.min(right - 1, rect.left + rect.width / 2)),
         y: Math.max(top + 1, Math.min(bottom - 1, rect.top + rect.height / 2)),
@@ -336,10 +337,10 @@ async function inspectCurio(
       const viewportRight = viewportLeft + (visualViewport?.width ?? window.innerWidth);
       const viewportBottom = viewportTop + (visualViewport?.height ?? window.innerHeight);
       const appRect = document.querySelector('.bento-app')?.getBoundingClientRect();
-      const visibleLeft = Math.max(viewportLeft, appRect?.left ?? 0);
-      const visibleTop = Math.max(viewportTop, appRect?.top ?? 0);
-      const visibleRight = Math.min(viewportRight, appRect?.right ?? window.innerWidth);
-      const visibleBottom = Math.min(viewportBottom, appRect?.bottom ?? window.innerHeight);
+      const visibleLeft = Math.max(viewportLeft, appRect?.left ?? 0, sceneRect?.left ?? 0);
+      const visibleTop = Math.max(viewportTop, appRect?.top ?? 0, sceneRect?.top ?? 0);
+      const visibleRight = Math.min(viewportRight, appRect?.right ?? window.innerWidth, sceneRect?.right ?? window.innerWidth);
+      const visibleBottom = Math.min(viewportBottom, appRect?.bottom ?? window.innerHeight, sceneRect?.bottom ?? window.innerHeight);
       const shelfStage = curio.closest('.restaurant-curio-shelf-stage');
       const siblingRoot = shelfStage ?? curio.parentElement;
       const siblingSelector = shelfStage ? '.curio-hotspot' : ':scope > .curio-hotspot';
