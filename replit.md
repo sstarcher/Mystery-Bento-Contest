@@ -24,11 +24,8 @@ server, database, accounts, or environment secrets.
 ## Stack
 
 - pnpm workspaces, Node.js 24, TypeScript 5.9
-- API: Express 5
-- DB: PostgreSQL + Drizzle ORM
-- Validation: Zod (`zod/v4`), `drizzle-zod`
-- API codegen: Orval (from OpenAPI spec)
-- Build: esbuild (CJS bundle)
+- Frontend: React 19, Vite, Tailwind CSS, Lucide Icons, Radix UI primitives
+- Storage: Browser-local persistence (`localStorage`)
 
 ## Where things live
 

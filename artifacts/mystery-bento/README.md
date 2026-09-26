@@ -136,7 +136,7 @@ and browser-delivered runtime assets separate.
 | `src/assets/derived/contestants/portraits/` | 12 | Opaque contestant portraits | Active imports |
 | `src/assets/derived/contestants/movement/` | 72 | 12 contestants × 6 transparent movement sheets | Active imports |
 | `src/assets/derived/curios/` | 33 | Three independent curio derivatives for 11 non-Pip contestants | Active imports |
-| `public/runtime/images/` | 28 | Race backgrounds, obstacle art, plates, keepsakes, and restaurant art | Active browser assets |
+| `public/runtime/images/` | 29 | Race backgrounds, obstacle art, plates, keepsakes, and restaurant art | Active browser assets |
 | `public/runtime/video/cooking/` | 12 | Winner cooking sprite sheets | Active browser assets |
 | `public/runtime/audio/` | 69 | 68 selected announcer clips plus one Pip listening preview | Active browser assets |
 | `assets/review/unused/` | 18 | Confirmed unused audio candidates awaiting review | Not shipped |

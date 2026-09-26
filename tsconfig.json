@@ -4,13 +4,10 @@
   "files": [],
   "references": [
     {
-      "path": "./lib/db"
+      "path": "./artifacts/mystery-bento"
     },
     {
-      "path": "./lib/api-client-react"
-    },
-    {
-      "path": "./lib/api-zod"
+      "path": "./scripts"
     }
   ]
 }
