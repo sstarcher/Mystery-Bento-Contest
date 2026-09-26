@@ -1507,8 +1507,28 @@ function CurioInfoCard({ item }: { item: Collectible }) {
 }
 
 function alignCurioTooltipToViewport(hotspot: HTMLButtonElement) {
-  const card = hotspot.querySelector<HTMLElement>('.curio-info-card');
+  const card = hotspot.querySelector<HTMLElement>('.curio-info-card')
+    ?? hotspot.parentElement?.querySelector<HTMLElement>(':scope > .curio-info-card');
   if (!card) return;
+
+  const tooltipSlot = hotspot.parentElement?.classList.contains('curio-hotspot-slot')
+    ? hotspot.parentElement
+    : null;
+  if (tooltipSlot && !tooltipSlot.classList.contains('curio-hotspot-slot-hanging-tools')) {
+    const slotRect = tooltipSlot.getBoundingClientRect();
+    const cardHeight = card.getBoundingClientRect().height;
+    const gap = Number.parseFloat(getComputedStyle(tooltipSlot).getPropertyValue('--curio-tooltip-gap')) || 10;
+    const aboveTop = slotRect.top + gap - cardHeight;
+    const belowTop = slotRect.bottom - gap;
+    const aboveFits = aboveTop >= 12 && slotRect.top + gap <= window.innerHeight - 12;
+    const belowFits = belowTop + cardHeight <= window.innerHeight - 12;
+    const aboveVisibleHeight = Math.max(0, Math.min(window.innerHeight - 12, slotRect.top + gap) - Math.max(12, aboveTop));
+    const belowVisibleHeight = Math.max(0, Math.min(window.innerHeight - 12, belowTop + cardHeight) - Math.max(12, belowTop));
+    tooltipSlot.classList.toggle(
+      'curio-tooltip-below',
+      !aboveFits && (belowFits || belowVisibleHeight > aboveVisibleHeight),
+    );
+  }
 
   const gutter = 12;
   const rect = card.getBoundingClientRect();
@@ -1527,6 +1547,7 @@ function alignCurioTooltipToViewport(hotspot: HTMLButtonElement) {
 
 function CurioHotspot({ item, className, style }: { item: Collectible; className: string; style?: CSSProperties }) {
   const isLatest = className.includes('displayed-curio-latest');
+  const isHangingTool = className.includes('displayed-curio-hanging-tools');
   const hotspotRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
@@ -1541,21 +1562,22 @@ function CurioHotspot({ item, className, style }: { item: Collectible; className
   }, []);
 
   return (
-    <button
-      type="button"
-      className={`curio-hotspot ${className}`}
-      ref={hotspotRef}
-      style={style}
-      aria-label={`View curio information for ${item.title}`}
-      aria-describedby={`curio-info-${item.id}`}
-      onPointerEnter={(event) => alignCurioTooltipToViewport(event.currentTarget)}
-      onFocus={(event) => alignCurioTooltipToViewport(event.currentTarget)}
-    >
-      {isLatest && <span className="curio-award-marker" aria-hidden="true">new</span>}
-      <CurioGlyph item={item} />
-      <span className="curio-place-label">{item.kind}</span>
+    <div className={`curio-hotspot-slot${isHangingTool ? ' curio-hotspot-slot-hanging-tools' : ''}`} style={style}>
+      <button
+        type="button"
+        className={`curio-hotspot ${className}`}
+        ref={hotspotRef}
+        aria-label={`View curio information for ${item.title}`}
+        aria-describedby={`curio-info-${item.id}`}
+        onPointerEnter={(event) => alignCurioTooltipToViewport(event.currentTarget)}
+        onFocus={(event) => alignCurioTooltipToViewport(event.currentTarget)}
+      >
+        {isLatest && <span className="curio-award-marker" aria-hidden="true">new</span>}
+        <CurioGlyph item={item} />
+        <span className="curio-place-label">{item.kind}</span>
+      </button>
       <CurioInfoCard item={item} />
-    </button>
+    </div>
   );
 }
 

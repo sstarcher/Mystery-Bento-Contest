@@ -224,6 +224,12 @@ type CurioInteractionResult = {
   cardVisible: boolean;
   cardWidth: number;
   cardHeight: number;
+  cardLeft: number;
+  cardTop: number;
+  cardRight: number;
+  cardBottom: number;
+  viewportWidth: number;
+  viewportHeight: number;
   cardWithinViewport: boolean;
   cardWithinScene: boolean;
   activeZIndex: number;
@@ -267,11 +273,15 @@ async function inspectCurio(
     (() => {
       const curio = document.querySelector(${JSON.stringify(selector)});
       if (!curio) throw new Error('Missing curio after hover');
-      const card = curio.querySelector('.curio-info-card');
+      const card = curio.querySelector('.curio-info-card')
+        ?? curio.parentElement?.querySelector(':scope > .curio-info-card');
       if (!card) throw new Error('Curio has no tooltip card');
       const cardRect = card.getBoundingClientRect();
       const sceneRect = document.querySelector('.scene-shell')?.getBoundingClientRect();
-      const siblings = [...(curio.parentElement?.children ?? [])]
+      const shelfStage = curio.closest('.restaurant-curio-shelf-stage');
+      const siblingRoot = shelfStage ?? curio.parentElement;
+      const siblingSelector = shelfStage ? '.curio-hotspot' : ':scope > .curio-hotspot';
+      const siblings = [...(siblingRoot?.querySelectorAll(siblingSelector) ?? [])]
         .filter((node) => node !== curio && node instanceof HTMLElement && node.matches('.curio-hotspot'));
       const siblingRects = siblings.map((sibling) => sibling.getBoundingClientRect());
       const overlaps = siblingRects.filter((rect) => (
@@ -303,6 +313,12 @@ async function inspectCurio(
         cardVisible: cardStyle.visibility === 'visible' && Number(cardStyle.opacity) > .99,
         cardWidth: cardRect.width,
         cardHeight: cardRect.height,
+        cardLeft: cardRect.left,
+        cardTop: cardRect.top,
+        cardRight: cardRect.right,
+        cardBottom: cardRect.bottom,
+        viewportWidth: window.innerWidth,
+        viewportHeight: window.innerHeight,
         cardWithinViewport: cardRect.left >= 0
           && cardRect.top >= 0
           && cardRect.right <= window.innerWidth
@@ -326,8 +342,8 @@ function assertCurioInteraction(result: CurioInteractionResult, label: string) {
   assert.equal(result.focused, true, `${label} should expose its tooltip on keyboard focus`);
   assert.equal(result.hovered, true, `${label} should expose its tooltip on pointer hover`);
   assert.equal(result.cardVisible, true, `${label} tooltip should be visible`);
-  assert.ok(result.cardWidth > 100 && result.cardHeight > 40, `${label} tooltip should render at full size`);
-  assert.equal(result.cardWithinViewport, true, `${label} tooltip should not be clipped by the viewport`);
+  assert.ok(result.cardWidth >= 300 && result.cardHeight > 40, `${label} tooltip should render at full size: ${JSON.stringify(result)}`);
+  assert.equal(result.cardWithinViewport, true, `${label} tooltip should not be clipped by the viewport: ${JSON.stringify(result)}`);
   assert.equal(result.cardWithinScene, true, `${label} tooltip should not be clipped by the fixed scene`);
   assert.ok(result.activeZIndex >= 100, `${label} should promote the active curio above its neighbors`);
   assert.ok(result.neighborCount > 0, `${label} should have a neighboring curio to test against`);
@@ -339,8 +355,8 @@ function assertCounterCurioInteraction(result: CurioInteractionResult, label: st
   assert.equal(result.focused, true, `${label} should expose its tooltip on keyboard focus`);
   assert.equal(result.hovered, true, `${label} should expose its tooltip on pointer hover`);
   assert.equal(result.cardVisible, true, `${label} tooltip should be visible`);
-  assert.ok(result.cardWidth > 100 && result.cardHeight > 40, `${label} tooltip should render at full size`);
-  assert.equal(result.cardWithinViewport, true, `${label} tooltip should not be clipped by the viewport`);
+  assert.ok(result.cardWidth >= 300 && result.cardHeight > 40, `${label} tooltip should render at full size: ${JSON.stringify(result)}`);
+  assert.equal(result.cardWithinViewport, true, `${label} tooltip should not be clipped by the viewport: ${JSON.stringify(result)}`);
   assert.equal(result.cardWithinScene, true, `${label} tooltip should not be clipped by the fixed scene`);
   assert.ok(result.activeZIndex >= 100, `${label} should promote the active curio above its neighbors`);
   assert.ok(result.containerZIndex >= 100, `${label} should promote its counter cluster above the counter scene`);
