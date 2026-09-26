@@ -125,6 +125,15 @@ pnpm --filter @workspace/mystery-bento run verify:assets
 
 ---
 
+## 🍣 Physical Tabletop Conveyor (Hardware & 3D CAD)
+
+For home builds and kitchen table setups, complete 3D models and CAD blueprints for a physical tabletop sushi conveyor loop (optimized for **3.5" plates** and the **Prusa CORE One+**) are available in [`hardware/sushi-train/`](hardware/sushi-train/):
+- **Ready-to-print STLs:** [`crescent_slat.stl`](hardware/sushi-train/crescent_slat.stl), [`drive_sprocket.stl`](hardware/sushi-train/drive_sprocket.stl)
+- **Parametric OpenSCAD Source:** Modular tracks, drive turnaround, and vertical filament-pinned crescent chain
+- **Fusion 360 Guide:** Step-by-step beginner tutorial in [`FUSION360_GUIDE.md`](hardware/sushi-train/FUSION360_GUIDE.md)
+
+---
+
 ## 📜 License
 
 This project is licensed under the [MIT License](LICENSE).
