@@ -307,11 +307,11 @@
 .curio-hotspot:hover, .curio-hotspot:focus { z-index: 100; }
 .curio-hotspot-slot { position: relative; display: grid; place-items: center; }
 .curio-hotspot-slot:has(> .curio-hotspot:hover), .curio-hotspot-slot:focus-within { z-index: 100; }
-.curio-info-card { position: absolute; left: 50%; bottom: calc(100% + 14px); z-index: 50; display: grid; box-sizing: border-box; width: min(472px, calc(100vw - 24px)); gap: 8px; padding: 24px 26px; transform: translate(calc(-50% + var(--curio-tooltip-shift-x, 0px)), 8px); visibility: hidden; opacity: 0; border: 3px solid #17121e; background: #f5e8c9; color: #30223c; box-shadow: 5px 5px 0 rgba(23,18,30,.48); font-family: var(--app-font-mono); font-size: 18px; line-height: 1.35; text-align: left; text-transform: none; letter-spacing: normal; pointer-events: none; transition: opacity .15s ease, transform .15s ease, visibility .15s ease; }
-.curio-info-card::after { content: ''; position: absolute; left: clamp(10px, calc(50% - var(--curio-tooltip-shift-x, 0px)), calc(100% - 10px)); bottom: -9px; width: 13px; height: 13px; transform: translateX(-50%) rotate(45deg); border-right: 3px solid #17121e; border-bottom: 3px solid #17121e; background: #f5e8c9; }
-.curio-info-card strong { position: relative; z-index: 1; font-family: var(--font-display); font-size: 30px; line-height: 1.05; }
-.curio-info-kind, .curio-info-earned { position: relative; z-index: 1; color: #a34d43; font-size: 16px; text-transform: uppercase; letter-spacing: .1em; }
-.curio-info-description { position: relative; z-index: 1; color: #765752; font-family: var(--font-sans); font-size: 22px; line-height: 1.35; }
+.curio-info-card { position: absolute; left: 50%; bottom: calc(100% + 14px); z-index: 50; display: grid; box-sizing: border-box; width: min(330px, calc(100vw - 24px)); gap: 6px; padding: 17px 18px; transform: translate(calc(-50% + var(--curio-tooltip-shift-x, 0px)), 8px); visibility: hidden; opacity: 0; border: 2px solid #17121e; background: #f5e8c9; color: #30223c; box-shadow: 4px 4px 0 rgba(23,18,30,.48); font-family: var(--app-font-mono); font-size: 13px; line-height: 1.35; text-align: left; text-transform: none; letter-spacing: normal; pointer-events: none; transition: opacity .15s ease, transform .15s ease, visibility .15s ease; }
+.curio-info-card::after { content: ''; position: absolute; left: clamp(10px, calc(50% - var(--curio-tooltip-shift-x, 0px)), calc(100% - 10px)); bottom: -7px; width: 9px; height: 9px; transform: translateX(-50%) rotate(45deg); border-right: 2px solid #17121e; border-bottom: 2px solid #17121e; background: #f5e8c9; }
+.curio-info-card strong { position: relative; z-index: 1; font-family: var(--font-display); font-size: 21px; line-height: 1.05; }
+.curio-info-kind, .curio-info-earned { position: relative; z-index: 1; color: #a34d43; font-size: 11px; text-transform: uppercase; letter-spacing: .1em; }
+.curio-info-description { position: relative; z-index: 1; color: #765752; font-family: var(--font-sans); font-size: 15.5px; line-height: 1.35; }
 .curio-hotspot:hover .curio-info-card, .curio-hotspot:focus .curio-info-card, .curio-hotspot:focus-visible .curio-info-card { visibility: visible; opacity: 1; transform: translate(calc(-50% + var(--curio-tooltip-shift-x, 0px)), 0); }
 .curio-hotspot-slot:has(> .curio-hotspot:hover) > .curio-info-card, .curio-hotspot-slot:focus-within > .curio-info-card { visibility: visible; opacity: 1; transform: translate(calc(-50% + var(--curio-tooltip-shift-x, 0px)), 0); }
 .curio-art-box { width: 96px; height: 96px; display: grid; place-items: center; overflow: visible; }
@@ -327,7 +327,7 @@
 .restaurant-curio-shelf-stage .curio-hotspot-slot.curio-tooltip-below > .curio-info-card::after { top: -9px; bottom: auto; transform: translateX(-50%) rotate(225deg); }
 .displayed-curio-hanging-tools .curio-art-box { transform: scale(1.2) rotate(5deg); }
 .restaurant-curio-shelf-stage .curio-hotspot-slot-hanging-tools > .curio-info-card { top: calc(100% - var(--curio-tooltip-gap)); bottom: auto; transform: translate(calc(-50% + var(--curio-tooltip-shift-x, 0px)), -8px); }
-.curio-hotspot-slot-hanging-tools > .curio-info-card::after { top: -9px; bottom: auto; transform: translateX(-50%) rotate(225deg); }
+.curio-hotspot-slot-hanging-tools > .curio-info-card::after { top: -7px; bottom: auto; transform: translateX(-50%) rotate(225deg); }
 .curio-hotspot-slot-hanging-tools:hover > .curio-info-card, .curio-hotspot-slot-hanging-tools:focus-within > .curio-info-card { transform: translate(calc(-50% + var(--curio-tooltip-shift-x, 0px)), 0); }
 .displayed-curio-latest .curio-glyph-image { filter: drop-shadow(0 0 4px rgba(245,201,104,.9)) drop-shadow(0 0 10px rgba(245,201,104,.44)); animation: curio-award-shimmer 1.65s ease-in-out infinite; }
 .displayed-curio-showcase .curio-glyph-image { filter: drop-shadow(0 0 3px rgba(245,201,104,.62)); }
@@ -830,10 +830,10 @@
   .background-bonsai { top: 344px; left: 37%; transform: scale(.54); transform-origin: bottom center; }
   .background-cherry-tree { top: 389px; right: 2%; left: auto; transform: scale(.44); transform-origin: bottom right; }
   .background-spice-shelf { display: none; }
-  .curio-info-card { width: min(420px, calc(100vw - 24px)); gap: 8px; padding: 20px 22px; font-size: 18px; }
-  .curio-info-card strong { font-size: 26px; }
-  .curio-info-kind, .curio-info-earned { font-size: 16px; }
-  .curio-info-description { font-size: 20px; }
+  .curio-info-card { width: min(294px, calc(100vw - 24px)); gap: 6px; padding: 14px 15px; font-size: 13px; }
+  .curio-info-card strong { font-size: 18px; }
+  .curio-info-kind, .curio-info-earned { font-size: 11px; }
+  .curio-info-description { font-size: 14px; }
   .open-kitchen { top: 76px; left: 25%; right: 25%; height: 325px; }
   .kitchen-return-sign { top: 90px; left: 31%; width: 146px; padding: 8px 8px 7px; gap: 4px; }
   .kitchen-return-sign strong { font-size: 16px; }
@@ -1111,13 +1111,13 @@
 }
 @media (min-width: 768px) and (max-width: 1100px) {
   .curio-info-card {
-    width: min(680px, calc(100vw - 32px));
-    gap: 12px;
-    padding: 32px 36px;
-    font-size: 22px;
+    width: min(476px, calc(100vw - 32px));
+    gap: 8px;
+    padding: 22px 25px;
+    font-size: 15px;
     line-height: 1.4;
   }
-  .curio-info-card strong { font-size: 36px; }
-  .curio-info-kind, .curio-info-earned { font-size: 18px; }
-  .curio-info-description { font-size: 28px; line-height: 1.45; }
+  .curio-info-card strong { font-size: 25px; }
+  .curio-info-kind, .curio-info-earned { font-size: 13px; }
+  .curio-info-description { font-size: 20px; line-height: 1.45; }
 }
