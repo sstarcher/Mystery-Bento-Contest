@@ -2321,9 +2321,7 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
   const announcementCompleteCallback = useRef<() => void>(() => undefined);
   const contestantsAnnouncedCallback = useRef<() => void>(() => undefined);
   contestantsAnnouncedCallback.current = () => {
-    setAnnouncementCardsVisible(false);
-    setRaceStartSequenceActive(true);
-    setAnnouncementStatus('The roster is set. The race is about to start.');
+    raceStartGraphicCallback.current();
   };
   announcementCompleteCallback.current = () => {
     if (raceStartHandoffResolved.current) return;

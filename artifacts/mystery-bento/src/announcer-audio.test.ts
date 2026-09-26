@@ -104,6 +104,11 @@ assert.match(
 );
 assert.match(
   appSource,
+  /contestantsAnnouncedCallback\.current = \(\) => \{\s*raceStartGraphicCallback\.current\(\);\s*\};/,
+  'the starting popup should appear with the race screen instead of after it',
+);
+assert.match(
+  appSource,
   /startedAt \+ raceStartBeat\.offset - RACE_LAST_CONTESTANT_PAUSE_MS - Date\.now\(\)/,
   'muted contests should hand off from the roster at the end of the final name',
 );
