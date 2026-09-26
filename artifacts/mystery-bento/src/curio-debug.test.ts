@@ -199,13 +199,23 @@ async function openBrowser(): Promise<BrowserProcess> {
   };
 }
 
-async function navigate(client: DevToolsClient, width: number, height: number) {
+async function navigate(
+  client: DevToolsClient,
+  width: number,
+  height: number,
+  mobile = false,
+  deviceScaleFactor = 1,
+) {
   await client.send('Emulation.setDeviceMetricsOverride', {
     width,
     height,
-    deviceScaleFactor: 1,
-    mobile: false,
+    deviceScaleFactor,
+    mobile,
   });
+  await client.send(
+    'Emulation.setTouchEmulationEnabled',
+    mobile ? { enabled: true, maxTouchPoints: 1 } : { enabled: false },
+  );
   await client.send('Page.navigate', { url: `${appUrl}/?debug=curio-shelf` });
   const deadline = Date.now() + 20_000;
   while (Date.now() < deadline) {
@@ -244,6 +254,7 @@ async function inspectCurio(
   selector: string,
   inline: 'center' | 'nearest' = 'center',
   scrollIntoView = true,
+  inputKind: 'mouse' | 'touch' | 'focus' = 'mouse',
 ): Promise<CurioInteractionResult> {
   await client.evaluate(`
     (() => {
@@ -262,14 +273,43 @@ async function inspectCurio(
       const curio = document.querySelector(${JSON.stringify(selector)});
       if (!curio) throw new Error('Missing curio after focus');
       const rect = curio.getBoundingClientRect();
-      return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
+      const viewport = window.visualViewport;
+      const viewportLeft = viewport?.offsetLeft ?? 0;
+      const viewportTop = viewport?.offsetTop ?? 0;
+      const viewportRight = viewportLeft + (viewport?.width ?? window.innerWidth);
+      const viewportBottom = viewportTop + (viewport?.height ?? window.innerHeight);
+      const appRect = document.querySelector('.bento-app')?.getBoundingClientRect();
+      const left = Math.max(viewportLeft, appRect?.left ?? 0);
+      const right = Math.min(viewportRight, appRect?.right ?? window.innerWidth);
+      const top = Math.max(viewportTop, appRect?.top ?? 0);
+      const bottom = Math.min(viewportBottom, appRect?.bottom ?? window.innerHeight);
+      return {
+        x: Math.max(left + 1, Math.min(right - 1, rect.left + rect.width / 2)),
+        y: Math.max(top + 1, Math.min(bottom - 1, rect.top + rect.height / 2)),
+      };
     })()
   `);
-  await client.send('Input.dispatchMouseEvent', {
-    type: 'mouseMoved',
-    x: focusState.x,
-    y: focusState.y,
-  });
+  if (inputKind === 'touch') {
+    await client.evaluate(`
+      (() => {
+        const curio = document.querySelector(${JSON.stringify(selector)});
+        if (!curio) throw new Error('Missing curio for touch pointer-down');
+        curio.dispatchEvent(new PointerEvent('pointerdown', {
+          bubbles: true,
+          cancelable: true,
+          pointerId: 1,
+          pointerType: 'touch',
+          isPrimary: true,
+        }));
+      })()
+    `);
+  } else if (inputKind === 'mouse') {
+    await client.send('Input.dispatchMouseEvent', {
+      type: 'mouseMoved',
+      x: focusState.x,
+      y: focusState.y,
+    });
+  }
   await new Promise((resolve) => setTimeout(resolve, 180));
 
   return client.evaluate<CurioInteractionResult>(`
@@ -281,6 +321,16 @@ async function inspectCurio(
       if (!card) throw new Error('Curio has no tooltip card');
       const cardRect = card.getBoundingClientRect();
       const sceneRect = document.querySelector('.scene-shell')?.getBoundingClientRect();
+      const visualViewport = window.visualViewport;
+      const viewportLeft = visualViewport?.offsetLeft ?? 0;
+      const viewportTop = visualViewport?.offsetTop ?? 0;
+      const viewportRight = viewportLeft + (visualViewport?.width ?? window.innerWidth);
+      const viewportBottom = viewportTop + (visualViewport?.height ?? window.innerHeight);
+      const appRect = document.querySelector('.bento-app')?.getBoundingClientRect();
+      const visibleLeft = Math.max(viewportLeft, appRect?.left ?? 0);
+      const visibleTop = Math.max(viewportTop, appRect?.top ?? 0);
+      const visibleRight = Math.min(viewportRight, appRect?.right ?? window.innerWidth);
+      const visibleBottom = Math.min(viewportBottom, appRect?.bottom ?? window.innerHeight);
       const shelfStage = curio.closest('.restaurant-curio-shelf-stage');
       const siblingRoot = shelfStage ?? curio.parentElement;
       const siblingSelector = shelfStage ? '.curio-hotspot' : ':scope > .curio-hotspot';
@@ -320,12 +370,21 @@ async function inspectCurio(
         cardTop: cardRect.top,
         cardRight: cardRect.right,
         cardBottom: cardRect.bottom,
-        viewportWidth: window.innerWidth,
-        viewportHeight: window.innerHeight,
-        cardWithinViewport: cardRect.left >= 0
-          && cardRect.top >= 0
-          && cardRect.right <= window.innerWidth
-          && cardRect.bottom <= window.innerHeight,
+        curioLeft: curio.getBoundingClientRect().left,
+        curioRight: curio.getBoundingClientRect().right,
+        windowWidth: window.innerWidth,
+        visualViewportWidth: visualViewport?.width ?? null,
+        visualViewportOffsetLeft: visualViewport?.offsetLeft ?? null,
+        tooltipShiftX: card.style.getPropertyValue('--curio-tooltip-shift-x'),
+        tooltipViewportWidth: card.style.getPropertyValue('--curio-visible-viewport-width'),
+        appViewportLeft: appRect?.left ?? null,
+        appViewportRight: appRect?.right ?? null,
+        viewportWidth: visibleRight - visibleLeft,
+        viewportHeight: visibleBottom - visibleTop,
+        cardWithinViewport: cardRect.left >= visibleLeft
+          && cardRect.top >= visibleTop
+          && cardRect.right <= visibleRight
+          && cardRect.bottom <= visibleBottom,
         cardWithinScene: Boolean(sceneRect)
           && cardRect.left >= (sceneRect?.left ?? 0)
           && cardRect.top >= (sceneRect?.top ?? 0)
@@ -366,6 +425,15 @@ function assertCounterCurioInteraction(result: CurioInteractionResult, label: st
   assert.equal(result.neighborCount, 1, `${label} should have a neighboring counter curio`);
 }
 
+function assertMobileCurioInteraction(result: CurioInteractionResult, label: string) {
+  assert.equal(result.focused, true, `${label} should open its tooltip on a phone-sized viewport`);
+  assert.equal(result.cardVisible, true, `${label} tooltip should be visible on a phone-sized viewport`);
+  assert.ok(result.cardWidth >= 280 && result.cardHeight > 40, `${label} tooltip should keep its reduced full size: ${JSON.stringify(result)}`);
+  assert.equal(result.cardWithinViewport, true, `${label} tooltip should fit the visual viewport: ${JSON.stringify(result)}`);
+  assert.equal(result.cardWithinScene, true, `${label} tooltip should fit the fixed scene`);
+  assert.ok(result.activeZIndex >= 100, `${label} should promote the active curio above its neighbors`);
+}
+
 async function addCounterCurioFixture(client: DevToolsClient) {
   await client.evaluate(`
     (() => {
@@ -393,8 +461,35 @@ async function identifyRightmostShelfCurio(client: DevToolsClient) {
   return client.evaluate<string>(`
     (() => {
       const curios = [...document.querySelectorAll('.restaurant-curio-shelf-stage .displayed-curio')];
-      const rightmost = curios.reduce((current, candidate) => (
-        candidate.getBoundingClientRect().right > current.getBoundingClientRect().right
+      const sceneRect = document.querySelector('.scene-shell')?.getBoundingClientRect();
+      if (!sceneRect) throw new Error('Missing fixed scene');
+      const visible = curios.filter((curio) => {
+        const rect = curio.getBoundingClientRect();
+        return rect.right > sceneRect.left
+          && rect.left < sceneRect.right
+          && rect.bottom > sceneRect.top
+          && rect.top < sceneRect.bottom;
+      });
+      if (!visible.length) {
+        const scrollport = document.querySelector('.bento-app');
+        const stageRect = document.querySelector('.restaurant-curio-shelf-stage')?.getBoundingClientRect();
+        throw new Error('No shelf curios intersect the visible app viewport: ' + JSON.stringify({
+          innerWidth: window.innerWidth,
+          visualViewport: viewport ? { width: viewport.width, offsetLeft: viewport.offsetLeft } : null,
+          appViewport: appRect ? { left: appRect.left, right: appRect.right } : null,
+          scrollport: scrollport instanceof HTMLElement
+            ? { clientWidth: scrollport.clientWidth, scrollWidth: scrollport.scrollWidth, scrollLeft: scrollport.scrollLeft }
+            : null,
+          stage: stageRect ? { left: stageRect.left, right: stageRect.right } : null,
+          curioBounds: curios.slice(0, 3).map((curio) => {
+            const rect = curio.getBoundingClientRect();
+            return { left: rect.left, right: rect.right };
+          }),
+        }));
+      }
+      const rightmost = visible.reduce((current, candidate) => (
+        Math.min(candidate.getBoundingClientRect().right, sceneRect.right)
+          > Math.min(current.getBoundingClientRect().right, sceneRect.right)
           ? candidate
           : current
       ));
@@ -404,7 +499,27 @@ async function identifyRightmostShelfCurio(client: DevToolsClient) {
   `);
 }
 
-async function captureRightmostCurioScreenshot(client: DevToolsClient, width: number) {
+async function scrollBentoViewportToRight(client: DevToolsClient, selector: string) {
+  await client.evaluate(`
+    (() => {
+      const scrollport = document.querySelector('.bento-app');
+      if (!(scrollport instanceof HTMLElement)) throw new Error('Missing app viewport');
+      const curio = document.querySelector(${JSON.stringify(selector)});
+      if (!(curio instanceof HTMLElement)) throw new Error('Missing right-edge shelf curio');
+      const appRect = scrollport.getBoundingClientRect();
+      const curioRect = curio.getBoundingClientRect();
+      const desiredScrollLeft = curioRect.right - appRect.left
+        + scrollport.scrollLeft - scrollport.clientWidth + 2;
+      scrollport.scrollLeft = Math.max(
+        0,
+        Math.min(scrollport.scrollWidth - scrollport.clientWidth, desiredScrollLeft),
+      );
+    })()
+  `);
+  await new Promise((resolve) => setTimeout(resolve, 100));
+}
+
+async function captureRightmostCurioScreenshot(client: DevToolsClient, width: number, suffix = '') {
   const response = await client.send('Page.captureScreenshot', {
     format: 'png',
     fromSurface: true,
@@ -412,7 +527,7 @@ async function captureRightmostCurioScreenshot(client: DevToolsClient, width: nu
   });
   const data = response.result?.data;
   if (typeof data !== 'string') throw new Error('Chromium did not return a tooltip screenshot');
-  const filePath = join(tmpdir(), `mystery-bento-curio-right-${width}.png`);
+  const filePath = join(tmpdir(), `mystery-bento-curio-right-${width}${suffix}.png`);
   writeFileSync(filePath, Buffer.from(data, 'base64'));
   console.log(`Captured hovered rightmost curio at ${width}px: ${filePath}`);
 }
@@ -442,11 +557,14 @@ async function runCurioBrowserCheck() {
         `${viewport.width}px upward shelf curio`,
       );
       const rightmostShelfCurio = await identifyRightmostShelfCurio(client);
+      await scrollBentoViewportToRight(client, rightmostShelfCurio);
+      const rightmostResult = await inspectCurio(client, rightmostShelfCurio, 'nearest', false);
       assertCurioInteraction(
-        await inspectCurio(client, rightmostShelfCurio, 'nearest', viewport.width !== 1280),
+        rightmostResult,
         `${viewport.width}px right-edge shelf curio`,
       );
       if (process.env.CURIO_CAPTURE_SCREENSHOTS === '1') {
+        console.log(`Rightmost popup bounds at ${viewport.width}px: ${JSON.stringify(rightmostResult)}`);
         await captureRightmostCurioScreenshot(client, viewport.width);
       }
       assertCurioInteraction(
@@ -458,6 +576,16 @@ async function runCurioBrowserCheck() {
         await inspectCurio(client, '.browser-check-counter-curio .counter-curio-item:last-child'),
         `${viewport.width}px counter curio`,
       );
+    }
+
+    await navigate(client, 360, 803, true, 3);
+    const mobileRightmostCurio = await identifyRightmostShelfCurio(client);
+    await scrollBentoViewportToRight(client, mobileRightmostCurio);
+    const mobileRightmostResult = await inspectCurio(client, mobileRightmostCurio, 'nearest', false, 'touch');
+    assertMobileCurioInteraction(mobileRightmostResult, '360px phone right-edge shelf curio');
+    if (process.env.CURIO_CAPTURE_SCREENSHOTS === '1') {
+      console.log(`Phone-sized popup bounds at mobile 360px: ${JSON.stringify(mobileRightmostResult)}`);
+      await captureRightmostCurioScreenshot(client, 360, '-mobile');
     }
   } finally {
     browser?.client.close();

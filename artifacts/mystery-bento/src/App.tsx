@@ -1511,6 +1511,18 @@ function alignCurioTooltipToViewport(hotspot: HTMLButtonElement) {
     ?? hotspot.parentElement?.querySelector<HTMLElement>(':scope > .curio-info-card');
   if (!card) return;
 
+  const visualViewport = window.visualViewport;
+  const viewportLeft = visualViewport?.offsetLeft ?? 0;
+  const viewportTop = visualViewport?.offsetTop ?? 0;
+  const viewportRight = viewportLeft + (visualViewport?.width ?? window.innerWidth);
+  const viewportBottom = viewportTop + (visualViewport?.height ?? window.innerHeight);
+  const appRect = document.querySelector('.bento-app')?.getBoundingClientRect();
+  const visibleLeft = Math.max(viewportLeft, appRect?.left ?? 0);
+  const visibleTop = Math.max(viewportTop, appRect?.top ?? 0);
+  const visibleRight = Math.min(viewportRight, appRect?.right ?? window.innerWidth);
+  const visibleBottom = Math.min(viewportBottom, appRect?.bottom ?? window.innerHeight);
+  card.style.setProperty('--curio-visible-viewport-width', `${viewportRight - viewportLeft}px`);
+
   const tooltipSlot = hotspot.parentElement?.classList.contains('curio-hotspot-slot')
     ? hotspot.parentElement
     : null;
@@ -1520,10 +1532,10 @@ function alignCurioTooltipToViewport(hotspot: HTMLButtonElement) {
     const gap = Number.parseFloat(getComputedStyle(tooltipSlot).getPropertyValue('--curio-tooltip-gap')) || 10;
     const aboveTop = slotRect.top + gap - cardHeight;
     const belowTop = slotRect.bottom - gap;
-    const aboveFits = aboveTop >= 12 && slotRect.top + gap <= window.innerHeight - 12;
-    const belowFits = belowTop + cardHeight <= window.innerHeight - 12;
-    const aboveVisibleHeight = Math.max(0, Math.min(window.innerHeight - 12, slotRect.top + gap) - Math.max(12, aboveTop));
-    const belowVisibleHeight = Math.max(0, Math.min(window.innerHeight - 12, belowTop + cardHeight) - Math.max(12, belowTop));
+    const aboveFits = aboveTop >= visibleTop + 12 && slotRect.top + gap <= visibleBottom - 12;
+    const belowFits = belowTop + cardHeight <= visibleBottom - 12;
+    const aboveVisibleHeight = Math.max(0, Math.min(visibleBottom - 12, slotRect.top + gap) - Math.max(visibleTop + 12, aboveTop));
+    const belowVisibleHeight = Math.max(0, Math.min(visibleBottom - 12, belowTop + cardHeight) - Math.max(visibleTop + 12, belowTop));
     tooltipSlot.classList.toggle(
       'curio-tooltip-below',
       !aboveFits && (belowFits || belowVisibleHeight > aboveVisibleHeight),
@@ -1535,10 +1547,10 @@ function alignCurioTooltipToViewport(hotspot: HTMLButtonElement) {
   const currentShift = Number.parseFloat(card.style.getPropertyValue('--curio-tooltip-shift-x')) || 0;
   const centeredLeft = rect.left - currentShift;
   const centeredRight = rect.right - currentShift;
-  const shift = centeredLeft < gutter
-    ? gutter - centeredLeft
-    : centeredRight > window.innerWidth - gutter
-      ? window.innerWidth - gutter - centeredRight
+  const shift = centeredLeft < visibleLeft + gutter
+    ? visibleLeft + gutter - centeredLeft
+    : centeredRight > visibleRight - gutter
+      ? visibleRight - gutter - centeredRight
       : 0;
   if (shift !== currentShift) {
     card.style.setProperty('--curio-tooltip-shift-x', `${shift}px`);
@@ -1557,8 +1569,15 @@ function CurioHotspot({ item, className, style }: { item: Collectible; className
         alignCurioTooltipToViewport(hotspot);
       }
     };
+    const visualViewport = window.visualViewport;
     window.addEventListener('resize', alignActiveTooltip);
-    return () => window.removeEventListener('resize', alignActiveTooltip);
+    visualViewport?.addEventListener('resize', alignActiveTooltip);
+    visualViewport?.addEventListener('scroll', alignActiveTooltip);
+    return () => {
+      window.removeEventListener('resize', alignActiveTooltip);
+      visualViewport?.removeEventListener('resize', alignActiveTooltip);
+      visualViewport?.removeEventListener('scroll', alignActiveTooltip);
+    };
   }, []);
 
   return (
@@ -1570,6 +1589,7 @@ function CurioHotspot({ item, className, style }: { item: Collectible; className
         aria-label={`View curio information for ${item.title}`}
         aria-describedby={`curio-info-${item.id}`}
         onPointerEnter={(event) => alignCurioTooltipToViewport(event.currentTarget)}
+        onPointerDown={(event) => alignCurioTooltipToViewport(event.currentTarget)}
         onFocus={(event) => alignCurioTooltipToViewport(event.currentTarget)}
       >
         {isLatest && <span className="curio-award-marker" aria-hidden="true">new</span>}
