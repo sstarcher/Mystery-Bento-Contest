@@ -1506,15 +1506,50 @@ function CurioInfoCard({ item }: { item: Collectible }) {
   );
 }
 
+function alignCurioTooltipToViewport(hotspot: HTMLButtonElement) {
+  const card = hotspot.querySelector<HTMLElement>('.curio-info-card');
+  if (!card) return;
+
+  const gutter = 12;
+  const rect = card.getBoundingClientRect();
+  const currentShift = Number.parseFloat(card.style.getPropertyValue('--curio-tooltip-shift-x')) || 0;
+  const centeredLeft = rect.left - currentShift;
+  const centeredRight = rect.right - currentShift;
+  const shift = centeredLeft < gutter
+    ? gutter - centeredLeft
+    : centeredRight > window.innerWidth - gutter
+      ? window.innerWidth - gutter - centeredRight
+      : 0;
+  if (shift !== currentShift) {
+    card.style.setProperty('--curio-tooltip-shift-x', `${shift}px`);
+  }
+}
+
 function CurioHotspot({ item, className, style }: { item: Collectible; className: string; style?: CSSProperties }) {
   const isLatest = className.includes('displayed-curio-latest');
+  const hotspotRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    const alignActiveTooltip = () => {
+      const hotspot = hotspotRef.current;
+      if (hotspot && (hotspot.matches(':hover') || hotspot === document.activeElement)) {
+        alignCurioTooltipToViewport(hotspot);
+      }
+    };
+    window.addEventListener('resize', alignActiveTooltip);
+    return () => window.removeEventListener('resize', alignActiveTooltip);
+  }, []);
+
   return (
     <button
       type="button"
       className={`curio-hotspot ${className}`}
+      ref={hotspotRef}
       style={style}
       aria-label={`View curio information for ${item.title}`}
       aria-describedby={`curio-info-${item.id}`}
+      onPointerEnter={(event) => alignCurioTooltipToViewport(event.currentTarget)}
+      onFocus={(event) => alignCurioTooltipToViewport(event.currentTarget)}
     >
       {isLatest && <span className="curio-award-marker" aria-hidden="true">new</span>}
       <CurioGlyph item={item} />

@@ -233,12 +233,16 @@ type CurioInteractionResult = {
   tooltipIsTopmostAtOverlap: boolean;
 };
 
-async function inspectCurio(client: DevToolsClient, selector: string): Promise<CurioInteractionResult> {
+async function inspectCurio(
+  client: DevToolsClient,
+  selector: string,
+  inline: 'center' | 'nearest' = 'center',
+): Promise<CurioInteractionResult> {
   await client.evaluate(`
     (() => {
       const curio = document.querySelector(${JSON.stringify(selector)});
       if (!curio) throw new Error('Missing curio: ' + ${JSON.stringify(selector)});
-      curio.scrollIntoView({ block: 'center', inline: 'center' });
+      curio.scrollIntoView({ block: 'center', inline: ${JSON.stringify(inline)} });
       curio.focus();
     })()
   `);
@@ -366,6 +370,21 @@ async function addCounterCurioFixture(client: DevToolsClient) {
   `);
 }
 
+async function identifyRightmostShelfCurio(client: DevToolsClient) {
+  return client.evaluate<string>(`
+    (() => {
+      const curios = [...document.querySelectorAll('.restaurant-curio-shelf-stage .displayed-curio')];
+      const rightmost = curios.reduce((current, candidate) => (
+        candidate.getBoundingClientRect().right > current.getBoundingClientRect().right
+          ? candidate
+          : current
+      ));
+      rightmost.id = 'browser-check-rightmost-shelf-curio';
+      return '#browser-check-rightmost-shelf-curio';
+    })()
+  `);
+}
+
 async function runCurioBrowserCheck() {
   const serverProcess = spawn('pnpm', ['run', 'dev'], {
     cwd: packageDirectory,
@@ -380,11 +399,20 @@ async function runCurioBrowserCheck() {
     await client.send('Page.enable');
     await client.send('Runtime.enable');
 
-    for (const viewport of [{ width: 1280, height: 800 }, { width: 640, height: 800 }]) {
+    for (const viewport of [
+      { width: 1280, height: 800 },
+      { width: 640, height: 800 },
+      { width: 360, height: 800 },
+    ]) {
       await navigate(client, viewport.width, viewport.height);
       assertCurioInteraction(
         await inspectCurio(client, '.displayed-curio:not(.displayed-curio-hanging-tools)'),
         `${viewport.width}px upward shelf curio`,
+      );
+      const rightmostShelfCurio = await identifyRightmostShelfCurio(client);
+      assertCurioInteraction(
+        await inspectCurio(client, rightmostShelfCurio, 'nearest'),
+        `${viewport.width}px right-edge shelf curio`,
       );
       assertCurioInteraction(
         await inspectCurio(client, '.displayed-curio-hanging-tools'),
