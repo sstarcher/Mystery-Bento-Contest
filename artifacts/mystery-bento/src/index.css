@@ -1100,3 +1100,15 @@
     background-image: radial-gradient(circle at 50% 15%, rgba(244,190,68,.14), transparent 16rem);
   }
 }
+@media (min-width: 768px) and (max-width: 1100px) {
+  .curio-info-card {
+    width: min(340px, calc(100vw - 32px));
+    gap: 6px;
+    padding: 16px 18px;
+    font-size: 11px;
+    line-height: 1.4;
+  }
+  .curio-info-card strong { font-size: 18px; }
+  .curio-info-kind, .curio-info-earned { font-size: 9px; }
+  .curio-info-description { font-size: 14px; line-height: 1.45; }
+}
