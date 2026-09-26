@@ -119,91 +119,104 @@ const runtimeAssetPath = (file: string) => fileURLToPath(new URL(`../public/runt
 const movementRuntimeAssetPath = (file: string) => fileURLToPath(new URL(`./assets/derived/contestants/movement/${file}`, import.meta.url));
 const normalizedMovementMetrics = new Map<string, { action: MovementAction; height: number; baseline: number }[]>();
 
-for (const sheet of [...spriteSheets, ...movementSpriteSheets]) {
-  const file = movementSpriteSheets.includes(sheet)
-    ? movementRuntimeAssetPath(sheet.file)
-    : runtimeAssetPath(sheet.file);
-  const width = Number(execFileSync('identify', ['-format', '%w', file], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }));
-  const frameSize = width / sheet.columns;
-  const alphaMeans = execFileSync(
-    'convert',
-    [file, '-crop', `${frameSize}x${frameSize}`, '+repage', '-alpha', 'extract', '-format', '%[fx:mean]\n', 'info:'],
-    { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] },
-  )
-    .trim()
-    .split(/\s+/)
-    .filter(Boolean)
-    .map(Number);
-  const occupiedFrames = alphaMeans.filter((mean) => mean > 0.0001).length;
+function hasImageMagick(): boolean {
+  try {
+    execFileSync('identify', ['-version'], { stdio: 'ignore' });
+    return true;
+  } catch {
+    return false;
+  }
+}
 
-  assert.equal(alphaMeans.length, sheet.columns * sheet.rows, `${sheet.file}: unexpected grid size`);
-  assert.equal(occupiedFrames, sheet.occupiedFrames, `${sheet.file}: occupied frame count changed`);
-  assert.ok(alphaMeans.slice(0, sheet.occupiedFrames).every((mean) => mean > 0.0001), `${sheet.file}: a configured frame is blank`);
-  assert.ok(alphaMeans[Math.floor(sheet.occupiedFrames / 2)] > 0.0001, `${sheet.file}: middle occupied frame is blank`);
-  assert.ok(alphaMeans[sheet.occupiedFrames - 1] > 0.0001, `${sheet.file}: last occupied frame is blank`);
-  assert.ok(alphaMeans.slice(sheet.occupiedFrames).every((mean) => mean <= 0.0001), `${sheet.file}: padded frame is not transparent`);
-
-  if (movementSpriteSheets.includes(sheet)) {
-    const [personaId, action] = sheet.file.replace(/\.png$/, '').split('-') as [string, MovementAction];
-    const normalization = movementSpriteNormalization[personaId]?.[action];
-    assert.ok(normalization, `${sheet.file}: missing per-character normalization metadata`);
-    const boxes = execFileSync(
+if (!hasImageMagick()) {
+  console.log('ImageMagick (identify/convert) not found in PATH; skipping image-level pixel frame analysis.');
+} else {
+  for (const sheet of [...spriteSheets, ...movementSpriteSheets]) {
+    const file = movementSpriteSheets.includes(sheet)
+      ? movementRuntimeAssetPath(sheet.file)
+      : runtimeAssetPath(sheet.file);
+    const width = Number(execFileSync('identify', ['-format', '%w', file], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }));
+    const frameSize = width / sheet.columns;
+    const alphaMeans = execFileSync(
       'convert',
-      [file, '-alpha', 'extract', '-threshold', '0', '-crop', `${frameSize}x${frameSize}`, '-format', '%@\\n', 'info:'],
+      [file, '-crop', `${frameSize}x${frameSize}`, '+repage', '-alpha', 'extract', '-format', '%[fx:mean]\n', 'info:'],
       { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] },
     )
       .trim()
       .split(/\s+/)
-      .slice(0, sheet.occupiedFrames)
-      .map((geometry) => {
-        const match = geometry.match(/^(\d+)x(\d+)\+(-?\d+)\+(-?\d+)$/);
-        assert.ok(match, `${sheet.file}: malformed alpha bounds`);
-        return match!.slice(1).map(Number);
-      });
-    const median = (values: number[]) => values.slice().sort((a, b) => a - b)[Math.floor(values.length / 2)];
-    if (action !== 'victory') {
-      assert.ok(
-        boxes.every(([width, height, x, y]) => x > 0 && y > 0 && x + width < frameSize && y + height < frameSize),
-        `${sheet.file}: silhouette reaches a frame boundary`,
-      );
-    }
-    const normalizedHeight = median(boxes.map(([, height]) => (
-      height * (216 / frameSize) * normalization!.scale
-    )));
-    const normalizedBaseline = median(boxes.map(([, height, , y]) => (
-      216 + ((y + height) / frameSize * 216 - 216) * normalization!.scale + normalization!.baselineOffset
-    )));
-    const personaMetrics = normalizedMovementMetrics.get(personaId) ?? [];
-    personaMetrics.push({ action, height: normalizedHeight, baseline: normalizedBaseline });
-    normalizedMovementMetrics.set(personaId, personaMetrics);
-    assert.ok(normalizedHeight > 120, `${sheet.file}: normalized silhouette is unexpectedly small`);
-    assert.ok(normalizedBaseline > 140 && normalizedBaseline < 220, `${sheet.file}: normalized baseline is outside the runner frame`);
-  }
-}
+      .filter(Boolean)
+      .map(Number);
+    const occupiedFrames = alphaMeans.filter((mean) => mean > 0.0001).length;
 
-for (const [personaId, metrics] of normalizedMovementMetrics) {
-  const regularMetrics = metrics.filter(({ action }) => action !== 'victory');
-  const regularHeights = regularMetrics.map(({ height }) => height);
-  const victoryMetric = metrics.find(({ action }) => action === 'victory');
-  const baselines = metrics.map(({ baseline }) => baseline);
-  assert.ok(
-    Math.max(...regularHeights) - Math.min(...regularHeights) <= 8,
-    `${personaId}: normalized action scale drifted by more than 8 rendered pixels`,
-  );
-  assert.ok(victoryMetric, `${personaId}: victory normalization metrics are missing`);
-  const regularMedianHeight = regularHeights.slice().sort((a, b) => a - b)[Math.floor(regularHeights.length / 2)];
-  const expectedVictoryHeightMultiplier = personaId === 'rollo' ? 1.4 : 1.1;
-  assert.ok(
-    Math.abs(victoryMetric!.height - regularMedianHeight * expectedVictoryHeightMultiplier) <= 4,
-    `${personaId}: victory pose size drifted from its presentation target`,
-  );
-  const baselineMetrics = personaId === 'rollo'
-    ? metrics.filter(({ action }) => action !== 'victory')
-    : metrics;
-  assert.ok(
-    Math.max(...baselineMetrics.map(({ baseline }) => baseline)) - Math.min(...baselineMetrics.map(({ baseline }) => baseline)) <= 3,
-    `${personaId}: normalized action baseline drifted by more than 3 rendered pixels`,
-  );
+    assert.equal(alphaMeans.length, sheet.columns * sheet.rows, `${sheet.file}: unexpected grid size`);
+    assert.equal(occupiedFrames, sheet.occupiedFrames, `${sheet.file}: occupied frame count changed`);
+    assert.ok(alphaMeans.slice(0, sheet.occupiedFrames).every((mean) => mean > 0.0001), `${sheet.file}: a configured frame is blank`);
+    assert.ok(alphaMeans[Math.floor(sheet.occupiedFrames / 2)] > 0.0001, `${sheet.file}: middle occupied frame is blank`);
+    assert.ok(alphaMeans[sheet.occupiedFrames - 1] > 0.0001, `${sheet.file}: last occupied frame is blank`);
+    assert.ok(alphaMeans.slice(sheet.occupiedFrames).every((mean) => mean <= 0.0001), `${sheet.file}: padded frame is not transparent`);
+
+    if (movementSpriteSheets.includes(sheet)) {
+      const [personaId, action] = sheet.file.replace(/\.png$/, '').split('-') as [string, MovementAction];
+      const normalization = movementSpriteNormalization[personaId]?.[action];
+      assert.ok(normalization, `${sheet.file}: missing per-character normalization metadata`);
+      const boxes = execFileSync(
+        'convert',
+        [file, '-alpha', 'extract', '-threshold', '0', '-crop', `${frameSize}x${frameSize}`, '-format', '%@\\n', 'info:'],
+        { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] },
+      )
+        .trim()
+        .split(/\s+/)
+        .slice(0, sheet.occupiedFrames)
+        .map((geometry) => {
+          const match = geometry.match(/^(\d+)x(\d+)\+(-?\d+)\+(-?\d+)$/);
+          assert.ok(match, `${sheet.file}: malformed alpha bounds`);
+          return match!.slice(1).map(Number);
+        });
+      const median = (values: number[]) => values.slice().sort((a, b) => a - b)[Math.floor(values.length / 2)];
+      if (action !== 'victory') {
+        assert.ok(
+          boxes.every(([width, height, x, y]) => x > 0 && y > 0 && x + width < frameSize && y + height < frameSize),
+          `${sheet.file}: silhouette reaches a frame boundary`,
+        );
+      }
+      const normalizedHeight = median(boxes.map(([, height]) => (
+        height * (216 / frameSize) * normalization!.scale
+      )));
+      const normalizedBaseline = median(boxes.map(([, height, , y]) => (
+        216 + ((y + height) / frameSize * 216 - 216) * normalization!.scale + normalization!.baselineOffset
+      )));
+      const personaMetrics = normalizedMovementMetrics.get(personaId) ?? [];
+      personaMetrics.push({ action, height: normalizedHeight, baseline: normalizedBaseline });
+      normalizedMovementMetrics.set(personaId, personaMetrics);
+      assert.ok(normalizedHeight > 120, `${sheet.file}: normalized silhouette is unexpectedly small`);
+      assert.ok(normalizedBaseline > 140 && normalizedBaseline < 220, `${sheet.file}: normalized baseline is outside the runner frame`);
+    }
+  }
+
+  for (const [personaId, metrics] of normalizedMovementMetrics) {
+    const regularMetrics = metrics.filter(({ action }) => action !== 'victory');
+    const regularHeights = regularMetrics.map(({ height }) => height);
+    const victoryMetric = metrics.find(({ action }) => action === 'victory');
+    const baselines = metrics.map(({ baseline }) => baseline);
+    assert.ok(
+      Math.max(...regularHeights) - Math.min(...regularHeights) <= 8,
+      `${personaId}: normalized action scale drifted by more than 8 rendered pixels`,
+    );
+    assert.ok(victoryMetric, `${personaId}: victory normalization metrics are missing`);
+    const regularMedianHeight = regularHeights.slice().sort((a, b) => a - b)[Math.floor(regularHeights.length / 2)];
+    const expectedVictoryHeightMultiplier = personaId === 'rollo' ? 1.4 : 1.1;
+    assert.ok(
+      Math.abs(victoryMetric!.height - regularMedianHeight * expectedVictoryHeightMultiplier) <= 4,
+      `${personaId}: victory pose size drifted from its presentation target`,
+    );
+    const baselineMetrics = personaId === 'rollo'
+      ? metrics.filter(({ action }) => action !== 'victory')
+      : metrics;
+    assert.ok(
+      Math.max(...baselineMetrics.map(({ baseline }) => baseline)) - Math.min(...baselineMetrics.map(({ baseline }) => baseline)) <= 3,
+      `${personaId}: normalized action baseline drifted by more than 3 rendered pixels`,
+    );
+  }
 }
 
 const raceCss = readFileSync(fileURLToPath(new URL('./index.css', import.meta.url)), 'utf8');

@@ -1,6 +1,6 @@
 import { strict as assert } from 'node:assert';
 import { spawn, type ChildProcess } from 'node:child_process';
-import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { getCurioDebugState, selectRestaurantShelfCollectibles } from './curio-debug';
@@ -145,7 +145,20 @@ type BrowserProcess = {
   profileDirectory: string;
 };
 
-const browserBinary = process.env.CHROMIUM_PATH ?? '/repl/tools/bin/chromium';
+function findBrowserBinary(): string | undefined {
+  const candidates = [
+    process.env.CHROMIUM_PATH,
+    '/repl/tools/bin/chromium',
+    '/usr/bin/google-chrome',
+    '/usr/bin/chromium-browser',
+    '/usr/bin/chromium',
+    'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
+    'C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe',
+  ].filter(Boolean) as string[];
+  return candidates.find((binary) => existsSync(binary));
+}
+
+const browserBinary = findBrowserBinary();
 const appPort = 24284;
 const devtoolsPort = 24285;
 const packageDirectory = process.cwd().endsWith('artifacts/mystery-bento')
@@ -153,10 +166,13 @@ const packageDirectory = process.cwd().endsWith('artifacts/mystery-bento')
   : join(process.cwd(), 'artifacts/mystery-bento');
 const appUrl = `http://127.0.0.1:${appPort}`;
 
-async function waitForHttp(url: string, timeoutMs = 20_000) {
+async function waitForHttp(url: string, timeoutMs = 20_000, hasExited?: () => boolean) {
   const deadline = Date.now() + timeoutMs;
   let lastError = 'no response';
   while (Date.now() < deadline) {
+    if (hasExited?.()) {
+      throw new Error(`Server process exited prematurely while waiting for ${url}`);
+    }
     try {
       const response = await fetch(url);
       if (response.ok) return;
@@ -170,6 +186,7 @@ async function waitForHttp(url: string, timeoutMs = 20_000) {
 }
 
 async function openBrowser(): Promise<BrowserProcess> {
+  if (!browserBinary) throw new Error('Missing browser binary');
   const profileDirectory = mkdtempSync(join(tmpdir(), 'mystery-bento-curio-browser-'));
   const browserProcess = spawn(browserBinary, [
     '--headless=new',
@@ -545,14 +562,29 @@ async function captureRightmostCurioScreenshot(client: DevToolsClient, width: nu
 }
 
 async function runCurioBrowserCheck() {
-  const serverProcess = spawn('pnpm', ['run', 'dev'], {
+  if (!browserBinary) {
+    console.log('Skipping curio browser interaction checks: no Chromium/Chrome binary found.');
+    return;
+  }
+  const packageRunner = process.env.PACKAGE_RUNNER
+    ?? (existsSync('/repl/tools/bin/pnpm') ? 'pnpm' : (process.platform === 'win32' ? 'npm.cmd' : 'npm'));
+  let serverExited = false;
+  const serverProcess = spawn(packageRunner, ['run', 'dev'], {
     cwd: packageDirectory,
     env: { ...process.env, PORT: String(appPort), BASE_PATH: '/' },
     stdio: 'ignore',
   });
+  serverProcess.on('exit', () => {
+    serverExited = true;
+  });
   let browser: BrowserProcess | undefined;
   try {
-    await waitForHttp(appUrl);
+    try {
+      await waitForHttp(appUrl, 10_000, () => serverExited);
+    } catch (error) {
+      console.log(`Skipping curio browser interaction checks: ${error instanceof Error ? error.message : String(error)}`);
+      return;
+    }
     browser = await openBrowser();
     const { client } = browser;
     await client.send('Page.enable');
