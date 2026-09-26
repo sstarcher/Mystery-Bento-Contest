@@ -13,6 +13,7 @@ Tuned specifically for:
 
 ## 📚 Essential Guides & Manuals
 
+* **[🛒 Sourcing & Shopping Guide](SHOPPING_LIST.md)**: Recommended vendors (Amazon, Printed Solid, Micro Center), exact brand recommendations, and direct search queries.
 * **[🛠️ Staged Build & Validation Guide](BUILD_AND_VALIDATION_GUIDE.md)**: **Start here!** Outlines the 6-stage incremental print-and-test workflow, complete BOM, and pass/fail checklists so you can validate fit and function *before* printing all 72 slats.
 * **[⚡ Electronics, Motor Wiring & ESP32 Firmware Guide](ELECTRONICS_AND_FIRMWARE.md)**: Full wiring schematic, TMC2209 current tuning ($V_{ref}$), stepper coil pairing, and web app REST API.
 * **[📐 Fusion 360 Modeling Guide](FUSION360_GUIDE.md)**: Beginner CAD tutorial covering sketch constraints, parameters, and modeling steps in Autodesk Fusion 360.
