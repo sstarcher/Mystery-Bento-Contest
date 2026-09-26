@@ -97,5 +97,15 @@ assert.match(
   /if \(!clip\.id\.startsWith\('race-starts\/'\)\) return/,
   'starting-lantern presentation should remain limited to race-start clips',
 );
+assert.match(
+  appSource,
+  /const completeRosterAnnouncementIfLastClip = \(beat: AnnouncerBeat, clipIndex: number\) => \{\s*if \(beat\.id === 'intro-opening' && clipIndex === beat\.clips\.length - 1\) \{\s*contestantsAnnouncedCallback\.current\(\);/,
+  'the race screen should replace the roster as soon as the final contestant introduction ends',
+);
+assert.match(
+  appSource,
+  /startedAt \+ raceStartBeat\.offset - RACE_LAST_CONTESTANT_PAUSE_MS - Date\.now\(\)/,
+  'muted contests should hand off from the roster at the end of the final name',
+);
 
 console.log('Race-start announcer verification passed.');

@@ -2319,6 +2319,12 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
   };
   const raceStartHandoffResolved = useRef(false);
   const announcementCompleteCallback = useRef<() => void>(() => undefined);
+  const contestantsAnnouncedCallback = useRef<() => void>(() => undefined);
+  contestantsAnnouncedCallback.current = () => {
+    setAnnouncementCardsVisible(false);
+    setRaceStartSequenceActive(true);
+    setAnnouncementStatus('The roster is set. The race is about to start.');
+  };
   announcementCompleteCallback.current = () => {
     if (raceStartHandoffResolved.current) return;
     raceStartHandoffResolved.current = true;
@@ -2398,6 +2404,10 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
         schedule(
           () => raceStartGraphicCallback.current(),
           startedAt + raceStartBeat.offset - Date.now(),
+        );
+        schedule(
+          () => contestantsAnnouncedCallback.current(),
+          startedAt + raceStartBeat.offset - RACE_LAST_CONTESTANT_PAUSE_MS - Date.now(),
         );
         schedule(
           () => raceStartGraphicHideCallback.current(),
@@ -2590,6 +2600,11 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
       announcedNameClips.add(clip.id);
       contestantAnnouncedCallback.current(clip.id.slice(prefix.length));
     };
+    const completeRosterAnnouncementIfLastClip = (beat: AnnouncerBeat, clipIndex: number) => {
+      if (beat.id === 'intro-opening' && clipIndex === beat.clips.length - 1) {
+        contestantsAnnouncedCallback.current();
+      }
+    };
     const announceRaceStartClip = (clip: AnnouncerClip) => {
       if (!clip.id.startsWith('race-starts/')) return;
       raceStartGraphicCallback.current();
@@ -2668,6 +2683,7 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
       }
       announceRaceStartClip(clip);
       if (getRaceAudioResource(clip.src)?.status === 'failed' || !fitsBeforeDeadline(beat, clip, Date.now())) {
+        completeRosterAnnouncementIfLastClip(beat, clipIndex);
         if (beat.id === 'race-start') {
           schedule(
             () => announcementCompleteCallback.current(),
@@ -2704,6 +2720,7 @@ function ContestOverlay({ contestants, winner, step, contestName, memorableEvent
         pendingAudio.current = null;
         announcerAudio.current = null;
         announcerAudioReadyAt.current = Date.now() + gapAfterClip;
+        completeRosterAnnouncementIfLastClip(beat, clipIndex);
         if (beat.id === 'race-start' && clipIndex === beat.clips.length - 1) {
           schedule(() => announcementCompleteCallback.current(), announcementCompletionDelay);
         }
