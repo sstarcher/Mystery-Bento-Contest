@@ -1,6 +1,6 @@
 import { strict as assert } from 'node:assert';
 import { spawn, type ChildProcess } from 'node:child_process';
-import { mkdtempSync, rmSync } from 'node:fs';
+import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { getCurioDebugState, selectRestaurantShelfCollectibles } from './curio-debug';
@@ -404,6 +404,19 @@ async function identifyRightmostShelfCurio(client: DevToolsClient) {
   `);
 }
 
+async function captureRightmostCurioScreenshot(client: DevToolsClient, width: number) {
+  const response = await client.send('Page.captureScreenshot', {
+    format: 'png',
+    fromSurface: true,
+    captureBeyondViewport: false,
+  });
+  const data = response.result?.data;
+  if (typeof data !== 'string') throw new Error('Chromium did not return a tooltip screenshot');
+  const filePath = join(tmpdir(), `mystery-bento-curio-right-${width}.png`);
+  writeFileSync(filePath, Buffer.from(data, 'base64'));
+  console.log(`Captured hovered rightmost curio at ${width}px: ${filePath}`);
+}
+
 async function runCurioBrowserCheck() {
   const serverProcess = spawn('pnpm', ['run', 'dev'], {
     cwd: packageDirectory,
@@ -433,6 +446,9 @@ async function runCurioBrowserCheck() {
         await inspectCurio(client, rightmostShelfCurio, 'nearest', viewport.width !== 1280),
         `${viewport.width}px right-edge shelf curio`,
       );
+      if (process.env.CURIO_CAPTURE_SCREENSHOTS === '1') {
+        await captureRightmostCurioScreenshot(client, viewport.width);
+      }
       assertCurioInteraction(
         await inspectCurio(client, '.displayed-curio-hanging-tools'),
         `${viewport.width}px downward shelf curio`,
