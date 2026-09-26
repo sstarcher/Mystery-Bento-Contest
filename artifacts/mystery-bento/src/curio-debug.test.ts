@@ -238,6 +238,15 @@ type CurioInteractionResult = {
   cardTop: number;
   cardRight: number;
   cardBottom: number;
+  curioLeft: number;
+  curioRight: number;
+  windowWidth: number;
+  visualViewportWidth: number | null;
+  visualViewportOffsetLeft: number | null;
+  tooltipShiftX: string;
+  tooltipViewportWidth: string;
+  appViewportLeft: number | null;
+  appViewportRight: number | null;
   viewportWidth: number;
   viewportHeight: number;
   cardWithinViewport: boolean;
@@ -254,7 +263,7 @@ async function inspectCurio(
   selector: string,
   inline: 'center' | 'nearest' = 'center',
   scrollIntoView = true,
-  inputKind: 'mouse' | 'touch' | 'focus' = 'mouse',
+  inputKind: 'mouse' | 'touch' = 'mouse',
 ): Promise<CurioInteractionResult> {
   await client.evaluate(`
     (() => {
@@ -426,12 +435,14 @@ function assertCounterCurioInteraction(result: CurioInteractionResult, label: st
 }
 
 function assertMobileCurioInteraction(result: CurioInteractionResult, label: string) {
-  assert.equal(result.focused, true, `${label} should open its tooltip on a phone-sized viewport`);
-  assert.equal(result.cardVisible, true, `${label} tooltip should be visible on a phone-sized viewport`);
+  assert.equal(result.focused, true, `${label} should open its tooltip on a phone-sized viewport: ${JSON.stringify(result)}`);
+  assert.equal(result.cardVisible, true, `${label} tooltip should be visible on a phone-sized viewport: ${JSON.stringify(result)}`);
   assert.ok(result.cardWidth >= 280 && result.cardHeight > 40, `${label} tooltip should keep its reduced full size: ${JSON.stringify(result)}`);
   assert.equal(result.cardWithinViewport, true, `${label} tooltip should fit the visual viewport: ${JSON.stringify(result)}`);
-  assert.equal(result.cardWithinScene, true, `${label} tooltip should fit the fixed scene`);
-  assert.ok(result.activeZIndex >= 100, `${label} should promote the active curio above its neighbors`);
+  assert.equal(result.cardWithinScene, true, `${label} tooltip should fit the fixed scene: ${JSON.stringify(result)}`);
+  assert.ok(result.containerZIndex >= 100, `${label} should promote the active slot above its neighbors: ${JSON.stringify(result)}`);
+  assert.equal(result.neighborOverlap, true, `${label} tooltip should overlap a neighboring curio: ${JSON.stringify(result)}`);
+  assert.equal(result.tooltipIsTopmostAtOverlap, true, `${label} tooltip should paint above a neighboring curio: ${JSON.stringify(result)}`);
 }
 
 async function addCounterCurioFixture(client: DevToolsClient) {
