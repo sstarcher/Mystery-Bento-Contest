@@ -22,24 +22,25 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
-
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
         with:
           version: 9
           run_install: false
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'pnpm'
+
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: pnpm install --no-frozen-lockfile
 
       - name: Build Mystery Bento static bundle
         env:
           PORT: 3000
-          BASE_PATH: /${{ github.event.repository.name }}/
+          BASE_PATH: /Mystery-Bento-Contest/
         run: pnpm --filter @workspace/mystery-bento run build
 
       - name: Setup SPA fallback & disable Jekyll
